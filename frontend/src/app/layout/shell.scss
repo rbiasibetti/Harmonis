@@ -1,0 +1,85 @@
+:host { display: block; }
+
+.layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1rem .75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.brand { display: flex; align-items: center; gap: .6rem; padding: .35rem .5rem; }
+.logo {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: var(--brand-600); color: #fff;
+  display: grid; place-items: center; font-weight: 800;
+}
+.brand .name { font-weight: 700; }
+
+nav { display: flex; flex-direction: column; gap: .15rem; }
+.nav-link {
+  display: flex; align-items: center; gap: .65rem;
+  padding: .55rem .7rem;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: .88rem;
+}
+.nav-link .ic { width: 1.2rem; text-align: center; }
+.nav-link:hover { background: var(--surface-2); color: var(--text); }
+.nav-link.active { background: var(--brand-50); color: var(--brand-600); }
+
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+.topbar {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: 0 1.25rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.spacer { flex: 1; }
+.icon-btn {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1rem;
+}
+.icon-btn:hover { background: var(--surface-2); }
+.menu-btn { display: none; }
+
+.user { display: flex; align-items: center; gap: .6rem; }
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--brand-100); color: var(--brand-600);
+  display: grid; place-items: center; font-weight: 700; font-size: .8rem;
+}
+.who { display: flex; flex-direction: column; line-height: 1.1; }
+.who small { font-size: .72rem; }
+.btn.sm { padding: .35rem .7rem; font-size: .8rem; }
+.muted { color: var(--text-muted); }
+
+.content { padding: 1.5rem; max-width: 1200px; width: 100%; }
+
+.scrim { display: none; }
+
+@media (max-width: 860px) {
+  .sidebar {
+    position: fixed; inset: 0 auto 0 0; z-index: 40;
+    transform: translateX(-100%); transition: transform .2s;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .menu-btn { display: inline-flex; }
+  .who { display: none; }
+  .scrim { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 30; }
+}

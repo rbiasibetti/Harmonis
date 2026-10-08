@@ -1,0 +1,30 @@
+:host { display: block; }
+
+.head h1 { margin: 0 0 .25rem; font-size: 1.4rem; }
+.muted { color: var(--text-muted); }
+
+.perms { padding: 1.25rem; margin: 1.25rem 0; }
+.perms h2 { margin: 0 0 .75rem; font-size: 1rem; }
+.chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.chip {
+  font-size: .72rem;
+  padding: .2rem .55rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-family: ui-monospace, monospace;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+.module { padding: 1.1rem; display: flex; flex-direction: column; gap: .4rem; }
+.m-top { display: flex; align-items: center; justify-content: space-between; }
+.soon {
+  margin-top: .35rem;
+  font-size: .72rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
