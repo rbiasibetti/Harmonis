@@ -71,13 +71,22 @@ java -jar target/harmonis-backend.jar --harmonis.seed.tenant=acme
 (admin/manager/member) e o usuário dono do tenant. Login de demonstração:
 **admin@acme.test / password**.
 
-### Endpoints M0
+### Endpoints
 
-| Método | Rota | Auth | Descrição |
+| Método | Rota | Permissão | Descrição |
 |---|---|---|---|
 | GET | `/api/health` | — | Saúde do serviço |
 | POST | `/api/auth/login` | — | `{tenant,email,password}` → `{token,user}` |
-| GET | `/api/me` | Bearer | Usuário autenticado (resolve o tenant pelo JWT) |
+| GET | `/api/me` | autenticado | Usuário autenticado (resolve o tenant pelo JWT) |
+| GET | `/api/users` | `users.view` | Lista usuários (`?q=` busca nome/e-mail) |
+| POST | `/api/users` | `users.create` | Cria usuário (retorna senha inicial gerada) |
+| PUT | `/api/users/{id}` | `users.update` | Atualiza nome/cargo/papéis/ativo |
+| DELETE | `/api/users/{id}` | `users.delete` | Remove usuário (owner/eu protegidos) |
+| GET | `/api/roles` | `roles.view` | Lista papéis (sistema + personalizados) |
+| GET | `/api/permissions` | `roles.view` | Catálogo de permissões agrupado |
+| POST | `/api/roles` | `roles.create` | Cria papel personalizado |
+| PUT | `/api/roles/{id}` | `roles.update` | Edita papel personalizado (sistema é imutável) |
+| DELETE | `/api/roles/{id}` | `roles.delete` | Remove papel personalizado |
 
 ```bash
 curl -s -X POST localhost:8080/api/auth/login -H 'Content-Type: application/json' \
@@ -93,7 +102,7 @@ cd backend && ./mvn.sh test
 ## Roadmap (milestones — espelha a referência)
 
 - [x] **M0** — Fundação: catálogo + roteamento por tenant, auth JWT, identidade/RBAC (seed), CORS.
-- [ ] **M1** — Usuários CRUD, papéis/permissões (sistema + personalizados), `@PreAuthorize`.
+- [x] **M1** — Usuários CRUD, papéis/permissões (sistema + personalizados), `@PreAuthorize`.
 - [ ] **M2** — Formulários (construtor, schema JSON, validação, respostas, CSV).
 - [ ] **M3** — Workflow (motor de aprovação: paralelo/condicional/gateway, caixa, timeline, notificações).
 - [ ] **M4** — ECM/GED (pastas, versionamento, download seguro, metadados, busca).

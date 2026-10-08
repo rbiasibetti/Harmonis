@@ -1,0 +1,27 @@
+:host { display: block; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+.role { padding: 1.1rem; display: flex; flex-direction: column; gap: .5rem; }
+.role-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+.role-top .name { font-size: .75rem; font-family: ui-monospace, monospace; }
+.count { font-size: .82rem; margin: 0; }
+.role-foot { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+.btn.sm { padding: .35rem .7rem; font-size: .8rem; }
+
+.perms {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .5rem .75rem;
+}
+.perm-group { padding: .35rem 0; border-bottom: 1px solid var(--border); }
+.perm-group:last-child { border-bottom: none; }
+.check-row.group { margin-bottom: .25rem; }
+.check-row.disabled { opacity: .85; }
+.perm-list { display: flex; flex-wrap: wrap; gap: .25rem 1rem; padding-left: 1.4rem; }
+.perm-list .check-row { padding: .15rem 0; }

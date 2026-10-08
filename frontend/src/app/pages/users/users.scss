@@ -1,0 +1,9 @@
+:host { display: block; }
+
+.toolbar {
+  display: flex;
+  gap: .5rem;
+  padding: .75rem;
+  margin-bottom: 1rem;
+}
+.toolbar .input { max-width: 340px; }

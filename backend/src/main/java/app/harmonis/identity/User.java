@@ -49,7 +49,7 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    protected User() {}
+    public User() {}
 
     @PrePersist
     void onCreate() {
