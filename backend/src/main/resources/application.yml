@@ -17,7 +17,7 @@ harmonis:
     secret: ${HARMONIS_JWT_SECRET:troque-esta-chave-em-producao-com-no-minimo-32-bytes!!}
     ttl-minutes: ${HARMONIS_JWT_TTL:480}
   cors:
-    allowed-origins: ${HARMONIS_CORS:http://localhost:4200}
+    allowed-origins: ${HARMONIS_CORS:http://localhost:4200,http://127.0.0.1:4200}
 
 spring:
   application:

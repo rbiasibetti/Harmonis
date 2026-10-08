@@ -1,0 +1,44 @@
+<div class="layout">
+  <aside class="sidebar" [class.open]="menuOpen()">
+    <div class="brand">
+      <div class="logo">H</div>
+      <span class="name">Harmonis</span>
+    </div>
+
+    <nav>
+      @for (item of visibleNav(); track item.path) {
+        <a class="nav-link" [routerLink]="item.path" routerLinkActive="active" (click)="menuOpen.set(false)">
+          <span class="ic">{{ item.icon }}</span>{{ item.label }}
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" type="button" (click)="menuOpen.set(!menuOpen())" aria-label="Menu">☰</button>
+      <div class="spacer"></div>
+
+      <button class="icon-btn" type="button" (click)="theme.toggle()" [attr.aria-label]="theme.dark() ? 'Tema claro' : 'Tema escuro'">
+        {{ theme.dark() ? '☀︎' : '☾' }}
+      </button>
+
+      <div class="user">
+        <div class="avatar">{{ initials() }}</div>
+        <div class="who">
+          <strong>{{ auth.user()?.name }}</strong>
+          <small class="muted">{{ auth.user()?.email }}</small>
+        </div>
+        <button class="btn btn-ghost sm" type="button" (click)="logout()">Sair</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+
+  @if (menuOpen()) {
+    <div class="scrim" (click)="menuOpen.set(false)"></div>
+  }
+</div>

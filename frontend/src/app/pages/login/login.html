@@ -1,0 +1,38 @@
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <div class="brand">
+      <div class="logo">H</div>
+      <div>
+        <h1>Harmonis</h1>
+        <p class="muted">Entre para acessar o workspace</p>
+      </div>
+    </div>
+
+    <form (ngSubmit)="submit()">
+      <div class="field">
+        <label class="label" for="tenant">Empresa (tenant)</label>
+        <input id="tenant" class="input" name="tenant" [(ngModel)]="tenant" required autocomplete="organization" />
+      </div>
+      <div class="field">
+        <label class="label" for="email">E-mail</label>
+        <input id="email" class="input" name="email" type="email" [(ngModel)]="email" required autocomplete="username" />
+      </div>
+      <div class="field">
+        <label class="label" for="password">Senha</label>
+        <input id="password" class="input" name="password" type="password" [(ngModel)]="password" required autocomplete="current-password" />
+      </div>
+
+      @if (error()) {
+        <p class="err">{{ error() }}</p>
+      }
+
+      <button class="btn btn-primary full" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Entrando…' : 'Entrar' }}
+      </button>
+    </form>
+
+    <button class="theme-toggle" type="button" (click)="theme.toggle()">
+      {{ theme.dark() ? '☀︎ Tema claro' : '☾ Tema escuro' }}
+    </button>
+  </div>
+</div>

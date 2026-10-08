@@ -1,0 +1,29 @@
+<div class="head">
+  <h1>Olá, {{ auth.user()?.name }}</h1>
+  <p class="muted">
+    Fundação pronta (M0): autenticação JWT, multi-tenancy por banco e RBAC.
+    @if (auth.user()?.owner) { <span class="badge">Proprietário</span> }
+  </p>
+</div>
+
+<section class="perms card">
+  <h2>Suas permissões</h2>
+  <div class="chips">
+    @for (p of auth.user()?.permissions ?? []; track p) {
+      <span class="chip">{{ p }}</span>
+    }
+  </div>
+</section>
+
+<section class="grid">
+  @for (m of modules; track m.label) {
+    <div class="card module">
+      <div class="m-top">
+        <strong>{{ m.label }}</strong>
+        <span class="badge">{{ m.milestone }}</span>
+      </div>
+      <p class="muted">{{ m.desc }}</p>
+      <span class="soon">Em breve</span>
+    </div>
+  }
+</section>
