@@ -1,0 +1,11 @@
+<div class="ph-head">
+  <h1>{{ info().title }}</h1>
+  @if (info().milestone) { <span class="badge">{{ info().milestone }}</span> }
+</div>
+
+<div class="card ph-card">
+  <div class="ph-icon">🚧</div>
+  <h2>Módulo em construção</h2>
+  @if (info().desc) { <p class="muted">{{ info().desc }}</p> }
+  <p class="muted small">Esta seção será entregue em um próximo milestone. A fundação (autenticação, multi-tenancy e permissões) já está pronta.</p>
+</div>

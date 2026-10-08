@@ -1,0 +1,17 @@
+:host { display: block; }
+
+.ph-head { display: flex; align-items: center; gap: .6rem; margin-bottom: 1.25rem; }
+.ph-head h1 { margin: 0; font-size: 1.4rem; }
+
+.ph-card {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+}
+.ph-icon { font-size: 2.5rem; }
+.ph-card h2 { margin: .25rem 0; font-size: 1.1rem; }
+.muted { color: var(--text-muted); margin: 0; max-width: 460px; }
+.small { font-size: .82rem; margin-top: .35rem; }
