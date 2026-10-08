@@ -1,0 +1,25 @@
+# Java / Maven
+backend/target/
+*.class
+*.jar
+!**/wrapper/*.jar
+
+# Node / Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Logs e temporarios
+*.log
+/tmp/
+
+# Bundles de referencia
+*.bundle
+
+# OS
+.DS_Store
