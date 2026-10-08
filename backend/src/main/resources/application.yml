@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+harmonis:
+  # Conexao base ao SQL Server local. Cada tenant tem seu proprio banco (db-per-tenant);
+  # as tabelas do Harmonis convivem com as de outros sistemas, por isso o prefixo hm_.
+  sqlserver:
+    host: ${HARMONIS_DB_HOST:localhost}
+    port: ${HARMONIS_DB_PORT:1433}
+    user: ${HARMONIS_DB_USER:sa}
+    password: ${HARMONIS_DB_PASSWORD:SQLServer2001}
+    # encrypt+trust para instancia local sem certificado valido
+    options: ";encrypt=true;trustServerCertificate=true;loginTimeout=15"
+  catalog:
+    db-name: ${HARMONIS_CATALOG_DB:harmonis_catalog}
+  jwt:
+    secret: ${HARMONIS_JWT_SECRET:troque-esta-chave-em-producao-com-no-minimo-32-bytes!!}
+    ttl-minutes: ${HARMONIS_JWT_TTL:480}
+  cors:
+    allowed-origins: ${HARMONIS_CORS:http://localhost:4200}
+
+spring:
+  application:
+    name: harmonis
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none   # schema gerido manualmente via migrations/ (sem Flyway)
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    properties:
+      # Dialeto fixado -> Hibernate NAO abre conexao no startup (nao ha tenant no contexto ainda)
+      hibernate.boot.allow_jdbc_metadata_access: false
+      hibernate.format_sql: false
+
+logging:
+  level:
+    app.harmonis: INFO
