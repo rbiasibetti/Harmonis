@@ -1,0 +1,95 @@
+<div class="page-head">
+  <div>
+    <h1>Papéis &amp; permissões</h1>
+    <p class="muted">Papéis de sistema e papéis personalizados do seu workspace.</p>
+  </div>
+  @if (auth.can('roles.create')) {
+    <button class="btn btn-primary" (click)="openCreate()">+ Novo papel</button>
+  }
+</div>
+
+@if (error()) { <p class="notice error">{{ error() }}</p> }
+
+<div class="grid">
+  @for (role of roles(); track role.id) {
+    <div class="card role">
+      <div class="role-top">
+        <div>
+          <strong>{{ role.label }}</strong>
+          <div class="muted name">{{ role.name }}</div>
+        </div>
+        @if (role.system) { <span class="badge gray">Sistema</span> }
+        @else { <span class="badge">Personalizado</span> }
+      </div>
+
+      <p class="muted count">{{ role.permissions.length }} permissão(ões)</p>
+
+      <div class="role-foot">
+        <button class="btn btn-ghost sm" (click)="open(role)">
+          {{ role.system || !auth.can('roles.update') ? 'Ver' : 'Editar' }}
+        </button>
+        @if (!role.system && auth.can('roles.delete')) {
+          <button class="icon-action danger" title="Remover" (click)="remove(role)">🗑</button>
+        }
+      </div>
+    </div>
+  } @empty {
+    <p class="muted">{{ loading() ? 'Carregando…' : 'Nenhum papel.' }}</p>
+  }
+</div>
+
+@if (showModal()) {
+  <div class="modal-scrim" (click)="closeModal()">
+    <div class="card modal" (click)="$event.stopPropagation()">
+      <h2>
+        {{ editing() ? (readonly() ? 'Papel' : 'Editar papel') : 'Novo papel' }}
+      </h2>
+
+      @if (!editing()) {
+        <div class="field">
+          <label class="label">Nome (identificador)</label>
+          <input class="input" [(ngModel)]="f.name" placeholder="ex.: suporte" />
+        </div>
+      }
+      <div class="field">
+        <label class="label">Rótulo</label>
+        <input class="input" [(ngModel)]="f.label" [disabled]="readonly()" placeholder="ex.: Suporte" />
+      </div>
+
+      <label class="label">Permissões</label>
+      <div class="perms">
+        @for (g of catalog(); track g.group) {
+          <div class="perm-group">
+            <label class="check-row group" [class.disabled]="readonly()">
+              <input type="checkbox"
+                     [checked]="groupState(g) === 'all'"
+                     [indeterminate]="groupState(g) === 'some'"
+                     (change)="toggleGroup(g)" [disabled]="readonly()" />
+              <strong>{{ g.group }}</strong>
+            </label>
+            <div class="perm-list">
+              @for (p of g.permissions; track p) {
+                <label class="check-row">
+                  <input type="checkbox" [checked]="f.permissions.has(p)"
+                         (change)="togglePermission(p)" [disabled]="readonly()" />
+                  <span class="chip">{{ p }}</span>
+                </label>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (formError()) { <p class="notice error">{{ formError() }}</p> }
+
+      <div class="modal-foot">
+        <button class="btn btn-ghost" (click)="closeModal()">{{ readonly() ? 'Fechar' : 'Cancelar' }}</button>
+        @if (!readonly()) {
+          <button class="btn btn-primary" (click)="save()" [disabled]="saving()">
+            {{ saving() ? 'Salvando…' : 'Salvar' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
