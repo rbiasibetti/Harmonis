@@ -19,6 +19,34 @@
       <button class="icon-btn menu-btn" type="button" (click)="menuOpen.set(!menuOpen())" aria-label="Menu">☰</button>
       <div class="spacer"></div>
 
+      <div class="bell-wrap">
+        <button class="icon-btn" type="button" (click)="toggleBell()" aria-label="Notificações">
+          🔔
+          @if (notifications.unread() > 0) { <span class="bell-badge">{{ notifications.unread() }}</span> }
+        </button>
+        @if (bellOpen()) {
+          <div class="bell-menu card" (click)="$event.stopPropagation()">
+            <div class="bell-head">
+              <strong>Notificações</strong>
+              @if (notifications.unread() > 0) {
+                <button class="link-btn" (click)="notifications.markAllRead()">Marcar todas como lidas</button>
+              }
+            </div>
+            <div class="bell-list">
+              @for (n of notifications.items(); track n.id) {
+                <button class="bell-item" [class.unread]="!n.readAt" (click)="openNotification(n)">
+                  <strong>{{ n.title }}</strong>
+                  <span class="muted">{{ n.message }}</span>
+                  <span class="muted when">{{ n.createdAt | date:'short' }}</span>
+                </button>
+              } @empty {
+                <p class="muted" style="padding:1rem;text-align:center">Sem notificações.</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
       <button class="icon-btn" type="button" (click)="theme.toggle()" [attr.aria-label]="theme.dark() ? 'Tema claro' : 'Tema escuro'">
         {{ theme.dark() ? '☀︎' : '☾' }}
       </button>

@@ -1,0 +1,147 @@
+<div class="page-head">
+  <div>
+    <a class="muted back" routerLink="/forms">← Formulários</a>
+    <h1>Fluxo de aprovação</h1>
+    <p class="muted">Início → etapas → Concluído. Qualquer reprovação encerra o processo.</p>
+  </div>
+  <div style="display:flex;gap:.5rem;align-items:center">
+    @if (saved()) { <span class="badge ok">Salvo</span> }
+    <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Salvando…' : 'Salvar' }}</button>
+  </div>
+</div>
+
+@if (error()) { <p class="notice error">{{ error() }}</p> }
+
+<div class="flow">
+  <div class="node start">Início</div>
+
+  @for (n of nodes(); track $index; let i = $index) {
+    <div class="connector"></div>
+    @if (isGateway(n)) {
+      <div class="card gateway">
+        <div class="fc-head">
+          <span class="badge" style="background:rgba(245,158,11,.15);color:#b45309">◇ Decisão</span>
+          <div class="fc-actions">
+            <button class="icon-action" (click)="move(nodes(), i, -1)">↑</button>
+            <button class="icon-action" (click)="move(nodes(), i, 1)">↓</button>
+            <button class="icon-action danger" (click)="removeNode(nodes(), i)">🗑</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Nome da decisão</label>
+          <input class="input" [(ngModel)]="n.name" placeholder="ex.: Valor alto?" />
+        </div>
+        <label class="label">Condição</label>
+        <ng-container *ngTemplateOutlet="condTpl; context: { cond: n.condition, required: true }"></ng-container>
+
+        <div class="branches">
+          <div class="branch">
+            <div class="branch-head yes">Se verdadeiro</div>
+            @for (s of n.then; track $index; let bi = $index) {
+              <ng-container *ngTemplateOutlet="stepTpl; context: { step: s, list: n.then, i: bi }"></ng-container>
+            }
+            <button class="btn btn-ghost sm" (click)="addBranchStep(n.then)">+ Etapa</button>
+          </div>
+          <div class="branch">
+            <div class="branch-head no">Se falso</div>
+            @for (s of n.else; track $index; let bi = $index) {
+              <ng-container *ngTemplateOutlet="stepTpl; context: { step: s, list: n.else, i: bi }"></ng-container>
+            }
+            <button class="btn btn-ghost sm" (click)="addBranchStep(n.else)">+ Etapa</button>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <ng-container *ngTemplateOutlet="stepTpl; context: { step: n, list: nodes(), i: i }"></ng-container>
+    }
+  }
+
+  <div class="connector"></div>
+  <div class="add-row">
+    <button class="btn btn-ghost" (click)="addStepTop()">+ Etapa</button>
+    <button class="btn btn-ghost" (click)="addGatewayTop()">+ Decisão (gateway)</button>
+  </div>
+
+  <div class="connector"></div>
+  <div class="node end">Concluído</div>
+</div>
+
+<!-- ===== template de etapa (reutilizado no topo e nos ramos) ===== -->
+<ng-template #stepTpl let-step="step" let-list="list" let-i="i">
+  <div class="card step">
+    <div class="fc-head">
+      <strong class="step-title">Etapa</strong>
+      <div class="fc-actions">
+        <button class="icon-action" (click)="move(list, i, -1)">↑</button>
+        <button class="icon-action" (click)="move(list, i, 1)">↓</button>
+        <button class="icon-action danger" (click)="removeNode(list, i)">🗑</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Nome da etapa</label>
+      <input class="input" [(ngModel)]="step.name" placeholder="ex.: Aprovação do gestor" />
+    </div>
+
+    <label class="label">Aprovadores</label>
+    @for (a of step.approvers; track $index; let ai = $index) {
+      <div class="approver">
+        <select class="input" [(ngModel)]="a.approver_type">
+          <option value="role">Por papel</option>
+          <option value="user">Usuário específico</option>
+        </select>
+        @if (a.approver_type === 'user') {
+          <select class="input" [(ngModel)]="a.user_id">
+            <option [ngValue]="null">Selecione…</option>
+            @for (u of userOptions(); track u.value) { <option [ngValue]="u.value">{{ u.label }}</option> }
+          </select>
+        } @else {
+          <select class="input" [(ngModel)]="a.role">
+            @for (r of roleOptions(); track r.value) { <option [value]="r.value">{{ r.label }}</option> }
+          </select>
+        }
+        @if (step.approvers.length > 1) {
+          <button class="icon-action danger" (click)="removeApprover(step, ai)">✕</button>
+        }
+      </div>
+    }
+    <button class="btn btn-ghost sm" (click)="addApprover(step)">+ Aprovador</button>
+
+    @if (step.approvers.length > 1) {
+      <div class="field" style="margin-top:.6rem">
+        <label class="label">Quando houver vários aprovadores</label>
+        <select class="input" [(ngModel)]="step.mode">
+          <option value="all">Exige aprovação de todos</option>
+          <option value="any">Basta um aprovar</option>
+        </select>
+      </div>
+    }
+
+    <div class="cond-box">
+      <label class="label">Condição (opcional)</label>
+      <ng-container *ngTemplateOutlet="condTpl; context: { cond: step.condition, required: false }"></ng-container>
+    </div>
+  </div>
+</ng-template>
+
+<!-- ===== template de condicao ===== -->
+<ng-template #condTpl let-cond="cond" let-required="required">
+  @if (fields().length === 0) {
+    <p class="muted" style="font-size:.8rem">Adicione campos ao formulário para criar condições.</p>
+  } @else {
+    <div class="cond-row">
+      <select class="input" [(ngModel)]="cond.field">
+        @if (!required) { <option value="">Sempre executar</option> }
+        @else { <option value="">Selecione o campo…</option> }
+        @for (f of fields(); track f.key) { <option [value]="f.key">{{ f.label }}</option> }
+      </select>
+      @if (cond.field) {
+        <select class="input" [(ngModel)]="cond.operator">
+          @for (op of operators; track op.value) { <option [value]="op.value">{{ op.label }}</option> }
+        </select>
+        @if (needsValue(cond)) {
+          <input class="input" [(ngModel)]="cond.value" placeholder="valor" />
+        }
+      }
+    </div>
+  }
+</ng-template>

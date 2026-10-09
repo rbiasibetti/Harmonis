@@ -43,6 +43,7 @@
                 <a class="icon-action" title="Respostas" [routerLink]="['/forms', f.id, 'submissions']">📊</a>
               }
               @if (auth.can('forms.update')) {
+                <a class="icon-action" title="Fluxo de aprovação" [routerLink]="['/forms', f.id, 'flow']">⇄</a>
                 <a class="icon-action" title="Editar" [routerLink]="['/forms', f.id, 'edit']">⚙</a>
               }
               @if (auth.can('forms.delete')) {

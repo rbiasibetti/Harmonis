@@ -58,6 +58,37 @@ nav { display: flex; flex-direction: column; gap: .15rem; }
 .icon-btn:hover { background: var(--surface-2); }
 .menu-btn { display: none; }
 
+.bell-wrap { position: relative; }
+.bell-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: var(--danger); color: #fff;
+  font-size: .62rem; font-weight: 700;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: 999px; display: grid; place-items: center;
+}
+.bell-menu {
+  position: absolute; right: 0; top: 46px;
+  width: 320px; max-height: 420px; overflow: auto;
+  z-index: 60; padding: 0;
+}
+.bell-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .75rem 1rem; border-bottom: 1px solid var(--border);
+}
+.link-btn { background: none; border: none; color: var(--brand-600); cursor: pointer; font-size: .78rem; }
+.bell-list { display: flex; flex-direction: column; }
+.bell-item {
+  display: flex; flex-direction: column; gap: .15rem;
+  text-align: left; padding: .7rem 1rem;
+  background: none; border: none; border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.bell-item:hover { background: var(--surface-2); }
+.bell-item.unread { background: var(--brand-50); }
+.bell-item .when { font-size: .72rem; }
+.bell-item strong { font-size: .85rem; }
+.bell-item .muted { font-size: .8rem; }
+
 .user { display: flex; align-items: center; gap: .6rem; }
 .avatar {
   width: 34px; height: 34px; border-radius: 50%;

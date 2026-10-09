@@ -3,8 +3,10 @@ package app.harmonis.forms;
 import app.harmonis.forms.FormDtos.*;
 import app.harmonis.identity.User;
 import app.harmonis.identity.UserRepository;
+import app.harmonis.workflow.ApprovalService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,14 +22,17 @@ public class FormService {
     private final FormSubmissionRepository submissions;
     private final UserRepository users;
     private final FormSchemaService schema;
+    private final ApprovalService approvals;
     private final ObjectMapper mapper;
 
     public FormService(FormRepository forms, FormSubmissionRepository submissions,
-                       UserRepository users, FormSchemaService schema, ObjectMapper mapper) {
+                       UserRepository users, FormSchemaService schema,
+                       @Lazy ApprovalService approvals, ObjectMapper mapper) {
         this.forms = forms;
         this.submissions = submissions;
         this.users = users;
         this.schema = schema;
+        this.approvals = approvals;
         this.mapper = mapper;
     }
 
@@ -86,6 +91,12 @@ public class FormService {
         sub.setSubmittedBy(userId);
         sub.setDataJson(writeData(data));
         submissions.save(sub);
+
+        // Se o formulario tem fluxo de aprovacao, inicia o processo.
+        String flow = form.getApprovalFlow();
+        if (flow != null && !flow.isBlank() && !flow.trim().equals("[]")) {
+            approvals.start(form, sub, userId);
+        }
         return sub.getId();
     }
 
@@ -131,6 +142,76 @@ public class FormService {
 
     public String formName(long formId) {
         return require(formId).getName();
+    }
+
+    // ----- fluxo de aprovacao -----
+
+    @Transactional(readOnly = true)
+    public FlowView getFlow(long id) {
+        Form form = require(id);
+        return new FlowView(readFlow(form.getApprovalFlow()), schema.readFields(form.getSchemaJson()));
+    }
+
+    @Transactional
+    public FlowView saveFlow(long id, List<Map<String, Object>> nodes) {
+        Form form = require(id);
+        Set<String> fieldKeys = new HashSet<>();
+        schema.readFields(form.getSchemaJson()).forEach(f -> fieldKeys.add(f.key()));
+        validateNodes(nodes == null ? List.of() : nodes, fieldKeys);
+        try {
+            form.setApprovalFlow(mapper.writeValueAsString(nodes == null ? List.of() : nodes));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fluxo inválido.");
+        }
+        forms.save(form);
+        return new FlowView(readFlow(form.getApprovalFlow()), schema.readFields(form.getSchemaJson()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void validateNodes(List<Map<String, Object>> nodes, Set<String> fieldKeys) {
+        for (Map<String, Object> node : nodes) {
+            boolean gateway = "gateway".equals(node.get("type"));
+            String name = Objects.toString(node.get("name"), "").trim();
+            if (name.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        gateway ? "Toda decisão precisa de um nome." : "Toda etapa precisa de um nome.");
+            }
+            Map<String, Object> cond = (node.get("condition") instanceof Map<?, ?> m) ? (Map<String, Object>) m : null;
+            if (gateway) {
+                String field = cond == null ? "" : Objects.toString(cond.get("field"), "");
+                if (field.isBlank()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A decisão \"" + name + "\" precisa de um campo de condição.");
+                }
+                if (!fieldKeys.contains(field)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo de condição inexistente: " + field);
+                }
+                validateNodes(asNodeList(node.get("then")), fieldKeys);
+                validateNodes(asNodeList(node.get("else")), fieldKeys);
+            } else {
+                if (cond != null) {
+                    String field = Objects.toString(cond.get("field"), "");
+                    if (!field.isBlank() && !fieldKeys.contains(field)) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo de condição inexistente: " + field);
+                    }
+                }
+                List<Map<String, Object>> approvers = asNodeList(node.get("approvers"));
+                boolean legacy = node.get("approver_type") != null || node.get("role") != null || node.get("user_id") != null;
+                if (approvers.isEmpty() && !legacy) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A etapa \"" + name + "\" precisa de ao menos um aprovador.");
+                }
+            }
+        }
+    }
+
+    private List<Map<String, Object>> readFlow(String json) {
+        if (json == null || json.isBlank()) return List.of();
+        try { return mapper.readValue(json, new TypeReference<>() {}); }
+        catch (Exception e) { return List.of(); }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> asNodeList(Object v) {
+        return (v instanceof List<?>) ? (List<Map<String, Object>>) v : List.of();
     }
 
     // ----- helpers -----

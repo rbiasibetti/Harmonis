@@ -10,6 +10,8 @@ import { FormsList } from './pages/forms/forms-list';
 import { FormBuilder } from './pages/forms/form-builder';
 import { FormFill } from './pages/forms/form-fill';
 import { FormSubmissionsPage } from './pages/forms/form-submissions';
+import { FlowEditor } from './pages/forms/flow-editor';
+import { Processes } from './pages/processes/processes';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -27,7 +29,8 @@ export const routes: Routes = [
       { path: 'forms/:id/edit', component: FormBuilder },
       { path: 'forms/:id/fill', component: FormFill },
       { path: 'forms/:id/submissions', component: FormSubmissionsPage },
-      { path: 'processes', component: Placeholder, data: { title: 'Processos', milestone: 'M3', desc: 'Fluxos de aprovação: paralelo, condicional e gateways.' } },
+      { path: 'forms/:id/flow', component: FlowEditor },
+      { path: 'processes', component: Processes },
       { path: 'documents', component: Placeholder, data: { title: 'Documentos', milestone: 'M4', desc: 'Pastas, versionamento, download seguro e busca.' } },
       { path: 'portal', component: Placeholder, data: { title: 'Portal', milestone: 'M5', desc: 'Páginas em Markdown (HTML sanitizado).' } },
     ],

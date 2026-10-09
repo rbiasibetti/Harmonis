@@ -75,6 +75,18 @@ public class FormController {
         return service.submissions(id);
     }
 
+    @GetMapping("/{id}/flow")
+    @PreAuthorize("hasAuthority('forms.update')")
+    public FlowView getFlow(@PathVariable long id) {
+        return service.getFlow(id);
+    }
+
+    @PutMapping("/{id}/flow")
+    @PreAuthorize("hasAuthority('forms.update')")
+    public FlowView saveFlow(@PathVariable long id, @Valid @RequestBody SaveFlowRequest req) {
+        return service.saveFlow(id, req.nodes());
+    }
+
     @GetMapping("/{id}/submissions.csv")
     @PreAuthorize("hasAuthority('forms.submissions')")
     public org.springframework.http.ResponseEntity<byte[]> csv(@PathVariable long id) {

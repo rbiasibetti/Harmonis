@@ -1,0 +1,46 @@
+:host { display: block; }
+
+.back { font-size: .8rem; display: inline-block; margin-bottom: .35rem; }
+.back:hover { color: var(--text); }
+
+.flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.node {
+  padding: .5rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: .85rem;
+}
+.node.start { background: var(--brand-600); color: #fff; }
+.node.end { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+.connector { width: 2px; height: 20px; background: var(--border); }
+
+.card.step, .card.gateway { width: 100%; padding: 1rem; }
+.step-title { font-size: .85rem; }
+.fc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+.fc-actions { display: flex; gap: .3rem; }
+.btn.sm { padding: .3rem .6rem; font-size: .78rem; }
+
+.approver { display: flex; gap: .4rem; margin-bottom: .4rem; }
+.approver .input { flex: 1; }
+
+.cond-box { margin-top: .75rem; background: var(--surface-2); padding: .6rem; border-radius: 10px; }
+.cond-row { display: flex; gap: .4rem; flex-wrap: wrap; }
+.cond-row .input { flex: 1; min-width: 120px; }
+
+.branches { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: .85rem; }
+.branch { border: 1px dashed var(--border); border-radius: 10px; padding: .6rem; display: flex; flex-direction: column; gap: .5rem; }
+.branch-head { font-size: .75rem; font-weight: 700; }
+.branch-head.yes { color: var(--ok); }
+.branch-head.no { color: var(--text-muted); }
+
+.add-row { display: flex; gap: .5rem; }
+
+@media (max-width: 680px) {
+  .branches { grid-template-columns: 1fr; }
+}
