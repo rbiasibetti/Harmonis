@@ -87,6 +87,15 @@ java -jar target/harmonis-backend.jar --harmonis.seed.tenant=acme
 | POST | `/api/roles` | `roles.create` | Cria papel personalizado |
 | PUT | `/api/roles/{id}` | `roles.update` | Edita papel personalizado (sistema é imutável) |
 | DELETE | `/api/roles/{id}` | `roles.delete` | Remove papel personalizado |
+| GET | `/api/forms/field-types` | `forms.view` | Catálogo dos 8 tipos de campo |
+| GET | `/api/forms` | `forms.view` | Lista formulários (com contagens) |
+| GET | `/api/forms/{id}` | `forms.view` | Detalhe (schema de campos) |
+| POST | `/api/forms` | `forms.create` | Cria formulário |
+| PUT | `/api/forms/{id}` | `forms.update` | Atualiza formulário/campos/status |
+| DELETE | `/api/forms/{id}` | `forms.delete` | Remove formulário (e respostas) |
+| POST | `/api/forms/{id}/submissions` | `forms.view` | Envia resposta (valida; 422 por campo) |
+| GET | `/api/forms/{id}/submissions` | `forms.submissions` | Lista respostas |
+| GET | `/api/forms/{id}/submissions.csv` | `forms.submissions` | Export CSV (`;` + BOM) |
 
 ```bash
 curl -s -X POST localhost:8080/api/auth/login -H 'Content-Type: application/json' \
@@ -103,7 +112,7 @@ cd backend && ./mvn.sh test
 
 - [x] **M0** — Fundação: catálogo + roteamento por tenant, auth JWT, identidade/RBAC (seed), CORS.
 - [x] **M1** — Usuários CRUD, papéis/permissões (sistema + personalizados), `@PreAuthorize`.
-- [ ] **M2** — Formulários (construtor, schema JSON, validação, respostas, CSV).
+- [x] **M2** — Formulários (construtor, schema JSON, validação, respostas, CSV).
 - [ ] **M3** — Workflow (motor de aprovação: paralelo/condicional/gateway, caixa, timeline, notificações).
 - [ ] **M4** — ECM/GED (pastas, versionamento, download seguro, metadados, busca).
 - [ ] **M5** — Portal (páginas Markdown sanitizado).

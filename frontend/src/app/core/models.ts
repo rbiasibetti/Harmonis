@@ -73,3 +73,54 @@ export interface SaveRoleRequest {
   label: string;
   permissions: string[];
 }
+
+/* ---- Formulários (M2) ---- */
+export interface FieldType {
+  code: string;
+  label: string;
+  hasOptions: boolean;
+}
+
+export interface FormField {
+  id: string | null;
+  key: string | null;
+  type: string;
+  label: string;
+  placeholder: string | null;
+  help: string | null;
+  required: boolean;
+  options: string[] | null;
+}
+
+export interface FormSummary {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  status: string;
+  fields: number;
+  submissions: number;
+}
+
+export interface FormDetail {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  status: string;
+  fields: FormField[];
+}
+
+export interface SaveFormRequest {
+  name: string;
+  description: string | null;
+  status: string;
+  fields: FormField[];
+}
+
+export interface SubmissionView {
+  id: number;
+  submittedBy: string | null;
+  createdAt: string;
+  data: Record<string, unknown>;
+}

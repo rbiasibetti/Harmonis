@@ -1,0 +1,43 @@
+@if (form(); as f) {
+  <div class="page-head">
+    <div>
+      <a class="muted back" routerLink="/forms">← Formulários</a>
+      <h1>Respostas — {{ f.name }}</h1>
+      <p class="muted">{{ rows().length }} resposta(s)</p>
+    </div>
+    @if (rows().length > 0) {
+      <button class="btn btn-ghost" (click)="exportCsv()">⬇ Exportar CSV</button>
+    }
+  </div>
+
+  @if (error()) { <p class="notice error">{{ error() }}</p> }
+
+  <div class="card" style="overflow:auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Enviado por</th>
+          <th>Data</th>
+          @for (fld of f.fields; track fld.key) { <th>{{ fld.label }}</th> }
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of rows(); track s.id; let i = $index) {
+          <tr>
+            <td class="muted">{{ rows().length - i }}</td>
+            <td>{{ s.submittedBy || '—' }}</td>
+            <td class="muted">{{ s.createdAt | date:'short' }}</td>
+            @for (fld of f.fields; track fld.key) { <td>{{ cell(fld, s.data) }}</td> }
+          </tr>
+        } @empty {
+          <tr><td [attr.colspan]="3 + f.fields.length" class="muted" style="text-align:center;padding:2rem">
+            {{ loading() ? 'Carregando…' : 'Nenhuma resposta ainda.' }}
+          </td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <p class="muted">{{ loading() ? 'Carregando…' : (error() || 'Formulário indisponível.') }}</p>
+}

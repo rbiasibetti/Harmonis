@@ -1,0 +1,61 @@
+<div class="page-head">
+  <div>
+    <h1>Formulários</h1>
+    <p class="muted">Crie formulários, publique e colete respostas.</p>
+  </div>
+  @if (auth.can('forms.create')) {
+    <a class="btn btn-primary" routerLink="/forms/new">+ Novo formulário</a>
+  }
+</div>
+
+@if (error()) { <p class="notice error">{{ error() }}</p> }
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Status</th>
+        <th>Campos</th>
+        <th>Respostas</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (f of forms(); track f.id) {
+        <tr>
+          <td>
+            <strong>{{ f.name }}</strong>
+            @if (f.description) { <div class="muted desc">{{ f.description }}</div> }
+          </td>
+          <td>
+            @if (f.status === 'published') { <span class="badge ok">Publicado</span> }
+            @else { <span class="badge gray">Rascunho</span> }
+          </td>
+          <td class="muted">{{ f.fields }}</td>
+          <td class="muted">{{ f.submissions }}</td>
+          <td>
+            <div class="row-actions">
+              @if (f.status === 'published') {
+                <a class="icon-action" title="Preencher" [routerLink]="['/forms', f.id, 'fill']">✎</a>
+              }
+              @if (auth.can('forms.submissions')) {
+                <a class="icon-action" title="Respostas" [routerLink]="['/forms', f.id, 'submissions']">📊</a>
+              }
+              @if (auth.can('forms.update')) {
+                <a class="icon-action" title="Editar" [routerLink]="['/forms', f.id, 'edit']">⚙</a>
+              }
+              @if (auth.can('forms.delete')) {
+                <button class="icon-action danger" title="Remover" (click)="remove(f)">🗑</button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="5" class="muted" style="text-align:center;padding:2rem">
+          {{ loading() ? 'Carregando…' : 'Nenhum formulário ainda.' }}
+        </td></tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,95 @@
+<div class="page-head">
+  <div>
+    <a class="muted back" routerLink="/forms">← Formulários</a>
+    <h1>{{ id() ? 'Editar formulário' : 'Novo formulário' }}</h1>
+  </div>
+  <div style="display:flex;gap:.5rem;align-items:center">
+    @if (saved()) { <span class="badge ok">Salvo</span> }
+    <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !name()">
+      {{ saving() ? 'Salvando…' : 'Salvar' }}
+    </button>
+  </div>
+</div>
+
+@if (error()) { <p class="notice error">{{ error() }}</p> }
+
+<div class="builder">
+  <div class="card meta">
+    <div class="field">
+      <label class="label">Nome</label>
+      <input class="input" [ngModel]="name()" (ngModelChange)="name.set($event)" placeholder="ex.: Solicitação de compra" />
+    </div>
+    <div class="field">
+      <label class="label">Descrição (opcional)</label>
+      <input class="input" [ngModel]="description()" (ngModelChange)="description.set($event)" />
+    </div>
+    <div class="field">
+      <label class="label">Status</label>
+      <select class="input" [ngModel]="status()" (ngModelChange)="status.set($event)">
+        <option value="draft">Rascunho</option>
+        <option value="published">Publicado</option>
+      </select>
+      <p class="muted" style="font-size:.78rem;margin:.35rem 0 0">Só formulários publicados podem ser preenchidos.</p>
+    </div>
+
+    <label class="label" style="margin-top:.5rem">Adicionar campo</label>
+    <div class="type-grid">
+      @for (t of types(); track t.code) {
+        <button class="btn btn-ghost type-btn" (click)="addField(t.code)">+ {{ t.label }}</button>
+      }
+    </div>
+  </div>
+
+  <div class="fields">
+    @for (f of fields(); track trackByIndex($index); let i = $index) {
+      <div class="card field-card">
+        <div class="fc-head">
+          <span class="badge gray">{{ typeLabel(f.type) }}</span>
+          <div class="fc-actions">
+            <button class="icon-action" title="Subir" (click)="move(i, -1)">↑</button>
+            <button class="icon-action" title="Descer" (click)="move(i, 1)">↓</button>
+            <button class="icon-action danger" title="Remover" (click)="remove(i)">🗑</button>
+          </div>
+        </div>
+
+        <div class="fc-grid">
+          <div class="field">
+            <label class="label">Rótulo</label>
+            <input class="input" [(ngModel)]="f.label" />
+          </div>
+          @if (f.type !== 'checkbox') {
+            <div class="field">
+              <label class="label">Placeholder</label>
+              <input class="input" [(ngModel)]="f.placeholder" />
+            </div>
+          }
+        </div>
+
+        <div class="field">
+          <label class="label">Ajuda (opcional)</label>
+          <input class="input" [(ngModel)]="f.help" />
+        </div>
+
+        @if (hasOptions(f.type)) {
+          <label class="label">Opções</label>
+          @for (opt of f.options; track $index; let oi = $index) {
+            <div class="opt-row">
+              <input class="input" [(ngModel)]="f.options![oi]" />
+              <button class="icon-action danger" (click)="removeOption(f, oi)">✕</button>
+            </div>
+          }
+          <button class="btn btn-ghost sm" (click)="addOption(f)">+ Opção</button>
+        }
+
+        <label class="switch" style="margin-top:.75rem">
+          <input type="checkbox" [(ngModel)]="f.required" />
+          <span class="track"></span> Obrigatório
+        </label>
+      </div>
+    } @empty {
+      <div class="card empty-fields muted">
+        {{ loading() ? 'Carregando…' : 'Nenhum campo ainda — adicione campos pelo painel ao lado.' }}
+      </div>
+    }
+  </div>
+</div>
