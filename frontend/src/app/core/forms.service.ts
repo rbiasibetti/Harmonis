@@ -43,4 +43,12 @@ export class FormsService {
   downloadCsv(id: number): Observable<Blob> {
     return this.http.get(`${API_BASE}/forms/${id}/submissions.csv`, { responseType: 'blob' });
   }
+
+  getFlow(id: number): Observable<{ nodes: any[]; fields: import('./models').FormField[] }> {
+    return this.http.get<{ nodes: any[]; fields: import('./models').FormField[] }>(`${API_BASE}/forms/${id}/flow`);
+  }
+
+  saveFlow(id: number, nodes: any[]): Observable<{ nodes: any[]; fields: import('./models').FormField[] }> {
+    return this.http.put<{ nodes: any[]; fields: import('./models').FormField[] }>(`${API_BASE}/forms/${id}/flow`, { nodes });
+  }
 }

@@ -33,4 +33,9 @@ public final class FormDtos {
     public record SubmissionView(
             Long id, String submittedBy, Instant createdAt, Map<String, Object> data
     ) {}
+
+    /** Fluxo de aprovacao + campos do formulario (para o editor de condicoes). */
+    public record FlowView(List<Map<String, Object>> nodes, List<FormField> fields) {}
+
+    public record SaveFlowRequest(@NotNull List<Map<String, Object>> nodes) {}
 }

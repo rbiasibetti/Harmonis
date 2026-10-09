@@ -1,22 +1,42 @@
 import { Component, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { AuthService } from '../core/auth.service';
 import { ThemeService } from '../core/theme.service';
+import { NotificationsService, NotificationView } from '../core/notifications.service';
 
 interface NavItem { label: string; path: string; icon: string; permission?: string; }
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, DatePipe],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
 export class Shell {
   protected auth = inject(AuthService);
   protected theme = inject(ThemeService);
+  protected notifications = inject(NotificationsService);
   private router = inject(Router);
 
   menuOpen = signal(false);
+  bellOpen = signal(false);
+
+  constructor() {
+    this.notifications.refresh();
+  }
+
+  toggleBell(): void {
+    const next = !this.bellOpen();
+    this.bellOpen.set(next);
+    if (next) this.notifications.refresh();
+  }
+
+  openNotification(n: NotificationView): void {
+    this.notifications.markRead(n.id);
+    this.bellOpen.set(false);
+    if (n.url) this.router.navigateByUrl(n.url);
+  }
 
   readonly nav: NavItem[] = [
     { label: 'Dashboard', path: '/dashboard', icon: '◧' },

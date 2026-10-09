@@ -1,0 +1,110 @@
+<div class="page-head">
+  <div>
+    <h1>Processos</h1>
+    <p class="muted">Aprovações pendentes e o acompanhamento das suas solicitações.</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab" [class.active]="tab() === 'inbox'" (click)="tab.set('inbox')">
+    Aprovações @if (inbox().length) { <span class="badge">{{ inbox().length }}</span> }
+  </button>
+  <button class="tab" [class.active]="tab() === 'mine'" (click)="tab.set('mine')">Minhas solicitações</button>
+</div>
+
+@if (tab() === 'inbox') {
+  <div class="card">
+    <table class="table">
+      <thead><tr><th>Formulário</th><th>Etapa</th><th>Solicitante</th><th>Data</th><th></th></tr></thead>
+      <tbody>
+        @for (it of inbox(); track it.taskId) {
+          <tr>
+            <td><strong>{{ it.formName }}</strong></td>
+            <td>{{ it.stepName }}</td>
+            <td class="muted">{{ it.requestedBy || '—' }}</td>
+            <td class="muted">{{ it.createdAt | date:'short' }}</td>
+            <td><div class="row-actions"><button class="btn btn-ghost sm" (click)="open(it.instanceId)">Revisar</button></div></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="muted" style="text-align:center;padding:2rem">
+            {{ loading() ? 'Carregando…' : 'Nenhuma aprovação pendente.' }}
+          </td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <div class="card">
+    <table class="table">
+      <thead><tr><th>Formulário</th><th>Status</th><th>Etapa atual</th><th>Data</th><th></th></tr></thead>
+      <tbody>
+        @for (it of mine(); track it.instanceId) {
+          <tr>
+            <td><strong>{{ it.formName }}</strong></td>
+            <td><span class="badge" [class]="statusBadge(it.status)">{{ statusLabel(it.status) }}</span></td>
+            <td class="muted">{{ it.currentStep || '—' }}</td>
+            <td class="muted">{{ it.createdAt | date:'short' }}</td>
+            <td><div class="row-actions"><button class="btn btn-ghost sm" (click)="open(it.instanceId)">Ver</button></div></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="muted" style="text-align:center;padding:2rem">Nenhuma solicitação.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (detail(); as d) {
+  <div class="modal-scrim" (click)="close()">
+    <div class="card modal wide" (click)="$event.stopPropagation()">
+      <div class="d-head">
+        <h2>{{ d.formName }}</h2>
+        <span class="badge" [class]="statusBadge(d.status)">{{ statusLabel(d.status) }}</span>
+      </div>
+      <p class="muted">Solicitado por {{ d.requestedBy || '—' }} em {{ d.createdAt | date:'short' }}</p>
+
+      <h3 class="sec">Dados enviados</h3>
+      <div class="data-grid">
+        @for (f of d.fields; track f.key) {
+          <div class="data-row"><span class="muted">{{ label(f) }}</span><span>{{ value(f, d.data) }}</span></div>
+        }
+      </div>
+
+      <h3 class="sec">Fluxo de aprovação</h3>
+      <div class="timeline">
+        @for (t of d.timeline; track t.id) {
+          <div class="tl-item">
+            <span class="dot" [class]="statusBadge(t.status)"></span>
+            <div class="tl-body">
+              <div class="tl-top">
+                <strong>{{ t.stepName }}</strong>
+                <span class="badge" [class]="statusBadge(t.status)">{{ statusLabel(t.status) }}</span>
+              </div>
+              <div class="muted tl-meta">
+                {{ t.approverType === 'user' ? (t.assignedUser || 'Usuário') : ('Papel: ' + t.role) }}
+                @if (t.decidedBy) { · por {{ t.decidedBy }} }
+                @if (t.decidedAt) { · {{ t.decidedAt | date:'short' }} }
+              </div>
+              @if (t.comment) { <div class="tl-comment">“{{ t.comment }}”</div> }
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (detailError()) { <p class="notice error">{{ detailError() }}</p> }
+
+      @if (d.actionableTaskId != null && d.status === 'pending') {
+        <div class="decide">
+          <label class="label">Comentário (opcional)</label>
+          <textarea class="input" rows="2" [(ngModel)]="comment"></textarea>
+          <div class="decide-actions">
+            <button class="btn btn-danger" (click)="decide(false)" [disabled]="deciding()">Reprovar</button>
+            <button class="btn btn-primary" (click)="decide(true)" [disabled]="deciding()">Aprovar</button>
+          </div>
+        </div>
+      } @else {
+        <div class="modal-foot"><button class="btn btn-ghost" (click)="close()">Fechar</button></div>
+      }
+    </div>
+  </div>
+}

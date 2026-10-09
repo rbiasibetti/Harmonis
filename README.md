@@ -96,6 +96,13 @@ java -jar target/harmonis-backend.jar --harmonis.seed.tenant=acme
 | POST | `/api/forms/{id}/submissions` | `forms.view` | Envia resposta (valida; 422 por campo) |
 | GET | `/api/forms/{id}/submissions` | `forms.submissions` | Lista respostas |
 | GET | `/api/forms/{id}/submissions.csv` | `forms.submissions` | Export CSV (`;` + BOM) |
+| GET/PUT | `/api/forms/{id}/flow` | `forms.update` | Lê/salva o fluxo de aprovação (árvore) |
+| GET | `/api/processes/inbox` | `processes.view` | Caixa de aprovações do usuário |
+| GET | `/api/processes/mine` | `processes.view` | Minhas solicitações |
+| GET | `/api/processes/{id}` | `processes.view` | Detalhe (dados + timeline) |
+| POST | `/api/processes/tasks/{taskId}/decide` | `processes.view` | Aprova/reprova (`{approved,comment}`) |
+| GET | `/api/notifications` | autenticado | Notificações recentes + não lidas |
+| POST | `/api/notifications/{id}/read`, `/read-all` | autenticado | Marca como lida(s) |
 
 ```bash
 curl -s -X POST localhost:8080/api/auth/login -H 'Content-Type: application/json' \
@@ -113,7 +120,7 @@ cd backend && ./mvn.sh test
 - [x] **M0** — Fundação: catálogo + roteamento por tenant, auth JWT, identidade/RBAC (seed), CORS.
 - [x] **M1** — Usuários CRUD, papéis/permissões (sistema + personalizados), `@PreAuthorize`.
 - [x] **M2** — Formulários (construtor, schema JSON, validação, respostas, CSV).
-- [ ] **M3** — Workflow (motor de aprovação: paralelo/condicional/gateway, caixa, timeline, notificações).
+- [x] **M3** — Workflow (motor de aprovação: paralelo/condicional/gateway, caixa, timeline, notificações).
 - [ ] **M4** — ECM/GED (pastas, versionamento, download seguro, metadados, busca).
 - [ ] **M5** — Portal (páginas Markdown sanitizado).
 - [ ] **M6** — Dashboard + modelador visual (drag-and-drop, zoom, mini-mapa).
