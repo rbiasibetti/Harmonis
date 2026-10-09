@@ -1,0 +1,74 @@
+@if (form(); as f) {
+  <div class="page-head">
+    <div>
+      <a class="muted back" routerLink="/forms">← Formulários</a>
+      <h1>{{ f.name }}</h1>
+      @if (f.description) { <p class="muted">{{ f.description }}</p> }
+    </div>
+  </div>
+
+  <div class="card fill-card">
+    @if (done()) {
+      <p class="notice success">Resposta enviada com sucesso!</p>
+      <button class="btn btn-ghost" (click)="again()">Enviar outra</button>
+    } @else {
+      @if (error()) { <p class="notice error">{{ error() }}</p> }
+
+      @for (fld of f.fields; track fld.key) {
+        <div class="field">
+          @if (fld.type !== 'checkbox') {
+            <label class="label">{{ fld.label }} @if (fld.required) { <span class="req">*</span> }</label>
+          }
+
+          @switch (fld.type) {
+            @case ('textarea') {
+              <textarea class="input" rows="3" [(ngModel)]="values[fld.key!]" [placeholder]="fld.placeholder || ''"></textarea>
+            }
+            @case ('number') {
+              <input class="input" type="number" [(ngModel)]="values[fld.key!]" [placeholder]="fld.placeholder || ''" />
+            }
+            @case ('email') {
+              <input class="input" type="email" [(ngModel)]="values[fld.key!]" [placeholder]="fld.placeholder || ''" />
+            }
+            @case ('date') {
+              <input class="input" type="date" [(ngModel)]="values[fld.key!]" />
+            }
+            @case ('select') {
+              <select class="input" [(ngModel)]="values[fld.key!]">
+                <option value="">Selecione…</option>
+                @for (o of fld.options; track o) { <option [value]="o">{{ o }}</option> }
+              </select>
+            }
+            @case ('radio') {
+              <div class="radios">
+                @for (o of fld.options; track o) {
+                  <label class="radio"><input type="radio" [name]="fld.key!" [value]="o" [(ngModel)]="values[fld.key!]" /> {{ o }}</label>
+                }
+              </div>
+            }
+            @case ('checkbox') {
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="values[fld.key!]" />
+                <span class="track"></span> {{ fld.label }} @if (fld.required) { <span class="req">*</span> }
+              </label>
+            }
+            @default {
+              <input class="input" type="text" [(ngModel)]="values[fld.key!]" [placeholder]="fld.placeholder || ''" />
+            }
+          }
+
+          @if (fld.help) { <p class="muted help">{{ fld.help }}</p> }
+          @if (err(fld.key!)) { <p class="field-err">{{ err(fld.key!) }}</p> }
+        </div>
+      }
+
+      <div class="modal-foot">
+        <button class="btn btn-primary" (click)="submit()" [disabled]="saving()">
+          {{ saving() ? 'Enviando…' : 'Enviar' }}
+        </button>
+      </div>
+    }
+  </div>
+} @else {
+  <p class="muted">{{ loading() ? 'Carregando…' : (error() || 'Formulário indisponível.') }}</p>
+}
