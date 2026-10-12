@@ -1,0 +1,29 @@
+:host { display: block; }
+
+.head-actions { display: flex; gap: .5rem; align-items: center; }
+.upload-btn { cursor: pointer; position: relative; }
+
+.toolbar { display: flex; gap: .5rem; padding: .75rem; margin-bottom: 1rem; }
+.toolbar .input { max-width: 380px; }
+
+.breadcrumb { display: flex; align-items: center; gap: .4rem; margin-bottom: .75rem; font-size: .88rem; }
+.breadcrumb a { color: var(--brand-600); }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb .sep { color: var(--text-muted); }
+
+.linklike { background: none; border: none; cursor: pointer; color: var(--text); font: inherit; padding: 0; text-align: left; }
+.linklike:hover strong { color: var(--brand-600); }
+
+.modal.wide { max-width: 580px; }
+.d-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.d-head h2 { margin: 0; font-size: 1.1rem; }
+.sec { font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); margin: 1.25rem 0 .5rem; }
+.btn.sm { padding: .3rem .6rem; font-size: .78rem; }
+
+.meta-row { display: flex; gap: .4rem; margin-bottom: .4rem; }
+
+.versions { display: flex; flex-direction: column; gap: .4rem; }
+.vrow { display: flex; align-items: center; justify-content: space-between; padding: .5rem .6rem; background: var(--surface-2); border-radius: 8px; }
+.vrow .when { font-size: .72rem; margin-top: .1rem; }
+
+.d-actions { display: flex; align-items: center; gap: .5rem; margin-top: 1.25rem; border-top: 1px solid var(--border); padding-top: 1rem; }

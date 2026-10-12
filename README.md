@@ -103,6 +103,16 @@ java -jar target/harmonis-backend.jar --harmonis.seed.tenant=acme
 | POST | `/api/processes/tasks/{taskId}/decide` | `processes.view` | Aprova/reprova (`{approved,comment}`) |
 | GET | `/api/notifications` | autenticado | Notificações recentes + não lidas |
 | POST | `/api/notifications/{id}/read`, `/read-all` | autenticado | Marca como lida(s) |
+| GET | `/api/documents?folder={id}` | `documents.view` | Navega (breadcrumb, pastas, docs) |
+| GET | `/api/documents/search?q=` | `documents.view` | Busca (nome/descrição/metadados/arquivo) |
+| GET | `/api/documents/{id}` | `documents.view` | Detalhe + versões |
+| POST | `/api/documents` (multipart) | `documents.create` | Upload (cria doc v1) |
+| POST | `/api/documents/{id}/versions` (multipart) | `documents.create` | Nova versão |
+| PUT | `/api/documents/{id}` | `documents.update` | Nome/descrição/metadados |
+| DELETE | `/api/documents/{id}` | `documents.delete` | Exclui (remove arquivos) |
+| GET | `/api/documents/{id}/download` | `documents.view` | Baixa a versão atual (autenticado) |
+| GET | `/api/documents/versions/{id}/download` | `documents.view` | Baixa uma versão |
+| POST/PUT/DELETE | `/api/documents/folders[/{id}]` | `documents.*` | CRUD de pastas (exclusão recursiva) |
 
 ```bash
 curl -s -X POST localhost:8080/api/auth/login -H 'Content-Type: application/json' \
@@ -121,6 +131,6 @@ cd backend && ./mvn.sh test
 - [x] **M1** — Usuários CRUD, papéis/permissões (sistema + personalizados), `@PreAuthorize`.
 - [x] **M2** — Formulários (construtor, schema JSON, validação, respostas, CSV).
 - [x] **M3** — Workflow (motor de aprovação: paralelo/condicional/gateway, caixa, timeline, notificações).
-- [ ] **M4** — ECM/GED (pastas, versionamento, download seguro, metadados, busca).
+- [x] **M4** — ECM/GED (pastas, versionamento, download seguro, metadados, busca).
 - [ ] **M5** — Portal (páginas Markdown sanitizado).
 - [ ] **M6** — Dashboard + modelador visual (drag-and-drop, zoom, mini-mapa).

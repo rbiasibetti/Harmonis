@@ -12,6 +12,7 @@ import { FormFill } from './pages/forms/form-fill';
 import { FormSubmissionsPage } from './pages/forms/form-submissions';
 import { FlowEditor } from './pages/forms/flow-editor';
 import { Processes } from './pages/processes/processes';
+import { Documents } from './pages/documents/documents';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -31,7 +32,8 @@ export const routes: Routes = [
       { path: 'forms/:id/submissions', component: FormSubmissionsPage },
       { path: 'forms/:id/flow', component: FlowEditor },
       { path: 'processes', component: Processes },
-      { path: 'documents', component: Placeholder, data: { title: 'Documentos', milestone: 'M4', desc: 'Pastas, versionamento, download seguro e busca.' } },
+      { path: 'documents', component: Documents },
+      { path: 'documents/folder/:id', component: Documents },
       { path: 'portal', component: Placeholder, data: { title: 'Portal', milestone: 'M5', desc: 'Páginas em Markdown (HTML sanitizado).' } },
     ],
   },
