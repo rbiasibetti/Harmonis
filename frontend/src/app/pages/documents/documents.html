@@ -1,0 +1,173 @@
+<div class="page-head">
+  <div>
+    <h1>Documentos</h1>
+    <p class="muted">Pastas, versionamento e busca.</p>
+  </div>
+  <div class="head-actions">
+    @if (auth.can('documents.create')) {
+      <button class="btn btn-ghost" (click)="openFolderModal()">+ Pasta</button>
+      <label class="btn btn-primary upload-btn">
+        {{ uploading() ? 'Enviando…' : '⬆ Enviar arquivo' }}
+        <input type="file" hidden (change)="onUpload($event)" [disabled]="uploading()" />
+      </label>
+    }
+  </div>
+</div>
+
+<div class="card toolbar">
+  <input class="input" placeholder="Buscar em todos os documentos…" [(ngModel)]="searchTerm" (keyup.enter)="runSearch()" />
+  <button class="btn btn-ghost" (click)="runSearch()">Buscar</button>
+  @if (searchResults() !== null) { <button class="btn btn-ghost" (click)="clearSearch()">Limpar</button> }
+</div>
+
+@if (error()) { <p class="notice error">{{ error() }}</p> }
+
+@if (searchResults() !== null) {
+  <!-- resultados de busca -->
+  <div class="card">
+    <table class="table">
+      <thead><tr><th>Documento</th><th>Pasta</th><th>Versão</th><th></th></tr></thead>
+      <tbody>
+        @for (h of searchResults(); track h.document.id) {
+          <tr>
+            <td><button class="linklike" (click)="open(h.document.id)"><strong>{{ h.document.name }}</strong></button></td>
+            <td class="muted">{{ h.folderName || 'Raiz' }}</td>
+            <td class="muted">v{{ h.document.currentVersion }}</td>
+            <td><div class="row-actions"><button class="icon-action" title="Baixar" (click)="downloadDoc(h.document.id, h.document.name)">⬇</button></div></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="4" class="muted" style="text-align:center;padding:2rem">Nada encontrado.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else if (view(); as v) {
+  <!-- breadcrumb -->
+  <div class="breadcrumb">
+    <a routerLink="/documents">Raiz</a>
+    @for (b of v.breadcrumb; track b.id) {
+      <span class="sep">/</span>
+      <a [routerLink]="['/documents/folder', b.id]">{{ b.name }}</a>
+    }
+  </div>
+
+  <div class="card">
+    <table class="table">
+      <thead><tr><th>Nome</th><th>Tipo</th><th>Detalhes</th><th></th></tr></thead>
+      <tbody>
+        @for (f of v.folders; track f.id) {
+          <tr>
+            <td><button class="linklike" (click)="openFolder(f.id)">🗀 <strong>{{ f.name }}</strong></button></td>
+            <td class="muted">Pasta</td>
+            <td class="muted">{{ f.createdAt | date:'short' }}</td>
+            <td>
+              <div class="row-actions">
+                @if (auth.can('documents.update')) { <button class="icon-action" title="Renomear" (click)="renameFolder(f.id, f.name)">✎</button> }
+                @if (auth.can('documents.delete')) { <button class="icon-action danger" title="Excluir" (click)="deleteFolder(f.id, f.name)">🗑</button> }
+              </div>
+            </td>
+          </tr>
+        }
+        @for (d of v.documents; track d.id) {
+          <tr>
+            <td><button class="linklike" (click)="open(d.id)">📄 <strong>{{ d.name }}</strong></button></td>
+            <td class="muted">Documento</td>
+            <td class="muted">v{{ d.currentVersion }} @if (metaKeys(d.metadata).length) { · {{ metaKeys(d.metadata).length }} metadado(s) }</td>
+            <td><div class="row-actions"><button class="icon-action" title="Baixar" (click)="downloadDoc(d.id, d.name)">⬇</button></div></td>
+          </tr>
+        }
+        @if (v.folders.length === 0 && v.documents.length === 0) {
+          <tr><td colspan="4" class="muted" style="text-align:center;padding:2rem">
+            {{ loading() ? 'Carregando…' : 'Pasta vazia.' }}
+          </td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- modal criar pasta -->
+@if (showFolderModal()) {
+  <div class="modal-scrim" (click)="showFolderModal.set(false)">
+    <div class="card modal" (click)="$event.stopPropagation()">
+      <h2>Nova pasta</h2>
+      <div class="field">
+        <label class="label">Nome</label>
+        <input class="input" [(ngModel)]="folderName" (keyup.enter)="createFolder()" />
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" (click)="showFolderModal.set(false)">Cancelar</button>
+        <button class="btn btn-primary" (click)="createFolder()">Criar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- modal detalhe documento -->
+@if (detail(); as d) {
+  <div class="modal-scrim" (click)="closeDetail()">
+    <div class="card modal wide" (click)="$event.stopPropagation()">
+      <div class="d-head">
+        <h2>📄 {{ d.name }}</h2>
+        <span class="badge gray">v{{ d.currentVersion }}</span>
+      </div>
+
+      @if (auth.can('documents.update')) {
+        <div class="field">
+          <label class="label">Nome</label>
+          <input class="input" [(ngModel)]="d.name" />
+        </div>
+        <div class="field">
+          <label class="label">Descrição</label>
+          <input class="input" [(ngModel)]="d.description" />
+        </div>
+
+        <label class="label">Metadados</label>
+        @for (row of metaRows(); track $index; let i = $index) {
+          <div class="meta-row">
+            <input class="input" placeholder="chave" [(ngModel)]="row.key" />
+            <input class="input" placeholder="valor" [(ngModel)]="row.value" />
+            <button class="icon-action danger" (click)="removeMeta(i)">✕</button>
+          </div>
+        }
+        <button class="btn btn-ghost sm" (click)="addMeta()">+ Metadado</button>
+        <div style="margin-top:.75rem">
+          <button class="btn btn-primary" (click)="saveDetail()" [disabled]="savingDetail()">
+            {{ savingDetail() ? 'Salvando…' : 'Salvar alterações' }}
+          </button>
+        </div>
+      } @else {
+        @if (d.description) { <p>{{ d.description }}</p> }
+        @if (metaKeys(d.metadata).length) {
+          <label class="label">Metadados</label>
+          <div class="chips">@for (k of metaKeys(d.metadata); track k) { <span class="chip">{{ k }}: {{ d.metadata[k] }}</span> }</div>
+        }
+      }
+
+      <h3 class="sec">Versões</h3>
+      <div class="versions">
+        @for (vrs of d.versions; track vrs.id) {
+          <div class="vrow">
+            <div>
+              <strong>v{{ vrs.version }}</strong>
+              <span class="muted">· {{ vrs.originalName }} · {{ humanSize(vrs.size) }}</span>
+              <div class="muted when">{{ vrs.uploadedBy || '—' }} · {{ vrs.createdAt | date:'short' }}</div>
+            </div>
+            <button class="icon-action" title="Baixar" (click)="downloadVersion(vrs.id, vrs.originalName)">⬇</button>
+          </div>
+        }
+      </div>
+
+      <div class="d-actions">
+        @if (auth.can('documents.create')) {
+          <label class="btn btn-ghost upload-btn">⬆ Nova versão
+            <input type="file" hidden (change)="onAddVersion($event)" />
+          </label>
+        }
+        <div style="flex:1"></div>
+        @if (auth.can('documents.delete')) { <button class="btn btn-danger" (click)="deleteDocument()">Excluir</button> }
+        <button class="btn btn-ghost" (click)="closeDetail()">Fechar</button>
+      </div>
+    </div>
+  </div>
+}

@@ -14,6 +14,10 @@ frontend/.angular/
 .vscode/
 *.iml
 
+# Arquivos de documentos (ECM) gravados em runtime
+backend/storage/
+storage/
+
 # Logs e temporarios
 *.log
 /tmp/

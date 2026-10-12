@@ -10,6 +10,7 @@ public class HarmonisProperties {
     private Catalog catalog = new Catalog();
     private Jwt jwt = new Jwt();
     private Cors cors = new Cors();
+    private Storage storage = new Storage();
 
     public SqlServer getSqlserver() { return sqlserver; }
     public void setSqlserver(SqlServer sqlserver) { this.sqlserver = sqlserver; }
@@ -19,6 +20,8 @@ public class HarmonisProperties {
     public void setJwt(Jwt jwt) { this.jwt = jwt; }
     public Cors getCors() { return cors; }
     public void setCors(Cors cors) { this.cors = cors; }
+    public Storage getStorage() { return storage; }
+    public void setStorage(Storage storage) { this.storage = storage; }
 
     /** Monta a URL JDBC para um banco especifico na mesma instancia SQL Server. */
     public String jdbcUrl(String databaseName) {
@@ -63,5 +66,11 @@ public class HarmonisProperties {
         private String allowedOrigins = "http://localhost:4200";
         public String getAllowedOrigins() { return allowedOrigins; }
         public void setAllowedOrigins(String allowedOrigins) { this.allowedOrigins = allowedOrigins; }
+    }
+
+    public static class Storage {
+        private String documentsDir = "storage/documents";
+        public String getDocumentsDir() { return documentsDir; }
+        public void setDocumentsDir(String documentsDir) { this.documentsDir = documentsDir; }
     }
 }
