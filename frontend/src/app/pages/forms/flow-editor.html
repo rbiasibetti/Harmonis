@@ -12,58 +12,95 @@
 
 @if (error()) { <p class="notice error">{{ error() }}</p> }
 
-<div class="flow">
-  <div class="node start">Início</div>
-
-  @for (n of nodes(); track $index; let i = $index) {
-    <div class="connector"></div>
-    @if (isGateway(n)) {
-      <div class="card gateway">
-        <div class="fc-head">
-          <span class="badge" style="background:rgba(245,158,11,.15);color:#b45309">◇ Decisão</span>
-          <div class="fc-actions">
-            <button class="icon-action" (click)="move(nodes(), i, -1)">↑</button>
-            <button class="icon-action" (click)="move(nodes(), i, 1)">↓</button>
-            <button class="icon-action danger" (click)="removeNode(nodes(), i)">🗑</button>
-          </div>
-        </div>
-        <div class="field">
-          <label class="label">Nome da decisão</label>
-          <input class="input" [(ngModel)]="n.name" placeholder="ex.: Valor alto?" />
-        </div>
-        <label class="label">Condição</label>
-        <ng-container *ngTemplateOutlet="condTpl; context: { cond: n.condition, required: true }"></ng-container>
-
-        <div class="branches">
-          <div class="branch">
-            <div class="branch-head yes">Se verdadeiro</div>
-            @for (s of n.then; track $index; let bi = $index) {
-              <ng-container *ngTemplateOutlet="stepTpl; context: { step: s, list: n.then, i: bi }"></ng-container>
-            }
-            <button class="btn btn-ghost sm" (click)="addBranchStep(n.then)">+ Etapa</button>
-          </div>
-          <div class="branch">
-            <div class="branch-head no">Se falso</div>
-            @for (s of n.else; track $index; let bi = $index) {
-              <ng-container *ngTemplateOutlet="stepTpl; context: { step: s, list: n.else, i: bi }"></ng-container>
-            }
-            <button class="btn btn-ghost sm" (click)="addBranchStep(n.else)">+ Etapa</button>
-          </div>
-        </div>
-      </div>
-    } @else {
-      <ng-container *ngTemplateOutlet="stepTpl; context: { step: n, list: nodes(), i: i }"></ng-container>
-    }
-  }
-
-  <div class="connector"></div>
-  <div class="add-row">
-    <button class="btn btn-ghost" (click)="addStepTop()">+ Etapa</button>
-    <button class="btn btn-ghost" (click)="addGatewayTop()">+ Decisão (gateway)</button>
+<div class="toolbar-flow">
+  <div class="zoom">
+    <button class="icon-action" (click)="zoomOut()" title="Diminuir">−</button>
+    <span class="zoom-pct">{{ zoomPct() }}%</span>
+    <button class="icon-action" (click)="zoomIn()" title="Aumentar">+</button>
   </div>
+  <span class="muted hint">Arraste pela alça ⠿ para reordenar</span>
+</div>
 
-  <div class="connector"></div>
-  <div class="node end">Concluído</div>
+<div class="modeler-body">
+  <aside class="minimap card">
+    <div class="mm-title">Mini-mapa</div>
+    @for (o of outline(); track o.i) {
+      <button class="mm-item" [class.gw]="o.gateway" (click)="scrollTo(o.i)">
+        <span class="mm-ic">{{ o.gateway ? '◇' : '▢' }}</span> {{ o.label }}
+      </button>
+    } @empty { <p class="muted mm-empty">Sem etapas ainda.</p> }
+  </aside>
+
+  <div class="flow-viewport">
+    <div class="flow" [style.zoom]="zoom()">
+      <div class="node start">Início</div>
+      <div class="connector"></div>
+
+      <div cdkDropList class="drop-list" (cdkDropListDropped)="drop($event, nodes())">
+        @for (n of nodes(); track $index; let i = $index) {
+          <div class="node-wrap" cdkDrag [id]="'flow-node-' + i">
+            <button class="drag-handle" cdkDragHandle title="Arraste para reordenar">⠿</button>
+            @if (isGateway(n)) {
+              <div class="card gateway">
+                <div class="fc-head">
+                  <span class="badge" style="background:rgba(245,158,11,.15);color:#b45309">◇ Decisão</span>
+                  <div class="fc-actions">
+                    <button class="icon-action" (click)="move(nodes(), i, -1)">↑</button>
+                    <button class="icon-action" (click)="move(nodes(), i, 1)">↓</button>
+                    <button class="icon-action danger" (click)="removeNode(nodes(), i)">🗑</button>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">Nome da decisão</label>
+                  <input class="input" [(ngModel)]="n.name" placeholder="ex.: Valor alto?" />
+                </div>
+                <label class="label">Condição</label>
+                <ng-container *ngTemplateOutlet="condTpl; context: { cond: n.condition, required: true }"></ng-container>
+
+                <div class="branches">
+                  <div class="branch">
+                    <div class="branch-head yes">Se verdadeiro</div>
+                    <div cdkDropList class="drop-list" (cdkDropListDropped)="drop($event, n.then)">
+                      @for (s of n.then; track $index; let bi = $index) {
+                        <div class="node-wrap" cdkDrag>
+                          <button class="drag-handle" cdkDragHandle>⠿</button>
+                          <ng-container *ngTemplateOutlet="stepTpl; context: { step: s, list: n.then, i: bi }"></ng-container>
+                        </div>
+                      }
+                    </div>
+                    <button class="btn btn-ghost sm" (click)="addBranchStep(n.then)">+ Etapa</button>
+                  </div>
+                  <div class="branch">
+                    <div class="branch-head no">Se falso</div>
+                    <div cdkDropList class="drop-list" (cdkDropListDropped)="drop($event, n.else)">
+                      @for (s of n.else; track $index; let bi = $index) {
+                        <div class="node-wrap" cdkDrag>
+                          <button class="drag-handle" cdkDragHandle>⠿</button>
+                          <ng-container *ngTemplateOutlet="stepTpl; context: { step: s, list: n.else, i: bi }"></ng-container>
+                        </div>
+                      }
+                    </div>
+                    <button class="btn btn-ghost sm" (click)="addBranchStep(n.else)">+ Etapa</button>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <ng-container *ngTemplateOutlet="stepTpl; context: { step: n, list: nodes(), i: i }"></ng-container>
+            }
+            <div class="connector"></div>
+          </div>
+        }
+      </div>
+
+      <div class="add-row">
+        <button class="btn btn-ghost" (click)="addStepTop()">+ Etapa</button>
+        <button class="btn btn-ghost" (click)="addGatewayTop()">+ Decisão (gateway)</button>
+      </div>
+
+      <div class="connector"></div>
+      <div class="node end">Concluído</div>
+    </div>
+  </div>
 </div>
 
 <!-- ===== template de etapa (reutilizado no topo e nos ramos) ===== -->

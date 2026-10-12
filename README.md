@@ -121,6 +121,7 @@ java -jar target/harmonis-backend.jar --harmonis.seed.tenant=acme
 | POST | `/api/pages` | `pages.create` | Cria página |
 | PUT | `/api/pages/{id}` | `pages.update` | Atualiza/publica página |
 | DELETE | `/api/pages/{id}` | `pages.delete` | Exclui página |
+| GET | `/api/dashboard` | autenticado | Métricas + listas (gated por permissão) |
 
 ```bash
 curl -s -X POST localhost:8080/api/auth/login -H 'Content-Type: application/json' \
@@ -141,4 +142,4 @@ cd backend && ./mvn.sh test
 - [x] **M3** — Workflow (motor de aprovação: paralelo/condicional/gateway, caixa, timeline, notificações).
 - [x] **M4** — ECM/GED (pastas, versionamento, download seguro, metadados, busca).
 - [x] **M5** — Portal (páginas Markdown sanitizado).
-- [ ] **M6** — Dashboard + modelador visual (drag-and-drop, zoom, mini-mapa).
+- [x] **M6** — Dashboard + modelador visual (drag-and-drop, zoom, mini-mapa).

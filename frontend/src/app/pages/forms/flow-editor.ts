@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FormsService } from '../../core/forms.service';
 import { RolesService } from '../../core/roles.service';
 import { UsersService } from '../../core/users.service';
@@ -11,7 +12,7 @@ interface Opt { value: string; label: string; }
 
 @Component({
   selector: 'app-flow-editor',
-  imports: [FormsModule, RouterLink, NgTemplateOutlet],
+  imports: [FormsModule, RouterLink, NgTemplateOutlet, DragDropModule],
   templateUrl: './flow-editor.html',
   styleUrl: './flow-editor.scss',
 })
@@ -31,6 +32,7 @@ export class FlowEditor {
   saving = signal(false);
   saved = signal(false);
   error = signal<string | null>(null);
+  zoom = signal(1);
 
   readonly operators: Opt[] = [
     { value: '==', label: 'igual a' },
@@ -106,6 +108,30 @@ export class FlowEditor {
   }
 
   private touch(): void { this.nodes.set([...this.nodes()]); }
+
+  // ----- drag-and-drop -----
+  drop(event: CdkDragDrop<any[]>, list: any[]): void {
+    moveItemInArray(list, event.previousIndex, event.currentIndex);
+    this.touch();
+  }
+
+  // ----- zoom -----
+  zoomIn(): void { this.zoom.set(Math.min(1.5, Math.round((this.zoom() + 0.1) * 10) / 10)); }
+  zoomOut(): void { this.zoom.set(Math.max(0.5, Math.round((this.zoom() - 0.1) * 10) / 10)); }
+  zoomPct(): number { return Math.round(this.zoom() * 100); }
+
+  // ----- mini-mapa -----
+  outline(): { i: number; label: string; gateway: boolean }[] {
+    return this.nodes().map((n, i) => ({
+      i,
+      label: n.name || (this.isGateway(n) ? 'Decisão' : 'Etapa'),
+      gateway: this.isGateway(n),
+    }));
+  }
+
+  scrollTo(i: number): void {
+    document.getElementById('flow-node-' + i)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 
   save(): void {
     this.error.set(null);

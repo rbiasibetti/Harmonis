@@ -74,6 +74,10 @@ public class PageService {
         return new PreviewResponse(markdown.render(content));
     }
 
+    public long countPublished() {
+        return pages.countByStatus("published");
+    }
+
     // ----- portal (publicadas) -----
 
     @Transactional(readOnly = true)
