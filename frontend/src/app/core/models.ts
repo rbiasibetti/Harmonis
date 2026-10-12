@@ -74,11 +74,33 @@ export interface SaveRoleRequest {
   permissions: string[];
 }
 
-/* ---- Formulários (M2) ---- */
+/* ---- Formulários (M2 / builder v2) ---- */
 export interface FieldType {
   code: string;
   label: string;
   hasOptions: boolean;
+  kind: string; // input | single | multiple | layout
+}
+
+export interface FieldValidation {
+  pattern?: string | null;
+  patternMessage?: string | null;
+  min?: number | null;
+  max?: number | null;
+  positive?: boolean | null;
+  integer?: boolean | null;
+  minLength?: number | null;
+  maxLength?: number | null;
+  minDate?: string | null;
+  maxDate?: string | null;
+  afterField?: string | null;
+  beforeField?: string | null;
+}
+
+export interface FieldCondition {
+  field: string;
+  operator: string;
+  value: string | null;
 }
 
 export interface FormField {
@@ -90,6 +112,10 @@ export interface FormField {
   help: string | null;
   required: boolean;
   options: string[] | null;
+  display?: string | null;       // single: combo|radio ; multiselect: combo|checkbox
+  width?: string | null;         // full|half|third
+  validation?: FieldValidation | null;
+  visibleWhen?: FieldCondition | null;
 }
 
 export interface FormSummary {

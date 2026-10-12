@@ -29,10 +29,15 @@ export class FormSubmissionsPage {
     });
   }
 
+  columns(): FormField[] {
+    return (this.form()?.fields ?? []).filter((f) => f.type !== 'section');
+  }
+
   cell(field: FormField, data: Record<string, unknown>): string {
     const v = data[field.key!];
-    if (v === null || v === undefined || v === '') return '—';
+    if (v === null || v === undefined || v === '' || (Array.isArray(v) && v.length === 0)) return '—';
     if (field.type === 'checkbox') return v === true || v === 'true' ? 'Sim' : 'Não';
+    if (Array.isArray(v)) return v.join(', ');
     return String(v);
   }
 

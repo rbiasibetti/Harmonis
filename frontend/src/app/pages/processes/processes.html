@@ -65,7 +65,7 @@
 
       <h3 class="sec">Dados enviados</h3>
       <div class="data-grid">
-        @for (f of d.fields; track f.key) {
+        @for (f of dataFields(d.fields); track f.key) {
           <div class="data-row"><span class="muted">{{ label(f) }}</span><span>{{ value(f, d.data) }}</span></div>
         }
       </div>
