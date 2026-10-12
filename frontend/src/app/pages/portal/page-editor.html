@@ -1,0 +1,48 @@
+<div class="page-head">
+  <div>
+    <a class="muted back" routerLink="/pages">← Páginas</a>
+    <h1>{{ id() ? 'Editar página' : 'Nova página' }}</h1>
+  </div>
+  <div style="display:flex;gap:.5rem;align-items:center">
+    @if (saved()) { <span class="badge ok">Salvo</span> }
+    <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !title()">
+      {{ saving() ? 'Salvando…' : 'Salvar' }}
+    </button>
+  </div>
+</div>
+
+@if (error()) { <p class="notice error">{{ error() }}</p> }
+
+<div class="editor-grid">
+  <div class="card meta">
+    <div class="field">
+      <label class="label">Título</label>
+      <input class="input" [ngModel]="title()" (ngModelChange)="title.set($event)" />
+    </div>
+    <div class="field">
+      <label class="label">Resumo (opcional)</label>
+      <input class="input" [ngModel]="excerpt()" (ngModelChange)="excerpt.set($event)" />
+    </div>
+    <div class="field">
+      <label class="label">Status</label>
+      <select class="input" [ngModel]="status()" (ngModelChange)="status.set($event)">
+        <option value="draft">Rascunho</option>
+        <option value="published">Publicada</option>
+      </select>
+      <p class="muted" style="font-size:.78rem;margin:.35rem 0 0">Rascunhos não aparecem no portal.</p>
+    </div>
+  </div>
+
+  <div class="card content-card">
+    <div class="tabs">
+      <button class="tab" [class.active]="tab() === 'edit'" (click)="tab.set('edit')">Markdown</button>
+      <button class="tab" [class.active]="tab() === 'preview'" (click)="showPreview()">Pré-visualizar</button>
+    </div>
+    @if (tab() === 'edit') {
+      <textarea class="input editor-area" [ngModel]="content()" (ngModelChange)="content.set($event)"
+                placeholder="# Título&#10;&#10;Escreva em **Markdown**…"></textarea>
+    } @else {
+      <div class="doc-content preview" [innerHTML]="previewHtml()"></div>
+    }
+  </div>
+</div>
