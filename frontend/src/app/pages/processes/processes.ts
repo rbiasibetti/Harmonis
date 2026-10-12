@@ -58,10 +58,15 @@ export class Processes {
 
   label(f: FormField): string { return f.label; }
 
+  dataFields(fields: FormField[]): FormField[] {
+    return (fields ?? []).filter((f) => f.type !== 'section');
+  }
+
   value(f: FormField, data: Record<string, unknown>): string {
     const v = data[f.key!];
-    if (v === null || v === undefined || v === '') return '—';
+    if (v === null || v === undefined || v === '' || (Array.isArray(v) && v.length === 0)) return '—';
     if (f.type === 'checkbox') return v === true || v === 'true' ? 'Sim' : 'Não';
+    if (Array.isArray(v)) return v.join(', ');
     return String(v);
   }
 

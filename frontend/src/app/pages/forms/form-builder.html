@@ -13,6 +13,18 @@
 
 @if (error()) { <p class="notice error">{{ error() }}</p> }
 
+<div class="bld-tabs">
+  <button class="tab" [class.active]="tab() === 'fields'" (click)="tab.set('fields')">Campos</button>
+  <button class="tab" [class.active]="tab() === 'layout'" (click)="openPreview()">Layout (prévia)</button>
+</div>
+
+@if (tab() === 'layout') {
+  <div class="card" style="padding:1.5rem">
+    @if (fields().length === 0) { <p class="muted">Adicione campos para ver o layout.</p> }
+    <app-form-renderer [fields]="fields()" [values]="previewValues" [disabled]="true"></app-form-renderer>
+  </div>
+} @else {
+
 <div class="builder">
   <div class="card meta">
     <div class="field">
@@ -29,10 +41,9 @@
         <option value="draft">Rascunho</option>
         <option value="published">Publicado</option>
       </select>
-      <p class="muted" style="font-size:.78rem;margin:.35rem 0 0">Só formulários publicados podem ser preenchidos.</p>
     </div>
 
-    <label class="label" style="margin-top:.5rem">Adicionar campo</label>
+    <label class="label" style="margin-top:.5rem">Adicionar</label>
     <div class="type-grid">
       @for (t of types(); track t.code) {
         <button class="btn btn-ghost type-btn" (click)="addField(t.code)">+ {{ t.label }}</button>
@@ -41,55 +52,126 @@
   </div>
 
   <div class="fields">
-    @for (f of fields(); track trackByIndex($index); let i = $index) {
-      <div class="card field-card">
+    @for (f of fields(); track $index; let i = $index) {
+      <div class="card field-card" [class.section]="isSection(f)">
         <div class="fc-head">
-          <span class="badge gray">{{ typeLabel(f.type) }}</span>
+          <span class="badge" [class.gray]="!isSection(f)">{{ typeLabel(f.type) }}</span>
           <div class="fc-actions">
-            <button class="icon-action" title="Subir" (click)="move(i, -1)">↑</button>
-            <button class="icon-action" title="Descer" (click)="move(i, 1)">↓</button>
-            <button class="icon-action danger" title="Remover" (click)="remove(i)">🗑</button>
+            <button class="icon-action" (click)="move(i, -1)">↑</button>
+            <button class="icon-action" (click)="move(i, 1)">↓</button>
+            <button class="icon-action danger" (click)="remove(i)">🗑</button>
           </div>
         </div>
 
-        <div class="fc-grid">
-          <div class="field">
-            <label class="label">Rótulo</label>
-            <input class="input" [(ngModel)]="f.label" />
+        @if (isSection(f)) {
+          <div class="field"><label class="label">Título do bloco</label><input class="input" [(ngModel)]="f.label" /></div>
+          <div class="field"><label class="label">Descrição (opcional)</label><input class="input" [(ngModel)]="f.help" /></div>
+          <div class="field" style="max-width:220px"><label class="label">Largura</label>
+            <select class="input" [(ngModel)]="f.width">@for (w of widths; track w.value) { <option [value]="w.value">{{ w.label }}</option> }</select>
           </div>
-          @if (f.type !== 'checkbox') {
-            <div class="field">
-              <label class="label">Placeholder</label>
-              <input class="input" [(ngModel)]="f.placeholder" />
+        } @else {
+          <div class="fc-grid">
+            <div class="field"><label class="label">Rótulo</label><input class="input" [(ngModel)]="f.label" /></div>
+            <div class="field"><label class="label">Largura</label>
+              <select class="input" [(ngModel)]="f.width">@for (w of widths; track w.value) { <option [value]="w.value">{{ w.label }}</option> }</select>
+            </div>
+          </div>
+          <div class="fc-grid">
+            @if (f.type !== 'checkbox') { <div class="field"><label class="label">Placeholder</label><input class="input" [(ngModel)]="f.placeholder" /></div> }
+            <div class="field"><label class="label">Ajuda (opcional)</label><input class="input" [(ngModel)]="f.help" /></div>
+          </div>
+
+          @if (hasOptions(f.type)) {
+            <label class="label">Opções</label>
+            @for (opt of f.options; track $index; let oi = $index) {
+              <div class="opt-row">
+                <input class="input" [(ngModel)]="f.options![oi]" />
+                <button class="icon-action danger" (click)="removeOption(f, oi)">✕</button>
+              </div>
+            }
+            <button class="btn btn-ghost sm" (click)="addOption(f)">+ Opção</button>
+
+            <div class="field" style="margin-top:.6rem;max-width:280px">
+              <label class="label">Apresentação</label>
+              @if (isSingle(f)) {
+                <select class="input" [(ngModel)]="f.display">
+                  <option value="combo">Lista suspensa (combo)</option>
+                  <option value="radio">Múltipla escolha (radio)</option>
+                </select>
+              } @else if (isMulti(f)) {
+                <select class="input" [(ngModel)]="f.display">
+                  <option value="combo">Lista de seleção múltipla</option>
+                  <option value="checkbox">Caixas de seleção (checkbox)</option>
+                </select>
+              }
             </div>
           }
-        </div>
 
-        <div class="field">
-          <label class="label">Ajuda (opcional)</label>
-          <input class="input" [(ngModel)]="f.help" />
-        </div>
+          <label class="switch" style="margin-top:.6rem">
+            <input type="checkbox" [(ngModel)]="f.required" /><span class="track"></span> Obrigatório
+          </label>
 
-        @if (hasOptions(f.type)) {
-          <label class="label">Opções</label>
-          @for (opt of f.options; track $index; let oi = $index) {
-            <div class="opt-row">
-              <input class="input" [(ngModel)]="f.options![oi]" />
-              <button class="icon-action danger" (click)="removeOption(f, oi)">✕</button>
+          @if (supportsValidation(f) && f.validation) {
+            <div class="val-box">
+              <p class="val-title">Validações</p>
+              @if (isNumber(f)) {
+                <label class="check"><input type="checkbox" [(ngModel)]="f.validation.positive" /> Somente valores positivos</label>
+                <label class="check"><input type="checkbox" [(ngModel)]="f.validation.integer" /> Somente números inteiros</label>
+                <div class="fc-grid">
+                  <div class="field"><label class="label">Valor mínimo</label><input class="input" type="number" [(ngModel)]="f.validation.min" /></div>
+                  <div class="field"><label class="label">Valor máximo</label><input class="input" type="number" [(ngModel)]="f.validation.max" /></div>
+                </div>
+                <div class="fc-grid">
+                  <div class="field"><label class="label">Maior que o campo</label>
+                    <select class="input" [(ngModel)]="f.validation.afterField"><option [ngValue]="null">—</option>@for (o of compareFields(f); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }</select></div>
+                  <div class="field"><label class="label">Menor que o campo</label>
+                    <select class="input" [(ngModel)]="f.validation.beforeField"><option [ngValue]="null">—</option>@for (o of compareFields(f); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }</select></div>
+                </div>
+              }
+              @if (isDate(f)) {
+                <div class="fc-grid">
+                  <div class="field"><label class="label">Data mínima</label><input class="input" type="date" [(ngModel)]="f.validation.minDate" /></div>
+                  <div class="field"><label class="label">Data máxima</label><input class="input" type="date" [(ngModel)]="f.validation.maxDate" /></div>
+                </div>
+                <div class="fc-grid">
+                  <div class="field"><label class="label">Posterior ao campo</label>
+                    <select class="input" [(ngModel)]="f.validation.afterField"><option [ngValue]="null">—</option>@for (o of compareFields(f); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }</select></div>
+                  <div class="field"><label class="label">Anterior ao campo</label>
+                    <select class="input" [(ngModel)]="f.validation.beforeField"><option [ngValue]="null">—</option>@for (o of compareFields(f); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }</select></div>
+                </div>
+              }
+              @if (isText(f)) {
+                <div class="fc-grid">
+                  <div class="field"><label class="label">Tamanho mínimo</label><input class="input" type="number" [(ngModel)]="f.validation.minLength" /></div>
+                  <div class="field"><label class="label">Tamanho máximo</label><input class="input" type="number" [(ngModel)]="f.validation.maxLength" /></div>
+                </div>
+                <div class="field"><label class="label">Expressão regular (regex)</label><input class="input" [(ngModel)]="f.validation.pattern" placeholder="ex.: \d&#123;5&#125;-\d&#123;3&#125;" /></div>
+                <div class="field"><label class="label">Mensagem se inválido</label><input class="input" [(ngModel)]="f.validation.patternMessage" placeholder="ex.: CEP inválido" /></div>
+              }
             </div>
           }
-          <button class="btn btn-ghost sm" (click)="addOption(f)">+ Opção</button>
+
+          @if (f.visibleWhen) {
+            <div class="cond-box">
+              <label class="label">Exibir somente quando</label>
+              <div class="cond-row">
+                <select class="input" [(ngModel)]="f.visibleWhen.field">
+                  <option value="">Sempre exibir</option>
+                  @for (o of otherFields(f); track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+                </select>
+                @if (f.visibleWhen.field) {
+                  <select class="input" [(ngModel)]="f.visibleWhen.operator">@for (op of operators; track op.value) { <option [value]="op.value">{{ op.label }}</option> }</select>
+                  @if (needsValue(f.visibleWhen.operator)) { <input class="input" [(ngModel)]="f.visibleWhen.value" placeholder="valor" /> }
+                }
+              </div>
+            </div>
+          }
         }
-
-        <label class="switch" style="margin-top:.75rem">
-          <input type="checkbox" [(ngModel)]="f.required" />
-          <span class="track"></span> Obrigatório
-        </label>
       </div>
     } @empty {
-      <div class="card empty-fields muted">
-        {{ loading() ? 'Carregando…' : 'Nenhum campo ainda — adicione campos pelo painel ao lado.' }}
-      </div>
+      <div class="card empty-fields muted">Nenhum campo ainda — adicione pelo painel ao lado.</div>
     }
   </div>
 </div>
+
+}

@@ -15,8 +15,25 @@
 .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
 .type-btn { font-size: .78rem; padding: .45rem .5rem; justify-content: flex-start; }
 
+.bld-tabs { display: flex; gap: .25rem; margin-bottom: 1rem; }
+.bld-tabs .tab {
+  padding: .5rem .9rem; border: none; background: transparent; cursor: pointer;
+  color: var(--text-muted); font-weight: 600; font-size: .88rem; border-radius: 10px;
+}
+.bld-tabs .tab:hover { background: var(--surface-2); color: var(--text); }
+.bld-tabs .tab.active { background: var(--brand-50); color: var(--brand-600); }
+
 .fields { display: flex; flex-direction: column; gap: .85rem; }
 .field-card { padding: 1rem; }
+.field-card.section { background: var(--surface-2); }
+
+.val-box { margin-top: .85rem; border: 1px solid var(--border); border-radius: 10px; padding: .75rem; }
+.val-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); margin: 0 0 .5rem; }
+.val-box .check { display: flex; align-items: center; gap: .5rem; font-size: .85rem; padding: .2rem 0; }
+
+.cond-box { margin-top: .85rem; background: var(--surface-2); padding: .6rem; border-radius: 10px; }
+.cond-box .cond-row { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .35rem; }
+.cond-box .cond-row .input { flex: 1; min-width: 130px; }
 .fc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
 .fc-actions { display: flex; gap: .35rem; }
 .fc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }

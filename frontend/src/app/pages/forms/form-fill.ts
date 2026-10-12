@@ -1,12 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsService } from '../../core/forms.service';
 import { FormDetail } from '../../core/models';
+import { FormRenderer } from './form-renderer';
 
 @Component({
   selector: 'app-form-fill',
-  imports: [FormsModule, RouterLink],
+  imports: [RouterLink, FormRenderer],
   templateUrl: './form-fill.html',
   styleUrl: './forms.scss',
 })
@@ -34,7 +34,12 @@ export class FormFill {
 
   private reset(f: FormDetail): void {
     const v: Record<string, any> = {};
-    f.fields.forEach((fld) => (v[fld.key!] = fld.type === 'checkbox' ? false : ''));
+    f.fields.forEach((fld) => {
+      if (fld.type === 'section' || !fld.key) return;
+      if (fld.type === 'checkbox') v[fld.key] = false;
+      else if (fld.type === 'multiselect') v[fld.key] = [];
+      else v[fld.key] = '';
+    });
     this.values = v;
     this.errors.set({});
     this.done.set(false);
@@ -57,9 +62,5 @@ export class FormFill {
   again(): void {
     const f = this.form();
     if (f) this.reset(f);
-  }
-
-  err(key: string): string | null {
-    return this.errors()[key] ?? null;
   }
 }

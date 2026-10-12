@@ -19,7 +19,7 @@
           <th>#</th>
           <th>Enviado por</th>
           <th>Data</th>
-          @for (fld of f.fields; track fld.key) { <th>{{ fld.label }}</th> }
+          @for (fld of columns(); track fld.key) { <th>{{ fld.label }}</th> }
         </tr>
       </thead>
       <tbody>
@@ -28,10 +28,10 @@
             <td class="muted">{{ rows().length - i }}</td>
             <td>{{ s.submittedBy || '—' }}</td>
             <td class="muted">{{ s.createdAt | date:'short' }}</td>
-            @for (fld of f.fields; track fld.key) { <td>{{ cell(fld, s.data) }}</td> }
+            @for (fld of columns(); track fld.key) { <td>{{ cell(fld, s.data) }}</td> }
           </tr>
         } @empty {
-          <tr><td [attr.colspan]="3 + f.fields.length" class="muted" style="text-align:center;padding:2rem">
+          <tr><td [attr.colspan]="3 + columns().length" class="muted" style="text-align:center;padding:2rem">
             {{ loading() ? 'Carregando…' : 'Nenhuma resposta ainda.' }}
           </td></tr>
         }

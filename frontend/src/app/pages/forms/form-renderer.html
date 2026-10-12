@@ -1,0 +1,77 @@
+<div class="fgrid">
+  @for (f of fields; track f.id) {
+    @if (isSection(f)) {
+      <div class="w-full section-block">
+        <h3>{{ f.label }}</h3>
+        @if (f.help) { <p class="muted">{{ f.help }}</p> }
+      </div>
+    } @else if (isVisible(f)) {
+      <div class="field" [class]="widthClass(f)">
+        @if (f.type !== 'checkbox') {
+          <label class="label">{{ f.label }} @if (f.required) { <span class="req">*</span> }</label>
+        }
+
+        @switch (f.type) {
+          @case ('textarea') {
+            <textarea class="input" rows="3" [(ngModel)]="values[f.key!]" [disabled]="disabled" [placeholder]="f.placeholder || ''"></textarea>
+          }
+          @case ('number') {
+            <input class="input" type="number" [(ngModel)]="values[f.key!]" [disabled]="disabled" [placeholder]="f.placeholder || ''" />
+          }
+          @case ('email') {
+            <input class="input" type="email" [(ngModel)]="values[f.key!]" [disabled]="disabled" [placeholder]="f.placeholder || ''" />
+          }
+          @case ('date') {
+            <input class="input" type="date" [(ngModel)]="values[f.key!]" [disabled]="disabled" />
+          }
+          @case ('select') {
+            @if (display(f) === 'radio') {
+              <div class="radios">
+                @for (o of f.options; track o) {
+                  <label class="radio"><input type="radio" [name]="f.key!" [value]="o" [(ngModel)]="values[f.key!]" [disabled]="disabled" /> {{ o }}</label>
+                }
+              </div>
+            } @else {
+              <select class="input" [(ngModel)]="values[f.key!]" [disabled]="disabled">
+                <option value="">Selecione…</option>
+                @for (o of f.options; track o) { <option [value]="o">{{ o }}</option> }
+              </select>
+            }
+          }
+          @case ('radio') {
+            <div class="radios">
+              @for (o of f.options; track o) {
+                <label class="radio"><input type="radio" [name]="f.key!" [value]="o" [(ngModel)]="values[f.key!]" [disabled]="disabled" /> {{ o }}</label>
+              }
+            </div>
+          }
+          @case ('multiselect') {
+            @if (display(f) === 'checkbox') {
+              <div class="checks">
+                @for (o of f.options; track o) {
+                  <label class="check"><input type="checkbox" [checked]="isChecked(f.key!, o)" (change)="toggleMulti(f.key!, o)" [disabled]="disabled" /> {{ o }}</label>
+                }
+              </div>
+            } @else {
+              <select class="input multi" multiple [(ngModel)]="values[f.key!]" [disabled]="disabled">
+                @for (o of f.options; track o) { <option [value]="o">{{ o }}</option> }
+              </select>
+            }
+          }
+          @case ('checkbox') {
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="values[f.key!]" [disabled]="disabled" />
+              <span class="track"></span> {{ f.label }} @if (f.required) { <span class="req">*</span> }
+            </label>
+          }
+          @default {
+            <input class="input" type="text" [(ngModel)]="values[f.key!]" [disabled]="disabled" [placeholder]="f.placeholder || ''" />
+          }
+        }
+
+        @if (f.help && f.type !== 'checkbox') { <p class="muted help">{{ f.help }}</p> }
+        @if (err(f.key)) { <p class="field-err">{{ err(f.key) }}</p> }
+      </div>
+    }
+  }
+</div>
