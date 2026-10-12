@@ -117,7 +117,9 @@ public class FormService {
     @Transactional(readOnly = true)
     public byte[] exportCsv(long formId) {
         Form form = require(formId);
-        List<FormField> fields = schema.readFields(form.getSchemaJson());
+        List<FormField> fields = schema.readFields(form.getSchemaJson()).stream()
+                .filter(f -> !FieldTypes.isLayout(f.type()))   // blocos de layout nao viram coluna
+                .toList();
         Map<Long, String> names = userNames();
         List<FormSubmission> rows = submissions.findByFormIdOrderByCreatedAtDesc(form.getId());
 

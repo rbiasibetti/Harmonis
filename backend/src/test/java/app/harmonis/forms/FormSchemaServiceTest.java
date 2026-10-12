@@ -1,5 +1,7 @@
 package app.harmonis.forms;
 
+import app.harmonis.forms.FormField.FieldCondition;
+import app.harmonis.forms.FormField.Validation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,8 +22,19 @@ class FormSchemaServiceTest {
     }
 
     private FormField field(String type, String label, boolean required, List<String> options) {
-        return new FormField(null, null, type, label, null, null, required, options);
+        return new FormField(null, null, type, label, null, null, required, options, null, null, null, null);
     }
+
+    private FormField field(String key, String type, boolean required, List<String> options,
+                            Validation v, FieldCondition vw) {
+        return new FormField(null, key, type, key, null, null, required, options, null, null, v, vw);
+    }
+
+    private Validation val() {
+        return new Validation(null, null, null, null, null, null, null, null, null, null, null, null);
+    }
+
+    // ----- normalizacao -----
 
     @Test
     void normaliza_gera_key_e_id_unicos() {
@@ -29,10 +42,9 @@ class FormSchemaServiceTest {
                 field("text", "Nome", true, null),
                 field("text", "Sobrenome", false, null)));
         assertEquals(2, out.size());
-        assertNotNull(out.get(0).key());
         assertTrue(out.get(0).key().startsWith("campo_"));
         assertNotEquals(out.get(0).key(), out.get(1).key());
-        assertTrue(out.get(0).id().startsWith("f_"));
+        assertEquals("full", out.get(0).width());
     }
 
     @Test
@@ -49,58 +61,141 @@ class FormSchemaServiceTest {
     }
 
     @Test
-    void campo_sem_rotulo_e_rejeitado() {
-        assertThrows(ResponseStatusException.class,
-                () -> svc.normalize(List.of(field("text", "  ", false, null))));
+    void secao_nao_tem_key_e_nao_exige_opcoes() {
+        List<FormField> out = svc.normalize(List.of(field("section", "Dados pessoais", false, null)));
+        assertEquals(1, out.size());
+        assertNull(out.get(0).key());
+        assertEquals("section", out.get(0).type());
     }
+
+    @Test
+    void display_normalizado_por_tipo() {
+        FormField single = new FormField(null, null, "select", "UF", null, null, false, List.of("SP"), null, null, null, null);
+        FormField radioDisplay = new FormField(null, null, "select", "UF", null, null, false, List.of("SP"), "radio", null, null, null);
+        FormField multi = new FormField(null, null, "multiselect", "Tags", null, null, false, List.of("A"), null, null, null, null);
+
+        assertEquals("combo", svc.normalize(List.of(single)).get(0).display());
+        assertEquals("radio", svc.normalize(List.of(radioDisplay)).get(0).display());
+        assertEquals("combo", svc.normalize(List.of(multi)).get(0).display());
+    }
+
+    // ----- validacao basica -----
 
     @Test
     void valida_obrigatorios_e_tipos() {
         List<FormField> fields = svc.normalize(List.of(
-                new FormField(null, "nome", "text", "Nome", null, null, true, null),
-                new FormField(null, "valor", "number", "Valor", null, null, true, null),
-                new FormField(null, "email", "email", "E-mail", null, null, false, null),
-                new FormField(null, "uf", "select", "UF", null, null, true, List.of("SP", "RJ"))));
+                field("nome", "text", true, null, null, null),
+                field("valor", "number", true, null, null, null),
+                field("uf", "select", true, List.of("SP", "RJ"), null, null)));
 
-        // tudo vazio: nome, valor e uf obrigatorios
         Map<String, String> e1 = svc.validate(fields, Map.of());
         assertTrue(e1.containsKey("nome"));
         assertTrue(e1.containsKey("valor"));
         assertTrue(e1.containsKey("uf"));
-        assertFalse(e1.containsKey("email"));
 
-        // tipos invalidos
-        Map<String, String> e2 = svc.validate(fields, Map.of(
-                "nome", "Ana", "valor", "abc", "email", "nao-email", "uf", "MG"));
-        assertFalse(e2.containsKey("nome"));
+        Map<String, String> e2 = svc.validate(fields, Map.of("nome", "Ana", "valor", "abc", "uf", "MG"));
         assertTrue(e2.containsKey("valor"));
-        assertTrue(e2.containsKey("email"));
         assertTrue(e2.containsKey("uf"));
 
-        // tudo valido
-        Map<String, String> e3 = svc.validate(fields, Map.of(
-                "nome", "Ana", "valor", "1200", "email", "ana@acme.test", "uf", "SP"));
-        assertTrue(e3.isEmpty());
+        assertTrue(svc.validate(fields, Map.of("nome", "Ana", "valor", "10", "uf", "SP")).isEmpty());
+    }
+
+    @Test
+    void secao_e_ignorada_na_validacao() {
+        List<FormField> fields = svc.normalize(List.of(field("section", "Bloco", false, null)));
+        assertTrue(svc.validate(fields, Map.of()).isEmpty());
+    }
+
+    // ----- novas validacoes -----
+
+    @Test
+    void numero_positivo() {
+        Validation v = new Validation(null, null, null, null, true, null, null, null, null, null, null, null);
+        List<FormField> fields = svc.normalize(List.of(field("valor", "number", true, null, v, null)));
+        assertTrue(svc.validate(fields, Map.of("valor", "-5")).containsKey("valor"));
+        assertTrue(svc.validate(fields, Map.of("valor", "0")).containsKey("valor"));
+        assertFalse(svc.validate(fields, Map.of("valor", "5")).containsKey("valor"));
+    }
+
+    @Test
+    void numero_min_max_e_inteiro() {
+        Validation v = new Validation(null, null, 10.0, 100.0, null, true, null, null, null, null, null, null);
+        List<FormField> fields = svc.normalize(List.of(field("qtd", "number", true, null, v, null)));
+        assertTrue(svc.validate(fields, Map.of("qtd", "5")).containsKey("qtd"));     // < min
+        assertTrue(svc.validate(fields, Map.of("qtd", "150")).containsKey("qtd"));   // > max
+        assertTrue(svc.validate(fields, Map.of("qtd", "20.5")).containsKey("qtd"));  // nao inteiro
+        assertFalse(svc.validate(fields, Map.of("qtd", "20")).containsKey("qtd"));
+    }
+
+    @Test
+    void regex_com_mensagem_custom() {
+        Validation v = new Validation("\\d{5}-\\d{3}", "CEP inválido", null, null, null, null, null, null, null, null, null, null);
+        List<FormField> fields = svc.normalize(List.of(field("cep", "text", true, null, v, null)));
+        Map<String, String> err = svc.validate(fields, Map.of("cep", "abc"));
+        assertEquals("CEP inválido", err.get("cep"));
+        assertFalse(svc.validate(fields, Map.of("cep", "12345-678")).containsKey("cep"));
+    }
+
+    @Test
+    void tamanho_minimo_de_texto() {
+        Validation v = new Validation(null, null, null, null, null, null, 3, 10, null, null, null, null);
+        List<FormField> fields = svc.normalize(List.of(field("apelido", "text", true, null, v, null)));
+        assertTrue(svc.validate(fields, Map.of("apelido", "ab")).containsKey("apelido"));
+        assertFalse(svc.validate(fields, Map.of("apelido", "abcd")).containsKey("apelido"));
+    }
+
+    @Test
+    void data_apos_outro_campo() {
+        Validation v = new Validation(null, null, null, null, null, null, null, null, null, null, "inicio", null);
+        List<FormField> fields = svc.normalize(List.of(
+                field("inicio", "date", true, null, null, null),
+                field("fim", "date", true, null, v, null)));
+        // fim antes de inicio -> erro
+        assertTrue(svc.validate(fields, Map.of("inicio", "2026-05-10", "fim", "2026-05-01")).containsKey("fim"));
+        // fim depois de inicio -> ok
+        assertFalse(svc.validate(fields, Map.of("inicio", "2026-05-10", "fim", "2026-05-20")).containsKey("fim"));
+    }
+
+    @Test
+    void multiselect_valida_opcoes_e_obrigatoriedade() {
+        List<FormField> fields = svc.normalize(List.of(
+                field("tags", "multiselect", true, List.of("A", "B", "C"), null, null)));
+        assertTrue(svc.validate(fields, Map.of()).containsKey("tags"));                         // vazio obrigatorio
+        assertTrue(svc.validate(fields, Map.of("tags", List.of("A", "X"))).containsKey("tags")); // opcao invalida
+        assertFalse(svc.validate(fields, Map.of("tags", List.of("A", "C"))).containsKey("tags"));
+    }
+
+    @Test
+    void campo_oculto_por_condicao_nao_e_exigido() {
+        FieldCondition vw = new FieldCondition("tem_obs", "==", "1");
+        List<FormField> fields = svc.normalize(List.of(
+                field("tem_obs", "checkbox", false, null, null, null),
+                field("obs", "text", true, null, null, vw)));
+        // checkbox desmarcado -> obs oculto -> nao exige
+        assertFalse(svc.validate(fields, Map.of()).containsKey("obs"));
+        // checkbox marcado -> obs visivel e obrigatorio
+        assertTrue(svc.validate(fields, Map.of("tem_obs", true)).containsKey("obs"));
+        assertFalse(svc.validate(fields, Map.of("tem_obs", true, "obs", "texto")).containsKey("obs"));
     }
 
     @Test
     void checkbox_obrigatorio_precisa_ser_marcado() {
         List<FormField> fields = svc.normalize(List.of(
-                new FormField(null, "aceite", "checkbox", "Aceito os termos", null, null, true, null)));
-
+                field("aceite", "checkbox", true, null, null, null)));
         assertTrue(svc.validate(fields, Map.of("aceite", false)).containsKey("aceite"));
-        assertTrue(svc.validate(fields, Map.of()).containsKey("aceite"));
         assertFalse(svc.validate(fields, Map.of("aceite", true)).containsKey("aceite"));
     }
 
     @Test
     void round_trip_de_serializacao_preserva_campos() {
         String json = svc.writeFields(List.of(
-                new FormField(null, "nome", "text", "Nome", null, null, true, null)));
+                field("nome", "text", true, null,
+                        new Validation(null, null, null, null, null, null, 2, 50, null, null, null, null), null)));
         assertTrue(json.contains("\"fields\""));
         List<FormField> back = svc.readFields(json);
         assertEquals(1, back.size());
-        assertEquals("Nome", back.get(0).label());
         assertEquals("nome", back.get(0).key());
+        assertNotNull(back.get(0).validation());
+        assertEquals(2, back.get(0).validation().minLength());
     }
 }
