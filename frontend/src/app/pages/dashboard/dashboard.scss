@@ -3,28 +3,42 @@
 .head h1 { margin: 0 0 .25rem; font-size: 1.4rem; }
 .muted { color: var(--text-muted); }
 
-.perms { padding: 1.25rem; margin: 1.25rem 0; }
-.perms h2 { margin: 0 0 .75rem; font-size: 1rem; }
-.chips { display: flex; flex-wrap: wrap; gap: .4rem; }
-.chip {
-  font-size: .72rem;
-  padding: .2rem .55rem;
-  border-radius: 8px;
-  background: var(--surface-2);
-  color: var(--text-muted);
-  font-family: ui-monospace, monospace;
-}
-
-.grid {
+.cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+.metric {
+  padding: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  transition: border-color .15s, transform .1s;
+}
+.metric:hover { border-color: var(--brand-500); transform: translateY(-1px); }
+.metric .ic {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--brand-50); color: var(--brand-600);
+  display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0;
+}
+.metric .value { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.metric .label { font-size: .8rem; margin-top: .2rem; }
+
+.lists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1rem;
 }
-.module { padding: 1.1rem; display: flex; flex-direction: column; gap: .4rem; }
-.m-top { display: flex; align-items: center; justify-content: space-between; }
-.soon {
-  margin-top: .35rem;
-  font-size: .72rem;
-  color: var(--text-muted);
-  font-style: italic;
+.list { padding: 1.1rem; }
+.list-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
+.list-head h2 { margin: 0; font-size: 1rem; }
+.more { font-size: .78rem; }
+.more:hover { color: var(--text); }
+.li {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: .55rem 0; border-bottom: 1px solid var(--border); font-size: .88rem;
 }
+.li:last-child { border-bottom: none; }
+.li .sub { font-size: .75rem; margin-top: .1rem; }
+.empty { font-size: .85rem; padding: .5rem 0; }

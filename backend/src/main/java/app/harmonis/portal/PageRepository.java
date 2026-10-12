@@ -10,4 +10,5 @@ public interface PageRepository extends JpaRepository<Page, Long> {
     List<Page> findByStatusOrderByPublishedAtDesc(String status);
     Optional<Page> findBySlug(String slug);
     boolean existsBySlug(String slug);
+    long countByStatus(String status);
 }

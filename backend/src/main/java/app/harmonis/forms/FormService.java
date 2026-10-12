@@ -144,6 +144,28 @@ public class FormService {
         return require(formId).getName();
     }
 
+    // ----- metricas para o dashboard -----
+
+    public long countPublished() {
+        return forms.countByStatus("published");
+    }
+
+    public record RecentSubmission(String formName, String submittedBy, java.time.Instant createdAt) {}
+
+    @Transactional(readOnly = true)
+    public List<RecentSubmission> recentSubmissions() {
+        Map<Long, String> formNames = new HashMap<>();
+        forms.findAll().forEach(f -> formNames.put(f.getId(), f.getName()));
+        Map<Long, String> names = new HashMap<>();
+        users.findAll().forEach(u -> names.put(u.getId(), u.getName()));
+        return submissions.findTop5ByOrderByCreatedAtDesc().stream()
+                .map(s -> new RecentSubmission(
+                        formNames.getOrDefault(s.getFormId(), "Formulário"),
+                        s.getSubmittedBy() == null ? null : names.get(s.getSubmittedBy()),
+                        s.getCreatedAt()))
+                .toList();
+    }
+
     // ----- fluxo de aprovacao -----
 
     @Transactional(readOnly = true)

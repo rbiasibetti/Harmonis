@@ -9,4 +9,5 @@ public interface FormRepository extends JpaRepository<Form, Long> {
     Optional<Form> findBySlug(String slug);
     boolean existsBySlug(String slug);
     List<Form> findAllByOrderByNameAsc();
+    long countByStatus(String status);
 }

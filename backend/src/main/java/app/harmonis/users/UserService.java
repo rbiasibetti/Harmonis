@@ -33,6 +33,11 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public long countActive() {
+        return users.findAll().stream().filter(User::isActive).count();
+    }
+
+    @Transactional(readOnly = true)
     public List<UserView> list(String query) {
         String q = query == null ? "" : query.trim().toLowerCase();
         return users.findAll().stream()

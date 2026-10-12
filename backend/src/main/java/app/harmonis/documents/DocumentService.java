@@ -221,6 +221,10 @@ public class DocumentService {
         return false;
     }
 
+    public long countDocuments() {
+        return documents.count();
+    }
+
     // ----- helpers -----
 
     private void saveVersion(Long documentId, int version, DocumentStorage.Stored stored, Long userId) {
