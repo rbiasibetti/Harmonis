@@ -1,0 +1,10 @@
+@if (page(); as p) {
+  <a class="muted back" routerLink="/portal">← Portal</a>
+  <article class="card article">
+    <h1>{{ p.title }}</h1>
+    @if (p.publishedAt) { <p class="muted meta">{{ p.publishedAt | date:'longDate' }}</p> }
+    <div class="doc-content" [innerHTML]="p.html"></div>
+  </article>
+} @else {
+  <p class="muted">{{ loading() ? 'Carregando…' : (error() || 'Página indisponível.') }}</p>
+}

@@ -113,6 +113,14 @@ java -jar target/harmonis-backend.jar --harmonis.seed.tenant=acme
 | GET | `/api/documents/{id}/download` | `documents.view` | Baixa a versão atual (autenticado) |
 | GET | `/api/documents/versions/{id}/download` | `documents.view` | Baixa uma versão |
 | POST/PUT/DELETE | `/api/documents/folders[/{id}]` | `documents.*` | CRUD de pastas (exclusão recursiva) |
+| GET | `/api/portal` | `pages.view` | Lista páginas publicadas |
+| GET | `/api/portal/{slug}` | `pages.view` | Página publicada (HTML sanitizado) |
+| GET | `/api/pages` | `pages.update` | Lista todas (gestão; inclui rascunhos) |
+| GET | `/api/pages/{id}` | `pages.update` | Página para edição (Markdown bruto) |
+| POST | `/api/pages/preview` | `pages.update` | Pré-visualiza Markdown → HTML sanitizado |
+| POST | `/api/pages` | `pages.create` | Cria página |
+| PUT | `/api/pages/{id}` | `pages.update` | Atualiza/publica página |
+| DELETE | `/api/pages/{id}` | `pages.delete` | Exclui página |
 
 ```bash
 curl -s -X POST localhost:8080/api/auth/login -H 'Content-Type: application/json' \
@@ -132,5 +140,5 @@ cd backend && ./mvn.sh test
 - [x] **M2** — Formulários (construtor, schema JSON, validação, respostas, CSV).
 - [x] **M3** — Workflow (motor de aprovação: paralelo/condicional/gateway, caixa, timeline, notificações).
 - [x] **M4** — ECM/GED (pastas, versionamento, download seguro, metadados, busca).
-- [ ] **M5** — Portal (páginas Markdown sanitizado).
+- [x] **M5** — Portal (páginas Markdown sanitizado).
 - [ ] **M6** — Dashboard + modelador visual (drag-and-drop, zoom, mini-mapa).

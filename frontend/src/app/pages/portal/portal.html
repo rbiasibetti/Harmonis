@@ -1,0 +1,21 @@
+<div class="page-head">
+  <div>
+    <h1>Portal</h1>
+    <p class="muted">Páginas e comunicados publicados.</p>
+  </div>
+  @if (auth.can('pages.update')) {
+    <a class="btn btn-ghost" routerLink="/pages">Gerenciar páginas</a>
+  }
+</div>
+
+<div class="cards">
+  @for (p of items(); track p.slug) {
+    <a class="card page-card" [routerLink]="['/portal', p.slug]">
+      <h2>{{ p.title }}</h2>
+      @if (p.excerpt) { <p class="muted">{{ p.excerpt }}</p> }
+      @if (p.publishedAt) { <span class="when muted">{{ p.publishedAt | date:'longDate' }}</span> }
+    </a>
+  } @empty {
+    <p class="muted">{{ loading() ? 'Carregando…' : 'Nenhuma página publicada ainda.' }}</p>
+  }
+</div>

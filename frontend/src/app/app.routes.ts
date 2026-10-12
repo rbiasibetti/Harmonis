@@ -3,7 +3,6 @@ import { authGuard } from './core/auth.guard';
 import { Login } from './pages/login/login';
 import { Shell } from './layout/shell';
 import { Dashboard } from './pages/dashboard/dashboard';
-import { Placeholder } from './pages/placeholder/placeholder';
 import { Users } from './pages/users/users';
 import { Roles } from './pages/roles/roles';
 import { FormsList } from './pages/forms/forms-list';
@@ -13,6 +12,10 @@ import { FormSubmissionsPage } from './pages/forms/form-submissions';
 import { FlowEditor } from './pages/forms/flow-editor';
 import { Processes } from './pages/processes/processes';
 import { Documents } from './pages/documents/documents';
+import { Portal } from './pages/portal/portal';
+import { PortalPage } from './pages/portal/portal-page';
+import { PagesAdmin } from './pages/portal/pages-admin';
+import { PageEditor } from './pages/portal/page-editor';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -34,7 +37,11 @@ export const routes: Routes = [
       { path: 'processes', component: Processes },
       { path: 'documents', component: Documents },
       { path: 'documents/folder/:id', component: Documents },
-      { path: 'portal', component: Placeholder, data: { title: 'Portal', milestone: 'M5', desc: 'Páginas em Markdown (HTML sanitizado).' } },
+      { path: 'portal', component: Portal },
+      { path: 'portal/:slug', component: PortalPage },
+      { path: 'pages', component: PagesAdmin },
+      { path: 'pages/new', component: PageEditor },
+      { path: 'pages/:id/edit', component: PageEditor },
     ],
   },
   { path: '**', redirectTo: '' },
