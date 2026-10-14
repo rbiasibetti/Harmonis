@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE } from './api';
-import { FieldType, FormDetail, FormSummary, SaveFormRequest, SubmissionView } from './models';
+import { AttachmentRef, FieldType, FormDetail, FormSummary, SaveFormRequest, SubmissionView } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class FormsService {
@@ -42,6 +42,17 @@ export class FormsService {
 
   downloadCsv(id: number): Observable<Blob> {
     return this.http.get(`${API_BASE}/forms/${id}/submissions.csv`, { responseType: 'blob' });
+  }
+
+  uploadAttachment(formId: number, fieldKey: string, file: File): Observable<AttachmentRef> {
+    const form = new FormData();
+    form.append('fieldKey', fieldKey);
+    form.append('file', file);
+    return this.http.post<AttachmentRef>(`${API_BASE}/forms/${formId}/attachments`, form);
+  }
+
+  downloadAttachment(attachmentId: number): Observable<Blob> {
+    return this.http.get(`${API_BASE}/forms/attachments/${attachmentId}/download`, { responseType: 'blob' });
   }
 
   getFlow(id: number): Observable<{ nodes: any[]; fields: import('./models').FormField[] }> {

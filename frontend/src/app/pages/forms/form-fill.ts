@@ -42,7 +42,8 @@ export class FormFill {
     this.requesterFields(f).forEach((fld) => {
       if (fld.type === 'section' || !fld.key) return;
       if (fld.type === 'checkbox') v[fld.key] = false;
-      else if (fld.type === 'multiselect') v[fld.key] = [];
+      else if (fld.type === 'multiselect' || fld.type === 'multifile') v[fld.key] = [];
+      else if (fld.type === 'file') v[fld.key] = null;
       else v[fld.key] = '';
     });
     this.values = v;

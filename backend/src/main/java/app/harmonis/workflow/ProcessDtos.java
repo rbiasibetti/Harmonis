@@ -26,7 +26,7 @@ public final class ProcessDtos {
     ) {}
 
     public record ProcessDetail(
-            Long instanceId, String formName, String status, String requestedBy, Instant createdAt,
+            Long instanceId, Long formId, String formName, String status, String requestedBy, Instant createdAt,
             List<FormField> fields, Map<String, Object> data, List<TaskView> timeline, Long actionableTaskId,
             List<FormField> fillFields
     ) {}

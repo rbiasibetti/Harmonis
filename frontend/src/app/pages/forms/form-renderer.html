@@ -64,6 +64,38 @@
               <span class="track"></span> {{ f.label }} @if (f.required) { <span class="req">*</span> }
             </label>
           }
+          @case ('file') {
+            <div class="attach">
+              @for (ref of fileList(f); track ref.id) {
+                <div class="attach-item">
+                  <button type="button" class="link-file" (click)="download(ref)">📎 {{ ref.name }}</button>
+                  <span class="muted sz">{{ humanSize(ref.size) }}</span>
+                  @if (!disabled) { <button type="button" class="icon-action danger" (click)="removeFile(f, ref)">✕</button> }
+                </div>
+              }
+              @if (!disabled && fileList(f).length === 0) {
+                <input type="file" [accept]="acceptAttr(f)" [disabled]="isUploading(f.key!)" (change)="onFilePick(f, $any($event.target))" />
+              }
+              @if (isUploading(f.key!)) { <p class="muted help">Enviando…</p> }
+              @if (fileError(f.key!)) { <p class="field-err">{{ fileError(f.key!) }}</p> }
+            </div>
+          }
+          @case ('multifile') {
+            <div class="attach">
+              @for (ref of fileList(f); track ref.id) {
+                <div class="attach-item">
+                  <button type="button" class="link-file" (click)="download(ref)">📎 {{ ref.name }}</button>
+                  <span class="muted sz">{{ humanSize(ref.size) }}</span>
+                  @if (!disabled) { <button type="button" class="icon-action danger" (click)="removeFile(f, ref)">✕</button> }
+                </div>
+              }
+              @if (!disabled) {
+                <input type="file" multiple [accept]="acceptAttr(f)" [disabled]="isUploading(f.key!)" (change)="onFilePick(f, $any($event.target))" />
+              }
+              @if (isUploading(f.key!)) { <p class="muted help">Enviando…</p> }
+              @if (fileError(f.key!)) { <p class="field-err">{{ fileError(f.key!) }}</p> }
+            </div>
+          }
           @default {
             <input class="input" type="text" [(ngModel)]="values[f.key!]" [disabled]="disabled" [placeholder]="f.placeholder || ''" />
           }

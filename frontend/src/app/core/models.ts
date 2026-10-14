@@ -95,6 +95,16 @@ export interface FieldValidation {
   maxDate?: string | null;
   afterField?: string | null;
   beforeField?: string | null;
+  accept?: string | null;       // anexo: tipos aceitos (ex.: ".pdf,.png,image/*")
+  maxSizeMb?: number | null;    // anexo: tamanho máximo por arquivo em MB
+}
+
+/** Referência de um anexo guardada no valor do campo (file/multifile). */
+export interface AttachmentRef {
+  id: number;
+  name: string;
+  size: number;
+  mime: string | null;
 }
 
 export interface FieldCondition {

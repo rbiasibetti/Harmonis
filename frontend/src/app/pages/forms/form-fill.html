@@ -14,7 +14,7 @@
     } @else {
       @if (error()) { <p class="notice error">{{ error() }}</p> }
 
-      <app-form-renderer [fields]="requesterFields(f)" [values]="values" [errors]="errors()"></app-form-renderer>
+      <app-form-renderer [fields]="requesterFields(f)" [values]="values" [errors]="errors()" [formId]="f.id"></app-form-renderer>
 
       <div class="modal-foot">
         <button class="btn btn-primary" (click)="submit()" [disabled]="saving()">

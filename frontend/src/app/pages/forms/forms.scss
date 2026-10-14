@@ -53,3 +53,9 @@
   .builder { grid-template-columns: 1fr; }
   .meta { position: static; }
 }
+
+.link-file {
+  display: block;
+  background: none; border: none; padding: 0; cursor: pointer; font: inherit;
+  color: var(--primary, #4f46e5); text-decoration: underline; text-align: left;
+}

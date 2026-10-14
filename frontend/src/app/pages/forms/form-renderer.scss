@@ -29,6 +29,20 @@
 .radio, .check { display: flex; align-items: center; gap: .5rem; font-size: .9rem; }
 .input.multi { min-height: 96px; padding: .4rem; }
 
+.attach { display: flex; flex-direction: column; gap: .4rem; }
+.attach-item {
+  display: flex; align-items: center; gap: .5rem;
+  background: var(--surface-2, rgba(127,127,127,.08));
+  border: 1px solid var(--border); border-radius: 8px; padding: .35rem .5rem;
+}
+.attach-item .sz { font-size: .75rem; margin-left: auto; }
+.link-file {
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--primary, #4f46e5); font: inherit; text-align: left;
+  text-decoration: underline; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.icon-action.danger { background: none; border: none; cursor: pointer; color: var(--danger); font-size: .85rem; }
+
 @media (max-width: 640px) {
   .w-full, .w-half, .w-third { grid-column: span 12; }
 }

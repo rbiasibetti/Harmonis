@@ -1,6 +1,7 @@
 package app.harmonis.workflow;
 
 import app.harmonis.forms.Form;
+import app.harmonis.forms.FormAttachmentService;
 import app.harmonis.forms.FormField;
 import app.harmonis.forms.FormRepository;
 import app.harmonis.forms.FormSchemaService;
@@ -29,12 +30,14 @@ public class ProcessService {
     private final UserRepository users;
     private final FormSchemaService schema;
     private final ApprovalService approvals;
+    private final FormAttachmentService attachmentsService;
     private final ObjectMapper mapper;
 
     public ProcessService(ProcessInstanceRepository instances, ProcessTaskRepository tasks,
                           FormRepository forms, FormSubmissionRepository submissions,
                           UserRepository users, FormSchemaService schema,
-                          ApprovalService approvals, ObjectMapper mapper) {
+                          ApprovalService approvals, FormAttachmentService attachmentsService,
+                          ObjectMapper mapper) {
         this.instances = instances;
         this.tasks = tasks;
         this.forms = forms;
@@ -42,6 +45,7 @@ public class ProcessService {
         this.users = users;
         this.schema = schema;
         this.approvals = approvals;
+        this.attachmentsService = attachmentsService;
         this.mapper = mapper;
     }
 
@@ -108,6 +112,7 @@ public class ProcessService {
 
         return new ProcessDetail(
                 inst.getId(),
+                inst.getFormId(),
                 form == null ? "Formulário" : form.getName(),
                 inst.getStatus(),
                 inst.getCreatedBy() == null ? null : userNames.get(inst.getCreatedBy()),
@@ -124,12 +129,12 @@ public class ProcessService {
         }
         // Ao aprovar, mescla e valida os campos complementares atribuidos ao papel desta tarefa.
         if (approved) {
-            mergeComplementaryFields(task, fieldValues);
+            mergeComplementaryFields(task, fieldValues, user.getId());
         }
         approvals.decide(task, approved, comment, user.getId());
     }
 
-    private void mergeComplementaryFields(ProcessTask task, Map<String, Object> fieldValues) {
+    private void mergeComplementaryFields(ProcessTask task, Map<String, Object> fieldValues, Long userId) {
         if (!"role".equals(task.getApproverType()) || task.getRole() == null) return;
         ProcessInstance inst = task.getInstance();
         Form form = forms.findById(inst.getFormId()).orElse(null);
@@ -149,6 +154,12 @@ public class ProcessService {
         Map<String, String> errors = schema.validate(assigned, data);
         if (!errors.isEmpty()) {
             throw new FormService.ValidationException(errors);
+        }
+
+        // Confirma anexos dos campos de arquivo preenchidos por este papel no fluxo.
+        List<FormField> fileFields = schema.fileFields(assigned);
+        if (!fileFields.isEmpty()) {
+            attachmentsService.commit(form, inst.getSubmissionId(), data, fileFields, userId);
         }
 
         FormSubmission sub = submissions.findById(inst.getSubmissionId())

@@ -160,6 +160,22 @@
             </div>
           }
 
+          @if (isAnyFile(f) && f.validation) {
+            <div class="val-box">
+              <p class="val-title">Anexo</p>
+              <div class="fc-grid">
+                <div class="field"><label class="label">Tipos aceitos</label>
+                  <input class="input" [(ngModel)]="f.validation.accept" placeholder="ex.: .pdf,.png,image/*" />
+                  <p class="muted help">Extensões (.pdf) ou tipos MIME (image/*), separados por vírgula. Vazio = qualquer.</p>
+                </div>
+                <div class="field"><label class="label">Tamanho máximo (MB)</label>
+                  <input class="input" type="number" min="0" step="0.5" [(ngModel)]="f.validation.maxSizeMb" />
+                  <p class="muted help">Por arquivo. Limite do servidor: 10 MB.</p>
+                </div>
+              </div>
+            </div>
+          }
+
           @if (f.visibleWhen) {
             <div class="cond-box">
               <label class="label">Exibir somente quando</label>

@@ -123,6 +123,18 @@ public class FormSchemaService {
                 continue;
             }
 
+            if (FieldTypes.isAnyFile(f.type())) {
+                // O valor sao referencias de anexo (um objeto, ou lista deles); tipo/tamanho
+                // sao validados no upload. Aqui so checamos obrigatoriedade.
+                boolean emptyFile = FieldTypes.isMultiFile(f.type())
+                        ? toList(value).isEmpty()
+                        : isEmptyValue(value);
+                if (f.required() && emptyFile) {
+                    errors.put(f.key(), FieldTypes.isMultiFile(f.type()) ? "Anexe ao menos um arquivo." : "Anexo obrigatório.");
+                }
+                continue;
+            }
+
             boolean empty = value == null || value.toString().isBlank();
             if (empty) {
                 if (f.required()) errors.put(f.key(), "Campo obrigatório.");
@@ -156,6 +168,11 @@ public class FormSchemaService {
     /** Campos preenchidos pelo solicitante no envio (sem fillRole). */
     public List<FormField> requesterFields(List<FormField> fields) {
         return fields.stream().filter(f -> blank(f.fillRole())).toList();
+    }
+
+    /** Subconjunto de campos de anexo (file/multifile). */
+    public List<FormField> fileFields(List<FormField> fields) {
+        return fields.stream().filter(f -> FieldTypes.isAnyFile(f.type())).toList();
     }
 
     /** Papeis distintos usados em algum campo com "Preenchido por" (preserva a ordem de aparicao). */
@@ -307,16 +324,19 @@ public class FormSchemaService {
         } else {
             pattern = null;
         }
+        Double maxSizeMb = (v.maxSizeMb() != null && v.maxSizeMb() > 0) ? v.maxSizeMb() : null;
         boolean empty = pattern == null && v.min() == null && v.max() == null
                 && !Boolean.TRUE.equals(v.positive()) && !Boolean.TRUE.equals(v.integer())
                 && v.minLength() == null && v.maxLength() == null
                 && blank(v.minDate()) && blank(v.maxDate())
-                && blank(v.afterField()) && blank(v.beforeField());
+                && blank(v.afterField()) && blank(v.beforeField())
+                && blank(v.accept()) && maxSizeMb == null;
         if (empty) return null;
         return new Validation(pattern, v.patternMessage(), v.min(), v.max(),
                 v.positive(), v.integer(), v.minLength(), v.maxLength(),
                 nullIfBlank(v.minDate()), nullIfBlank(v.maxDate()),
-                nullIfBlank(v.afterField()), nullIfBlank(v.beforeField()));
+                nullIfBlank(v.afterField()), nullIfBlank(v.beforeField()),
+                nullIfBlank(v.accept()), maxSizeMb);
     }
 
     private static FieldCondition sanitizeCondition(FieldCondition c) {

@@ -89,6 +89,7 @@ export class FormBuilder {
   isSection(f: FormField): boolean { return f.type === 'section'; }
   isSingle(f: FormField): boolean { return f.type === 'select'; }
   isMulti(f: FormField): boolean { return f.type === 'multiselect'; }
+  isAnyFile(f: FormField): boolean { return f.type === 'file' || f.type === 'multifile'; }
   supportsValidation(f: FormField): boolean {
     return ['text', 'textarea', 'number', 'email', 'date'].includes(f.type);
   }
@@ -146,7 +147,9 @@ export class FormBuilder {
     const v: Record<string, any> = {};
     this.fields().forEach((f) => {
       if (f.type === 'section' || !f.key) return;
-      v[f.key] = f.type === 'checkbox' ? false : f.type === 'multiselect' ? [] : '';
+      v[f.key] = f.type === 'checkbox' ? false
+        : (f.type === 'multiselect' || f.type === 'multifile') ? []
+        : f.type === 'file' ? null : '';
     });
     this.previewValues = v;
     this.tab.set('layout');

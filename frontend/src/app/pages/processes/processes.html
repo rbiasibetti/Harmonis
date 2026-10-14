@@ -66,7 +66,20 @@
       <h3 class="sec">Dados enviados</h3>
       <div class="data-grid">
         @for (f of dataFields(d.fields); track f.key) {
-          <div class="data-row"><span class="muted">{{ label(f) }}</span><span>{{ value(f, d.data) }}</span></div>
+          <div class="data-row">
+            <span class="muted">{{ label(f) }}</span>
+            @if (isFileField(f)) {
+              @if (refsOf(f, d.data).length) {
+                <span class="file-cell">
+                  @for (ref of refsOf(f, d.data); track ref.id) {
+                    <button type="button" class="link-file" (click)="downloadRef(ref)">📎 {{ ref.name }}</button>
+                  }
+                </span>
+              } @else { <span>—</span> }
+            } @else {
+              <span>{{ value(f, d.data) }}</span>
+            }
+          </div>
         }
       </div>
 
@@ -93,7 +106,7 @@
 
       @if (d.actionableTaskId != null && d.status === 'pending' && d.fillFields.length > 0) {
         <h3 class="sec">Preencha os campos sob sua responsabilidade</h3>
-        <app-form-renderer [fields]="d.fillFields" [values]="fillValues" [errors]="fillErrors()"></app-form-renderer>
+        <app-form-renderer [fields]="d.fillFields" [values]="fillValues" [errors]="fillErrors()" [formId]="d.formId"></app-form-renderer>
       }
 
       @if (detailError()) { <p class="notice error">{{ detailError() }}</p> }

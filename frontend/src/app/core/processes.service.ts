@@ -37,6 +37,7 @@ export interface TaskView {
 
 export interface ProcessDetail {
   instanceId: number;
+  formId: number;
   formName: string;
   status: string;
   requestedBy: string | null;

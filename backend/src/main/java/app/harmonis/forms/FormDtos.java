@@ -38,4 +38,7 @@ public final class FormDtos {
     public record FlowView(List<Map<String, Object>> nodes, List<FormField> fields) {}
 
     public record SaveFlowRequest(@NotNull List<Map<String, Object>> nodes) {}
+
+    /** Referencia de um anexo (retornada no upload e guardada na resposta). */
+    public record AttachmentRef(Long id, String name, long size, String mime) {}
 }
