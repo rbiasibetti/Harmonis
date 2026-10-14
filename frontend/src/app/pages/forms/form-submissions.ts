@@ -3,7 +3,8 @@ import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { FormsService } from '../../core/forms.service';
-import { FormDetail, FormField, SubmissionView } from '../../core/models';
+import { AttachmentRef, FormDetail, FormField, SubmissionView } from '../../core/models';
+import { downloadBlob } from '../../core/download';
 
 @Component({
   selector: 'app-form-submissions',
@@ -39,6 +40,18 @@ export class FormSubmissionsPage {
     if (field.type === 'checkbox') return v === true || v === 'true' ? 'Sim' : 'Não';
     if (Array.isArray(v)) return v.join(', ');
     return String(v);
+  }
+
+  isFileField(f: FormField): boolean { return f.type === 'file' || f.type === 'multifile'; }
+
+  refsOf(field: FormField, data: Record<string, unknown>): AttachmentRef[] {
+    const v = data[field.key!];
+    if (!v) return [];
+    return (Array.isArray(v) ? v : [v]) as AttachmentRef[];
+  }
+
+  download(ref: AttachmentRef): void {
+    this.api.downloadAttachment(ref.id).subscribe({ next: (blob) => downloadBlob(blob, ref.name) });
   }
 
   exportCsv(): void {

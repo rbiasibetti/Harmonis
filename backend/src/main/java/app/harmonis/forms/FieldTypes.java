@@ -10,7 +10,7 @@ public final class FieldTypes {
 
     public record TypeInfo(String code, String label, boolean hasOptions, String kind) {}
 
-    /** kind: 'input' (campo com valor) | 'single' | 'multiple' | 'layout'. */
+    /** kind: 'input' (campo com valor) | 'single' | 'multiple' | 'file' | 'multifile' | 'layout'. */
     public static final List<TypeInfo> ALL = List.of(
             new TypeInfo("text", "Texto curto", false, "input"),
             new TypeInfo("textarea", "Texto longo", false, "input"),
@@ -20,13 +20,15 @@ public final class FieldTypes {
             new TypeInfo("select", "Seleção única", true, "single"),
             new TypeInfo("multiselect", "Seleção múltipla", true, "multiple"),
             new TypeInfo("checkbox", "Confirmação (sim/não)", false, "input"),
+            new TypeInfo("file", "Anexo (único)", false, "file"),
+            new TypeInfo("multifile", "Anexo (múltiplo)", false, "multifile"),
             new TypeInfo("section", "Bloco / seção", false, "layout")
     );
 
     // 'radio' permanece valido para compatibilidade (dados antigos); a UI usa select + display.
     private static final Set<String> CODES =
             Set.of("text", "textarea", "number", "email", "date",
-                    "select", "radio", "multiselect", "checkbox", "section");
+                    "select", "radio", "multiselect", "checkbox", "file", "multifile", "section");
 
     private static final Set<String> WITH_OPTIONS = Set.of("select", "radio", "multiselect");
 
@@ -49,5 +51,20 @@ public final class FieldTypes {
 
     public static boolean isMultiChoice(String code) {
         return "multiselect".equals(code);
+    }
+
+    /** Anexo único. */
+    public static boolean isFile(String code) {
+        return "file".equals(code);
+    }
+
+    /** Anexo múltiplo (valor = lista de referências). */
+    public static boolean isMultiFile(String code) {
+        return "multifile".equals(code);
+    }
+
+    /** Qualquer campo de anexo (único ou múltiplo). */
+    public static boolean isAnyFile(String code) {
+        return isFile(code) || isMultiFile(code);
     }
 }

@@ -39,7 +39,9 @@ public record FormField(
             String minDate,        // data minima ISO (date)
             String maxDate,        // data maxima ISO (date)
             String afterField,     // este campo deve ser > o campo referenciado (date/number)
-            String beforeField     // este campo deve ser < o campo referenciado (date/number)
+            String beforeField,    // este campo deve ser < o campo referenciado (date/number)
+            String accept,         // anexo: tipos aceitos (lista separada por virgula, ex.: ".pdf,.png,image/*")
+            Double maxSizeMb       // anexo: tamanho maximo por arquivo em MB
     ) {}
 
     /** Condicao campo/operador/valor (mesmos operadores do motor de workflow). */

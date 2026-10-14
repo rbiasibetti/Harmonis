@@ -23,16 +23,19 @@ public class FormService {
     private final UserRepository users;
     private final FormSchemaService schema;
     private final ApprovalService approvals;
+    private final FormAttachmentService attachmentsService;
     private final ObjectMapper mapper;
 
     public FormService(FormRepository forms, FormSubmissionRepository submissions,
                        UserRepository users, FormSchemaService schema,
-                       @Lazy ApprovalService approvals, ObjectMapper mapper) {
+                       @Lazy ApprovalService approvals, FormAttachmentService attachmentsService,
+                       ObjectMapper mapper) {
         this.forms = forms;
         this.submissions = submissions;
         this.users = users;
         this.schema = schema;
         this.approvals = approvals;
+        this.attachmentsService = attachmentsService;
         this.mapper = mapper;
     }
 
@@ -99,6 +102,15 @@ public class FormService {
         sub.setSubmittedBy(userId);
         sub.setDataJson(writeData(data));
         submissions.save(sub);
+
+        // Confirma os anexos do solicitante: vincula a submissao e reescreve os valores
+        // com metadados autoritativos (do banco).
+        List<FormField> fileFields = schema.fileFields(fields);
+        if (!fileFields.isEmpty()) {
+            Map<String, Object> committed = attachmentsService.commit(form, sub.getId(), data, fileFields, userId);
+            sub.setDataJson(writeData(committed));
+            submissions.save(sub);
+        }
 
         // Se o formulario tem fluxo de aprovacao, inicia o processo.
         String flow = form.getApprovalFlow();
@@ -327,12 +339,29 @@ public class FormService {
                     : List.of("true", "1", "on", "sim").contains(value.toString().toLowerCase());
             return b ? "Sim" : "Não";
         }
+        if (FieldTypes.isAnyFile(f.type())) return attachmentNames(value);
         if (value instanceof Collection<?> c) {
             StringBuilder sb = new StringBuilder();
             for (Object o : c) { if (sb.length() > 0) sb.append(", "); sb.append(o); }
             return sb.toString();
         }
         return value.toString();
+    }
+
+    /** Nome(s) de arquivo a partir de uma referencia de anexo (objeto ou lista de objetos). */
+    @SuppressWarnings("unchecked")
+    private static String attachmentNames(Object value) {
+        if (value instanceof Collection<?> c) {
+            StringBuilder sb = new StringBuilder();
+            for (Object o : c) { String n = oneName(o); if (!n.isEmpty()) { if (sb.length() > 0) sb.append(", "); sb.append(n); } }
+            return sb.toString();
+        }
+        return oneName(value);
+    }
+
+    private static String oneName(Object o) {
+        if (o instanceof Map<?, ?> m && m.get("name") != null) return m.get("name").toString();
+        return o == null ? "" : o.toString();
     }
 
     private static String csvLine(List<String> cols) {

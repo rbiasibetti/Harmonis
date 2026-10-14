@@ -3,8 +3,10 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InboxItem, MineItem, ProcessDetail, ProcessesService } from '../../core/processes.service';
 import { NotificationsService } from '../../core/notifications.service';
-import { FormField } from '../../core/models';
+import { FormsService } from '../../core/forms.service';
+import { AttachmentRef, FormField } from '../../core/models';
 import { FormRenderer } from '../forms/form-renderer';
+import { downloadBlob } from '../../core/download';
 
 @Component({
   selector: 'app-processes',
@@ -15,6 +17,7 @@ import { FormRenderer } from '../forms/form-renderer';
 export class Processes {
   private api = inject(ProcessesService);
   private notifications = inject(NotificationsService);
+  private formsApi = inject(FormsService);
 
   tab = signal<'inbox' | 'mine'>('inbox');
   inbox = signal<InboxItem[]>([]);
@@ -47,7 +50,9 @@ export class Processes {
     const v: Record<string, any> = {};
     (d.fillFields ?? []).forEach((f) => {
       if (!f.key) return;
-      v[f.key] = f.type === 'checkbox' ? false : f.type === 'multiselect' ? [] : '';
+      v[f.key] = f.type === 'checkbox' ? false
+        : (f.type === 'multiselect' || f.type === 'multifile') ? []
+        : f.type === 'file' ? null : '';
     });
     this.fillValues = v;
   }
@@ -89,6 +94,18 @@ export class Processes {
     if (f.type === 'checkbox') return v === true || v === 'true' ? 'Sim' : 'Não';
     if (Array.isArray(v)) return v.join(', ');
     return String(v);
+  }
+
+  isFileField(f: FormField): boolean { return f.type === 'file' || f.type === 'multifile'; }
+
+  refsOf(f: FormField, data: Record<string, unknown>): AttachmentRef[] {
+    const v = data[f.key!];
+    if (!v) return [];
+    return (Array.isArray(v) ? v : [v]) as AttachmentRef[];
+  }
+
+  downloadRef(ref: AttachmentRef): void {
+    this.formsApi.downloadAttachment(ref.id).subscribe({ next: (blob) => downloadBlob(blob, ref.name) });
   }
 
   statusBadge(s: string): string {

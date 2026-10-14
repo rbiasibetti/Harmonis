@@ -35,7 +35,7 @@ class FormSchemaServiceTest {
     }
 
     private Validation val() {
-        return new Validation(null, null, null, null, null, null, null, null, null, null, null, null);
+        return new Validation(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     // ----- normalizacao -----
@@ -114,7 +114,7 @@ class FormSchemaServiceTest {
 
     @Test
     void numero_positivo() {
-        Validation v = new Validation(null, null, null, null, true, null, null, null, null, null, null, null);
+        Validation v = new Validation(null, null, null, null, true, null, null, null, null, null, null, null, null, null);
         List<FormField> fields = svc.normalize(List.of(field("valor", "number", true, null, v, null)));
         assertTrue(svc.validate(fields, Map.of("valor", "-5")).containsKey("valor"));
         assertTrue(svc.validate(fields, Map.of("valor", "0")).containsKey("valor"));
@@ -123,7 +123,7 @@ class FormSchemaServiceTest {
 
     @Test
     void numero_min_max_e_inteiro() {
-        Validation v = new Validation(null, null, 10.0, 100.0, null, true, null, null, null, null, null, null);
+        Validation v = new Validation(null, null, 10.0, 100.0, null, true, null, null, null, null, null, null, null, null);
         List<FormField> fields = svc.normalize(List.of(field("qtd", "number", true, null, v, null)));
         assertTrue(svc.validate(fields, Map.of("qtd", "5")).containsKey("qtd"));     // < min
         assertTrue(svc.validate(fields, Map.of("qtd", "150")).containsKey("qtd"));   // > max
@@ -133,7 +133,7 @@ class FormSchemaServiceTest {
 
     @Test
     void regex_com_mensagem_custom() {
-        Validation v = new Validation("\\d{5}-\\d{3}", "CEP inválido", null, null, null, null, null, null, null, null, null, null);
+        Validation v = new Validation("\\d{5}-\\d{3}", "CEP inválido", null, null, null, null, null, null, null, null, null, null, null, null);
         List<FormField> fields = svc.normalize(List.of(field("cep", "text", true, null, v, null)));
         Map<String, String> err = svc.validate(fields, Map.of("cep", "abc"));
         assertEquals("CEP inválido", err.get("cep"));
@@ -142,7 +142,7 @@ class FormSchemaServiceTest {
 
     @Test
     void tamanho_minimo_de_texto() {
-        Validation v = new Validation(null, null, null, null, null, null, 3, 10, null, null, null, null);
+        Validation v = new Validation(null, null, null, null, null, null, 3, 10, null, null, null, null, null, null);
         List<FormField> fields = svc.normalize(List.of(field("apelido", "text", true, null, v, null)));
         assertTrue(svc.validate(fields, Map.of("apelido", "ab")).containsKey("apelido"));
         assertFalse(svc.validate(fields, Map.of("apelido", "abcd")).containsKey("apelido"));
@@ -150,7 +150,7 @@ class FormSchemaServiceTest {
 
     @Test
     void data_apos_outro_campo() {
-        Validation v = new Validation(null, null, null, null, null, null, null, null, null, null, "inicio", null);
+        Validation v = new Validation(null, null, null, null, null, null, null, null, null, null, "inicio", null, null, null);
         List<FormField> fields = svc.normalize(List.of(
                 field("inicio", "date", true, null, null, null),
                 field("fim", "date", true, null, v, null)));
@@ -238,10 +238,44 @@ class FormSchemaServiceTest {
     }
 
     @Test
+    void campos_de_anexo_exigem_obrigatoriedade_e_sao_filtrados() {
+        List<FormField> fields = svc.normalize(List.of(
+                field("file", "Contrato", true, null),       // anexo único obrigatório
+                field("multifile", "Fotos", true, null),     // anexo múltiplo obrigatório
+                field("text", "Observação", false, null)));
+
+        // vazios -> obrigatoriedade por tipo
+        Map<String, String> errors = svc.validate(fields, Map.of());
+        assertEquals("Anexo obrigatório.", errors.get(fields.get(0).key()));
+        assertEquals("Anexe ao menos um arquivo.", errors.get(fields.get(1).key()));
+
+        // preenchidos com referencias -> sem erro
+        Map<String, Object> data = Map.of(
+                fields.get(0).key(), Map.of("id", 1, "name", "contrato.pdf"),
+                fields.get(1).key(), List.of(Map.of("id", 2, "name", "a.png"), Map.of("id", 3, "name", "b.png")));
+        assertTrue(svc.validate(fields, data).isEmpty());
+
+        // fileFields filtra apenas os anexos
+        List<FormField> files = svc.fileFields(fields);
+        assertEquals(2, files.size());
+        assertTrue(files.stream().allMatch(f -> FieldTypes.isAnyFile(f.type())));
+    }
+
+    @Test
+    void validacao_de_anexo_preserva_accept_e_tamanho() {
+        FormField f = svc.normalize(List.of(field("doc", "file", false, null,
+                new Validation(null, null, null, null, null, null, null, null, null, null, null, null, ".pdf,.png", 5.0), null)))
+                .get(0);
+        assertNotNull(f.validation());
+        assertEquals(".pdf,.png", f.validation().accept());
+        assertEquals(5.0, f.validation().maxSizeMb());
+    }
+
+    @Test
     void round_trip_de_serializacao_preserva_campos() {
         String json = svc.writeFields(List.of(
                 field("nome", "text", true, null,
-                        new Validation(null, null, null, null, null, null, 2, 50, null, null, null, null), null)));
+                        new Validation(null, null, null, null, null, null, 2, 50, null, null, null, null, null, null), null)));
         assertTrue(json.contains("\"fields\""));
         List<FormField> back = svc.readFields(json);
         assertEquals(1, back.size());

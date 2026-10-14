@@ -15,9 +15,11 @@ import java.util.List;
 public class FormController {
 
     private final FormService service;
+    private final FormAttachmentService attachments;
 
-    public FormController(FormService service) {
+    public FormController(FormService service, FormAttachmentService attachments) {
         this.service = service;
+        this.attachments = attachments;
     }
 
     @GetMapping("/field-types")
@@ -73,6 +75,38 @@ public class FormController {
     @PreAuthorize("hasAuthority('forms.submissions')")
     public List<SubmissionView> submissions(@PathVariable long id) {
         return service.submissions(id);
+    }
+
+    // ----- anexos -----
+
+    @PostMapping("/{id}/attachments")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('forms.view')")
+    public AttachmentRef uploadAttachment(@PathVariable long id,
+                                          @RequestParam("fieldKey") String fieldKey,
+                                          @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+                                          @AuthenticationPrincipal AuthPrincipal principal) {
+        return attachments.upload(id, fieldKey, file, principal.userId());
+    }
+
+    @GetMapping("/attachments/{attachmentId}/download")
+    @PreAuthorize("hasAuthority('forms.view')")
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.FileSystemResource> downloadAttachment(
+            @PathVariable long attachmentId) {
+        FormAttachmentService.Downloadable d = attachments.download(attachmentId);
+        org.springframework.core.io.FileSystemResource resource =
+                new org.springframework.core.io.FileSystemResource(d.path());
+        if (!resource.exists()) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Arquivo não encontrado.");
+        }
+        String filename = java.net.URLEncoder.encode(d.originalName(), java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
+        org.springframework.http.MediaType mediaType = d.mimeType() != null
+                ? org.springframework.http.MediaType.parseMediaType(d.mimeType())
+                : org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
+        return org.springframework.http.ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
+                .contentType(mediaType)
+                .body(resource);
     }
 
     @GetMapping("/{id}/flow")

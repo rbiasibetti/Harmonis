@@ -28,7 +28,17 @@
             <td class="muted">{{ rows().length - i }}</td>
             <td>{{ s.submittedBy || '—' }}</td>
             <td class="muted">{{ s.createdAt | date:'short' }}</td>
-            @for (fld of columns(); track fld.key) { <td>{{ cell(fld, s.data) }}</td> }
+            @for (fld of columns(); track fld.key) {
+              @if (isFileField(fld)) {
+                <td>
+                  @for (ref of refsOf(fld, s.data); track ref.id) {
+                    <button type="button" class="link-file" (click)="download(ref)">📎 {{ ref.name }}</button>
+                  } @empty { — }
+                </td>
+              } @else {
+                <td>{{ cell(fld, s.data) }}</td>
+              }
+            }
           </tr>
         } @empty {
           <tr><td [attr.colspan]="3 + columns().length" class="muted" style="text-align:center;padding:2rem">
