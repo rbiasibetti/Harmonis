@@ -158,6 +158,28 @@ public class FormSchemaService {
         return fields.stream().filter(f -> blank(f.fillRole())).toList();
     }
 
+    /** Papeis distintos usados em algum campo com "Preenchido por" (preserva a ordem de aparicao). */
+    public java.util.LinkedHashSet<String> fillRoles(List<FormField> fields) {
+        java.util.LinkedHashSet<String> roles = new java.util.LinkedHashSet<>();
+        for (FormField f : fields) {
+            if (!blank(f.fillRole())) roles.add(f.fillRole().trim());
+        }
+        return roles;
+    }
+
+    /**
+     * Primeiro campo cujo "Preenchido por" (fillRole) nao esta coberto por nenhum papel do fluxo
+     * (coverRoles), ou null se todos estiverem cobertos. Campos sem fillRole sao ignorados.
+     */
+    public FormField firstUncoveredFillRole(List<FormField> fields, java.util.Set<String> coverRoles) {
+        java.util.Set<String> cover = coverRoles == null ? java.util.Set.of() : coverRoles;
+        for (FormField f : fields) {
+            if (blank(f.fillRole())) continue;
+            if (!cover.contains(f.fillRole().trim())) return f;
+        }
+        return null;
+    }
+
     /** Campos atribuidos a um papel, ainda vazios e visiveis sob os dados atuais. */
     public List<FormField> pendingFor(List<FormField> fields, String role, Map<String, Object> data) {
         if (role == null || role.isBlank()) return List.of();

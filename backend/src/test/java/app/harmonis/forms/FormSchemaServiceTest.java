@@ -214,6 +214,30 @@ class FormSchemaServiceTest {
     }
 
     @Test
+    void fill_role_sem_etapa_correspondente_e_detectado_como_orfao() {
+        List<FormField> fields = svc.normalize(List.of(
+                roleField("descricao", "text", true, null),
+                roleField("parecer", "text", true, "manager"),
+                roleField("visto", "text", true, "admin")));
+
+        assertEquals(java.util.Set.of("manager", "admin"), svc.fillRoles(fields));
+
+        // fluxo cobre "manager" mas nao "admin" -> "visto" fica orfao
+        FormField orphan = svc.firstUncoveredFillRole(fields, java.util.Set.of("manager"));
+        assertNotNull(orphan);
+        assertEquals("visto", orphan.key());
+        assertEquals("admin", orphan.fillRole());
+
+        // fluxo cobre ambos -> nenhum orfao
+        assertNull(svc.firstUncoveredFillRole(fields, java.util.Set.of("manager", "admin")));
+
+        // formulario sem fillRole -> nunca ha orfao, mesmo sem papeis no fluxo
+        List<FormField> semPapel = svc.normalize(List.of(roleField("descricao", "text", true, null)));
+        assertTrue(svc.fillRoles(semPapel).isEmpty());
+        assertNull(svc.firstUncoveredFillRole(semPapel, java.util.Set.of()));
+    }
+
+    @Test
     void round_trip_de_serializacao_preserva_campos() {
         String json = svc.writeFields(List.of(
                 field("nome", "text", true, null,
