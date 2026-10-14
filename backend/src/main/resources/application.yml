@@ -1,5 +1,9 @@
 server:
   port: 8080
+  error:
+    # Inclui a mensagem da ResponseStatusException no corpo do erro (ex.: motivo da
+    # validacao do fluxo), para o frontend exibir ao usuario em vez de um 400 generico.
+    include-message: always
 
 harmonis:
   # Conexao base ao SQL Server local. Cada tenant tem seu proprio banco (db-per-tenant);
