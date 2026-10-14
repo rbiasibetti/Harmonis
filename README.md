@@ -534,5 +534,4 @@ esperado e o comportamento observado.
 
 ## Licença
 
-Defina a licença do projeto (ex.: adicione um arquivo `LICENSE`). Enquanto nenhuma licença for
-declarada, todos os direitos são reservados ao(s) autor(es).
+Todos os direitos são reservados ao(s) autor(es).
