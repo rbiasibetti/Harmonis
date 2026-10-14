@@ -85,6 +85,8 @@ export class FormRenderer {
     } else {
       this.values[f.key!] = null;
     }
+    // Remove o arquivo órfão do servidor (ainda não vinculado a uma resposta).
+    this.api.deleteAttachment(ref.id).subscribe({ error: () => {} });
   }
 
   download(ref: AttachmentRef): void {

@@ -89,6 +89,14 @@ public class FormController {
         return attachments.upload(id, fieldKey, file, principal.userId());
     }
 
+    @DeleteMapping("/attachments/{attachmentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('forms.view')")
+    public void deleteAttachment(@PathVariable long attachmentId,
+                                 @AuthenticationPrincipal AuthPrincipal principal) {
+        attachments.deleteUncommitted(attachmentId, principal.userId());
+    }
+
     @GetMapping("/attachments/{attachmentId}/download")
     @PreAuthorize("hasAuthority('forms.view')")
     public org.springframework.http.ResponseEntity<org.springframework.core.io.FileSystemResource> downloadAttachment(
