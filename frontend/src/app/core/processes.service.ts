@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API_BASE } from './api';
 import { FormField } from './models';
 
+
 export interface InboxItem {
   taskId: number;
   instanceId: number;
@@ -44,6 +45,7 @@ export interface ProcessDetail {
   data: Record<string, unknown>;
   timeline: TaskView[];
   actionableTaskId: number | null;
+  fillFields: FormField[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -66,7 +68,7 @@ export class ProcessesService {
     return this.http.get<ProcessDetail>(`${API_BASE}/processes/${instanceId}`);
   }
 
-  decide(taskId: number, approved: boolean, comment: string): Observable<void> {
-    return this.http.post<void>(`${API_BASE}/processes/tasks/${taskId}/decide`, { approved, comment });
+  decide(taskId: number, approved: boolean, comment: string, fieldValues?: Record<string, unknown>): Observable<void> {
+    return this.http.post<void>(`${API_BASE}/processes/tasks/${taskId}/decide`, { approved, comment, fieldValues });
   }
 }

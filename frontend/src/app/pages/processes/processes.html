@@ -91,6 +91,11 @@
         }
       </div>
 
+      @if (d.actionableTaskId != null && d.status === 'pending' && d.fillFields.length > 0) {
+        <h3 class="sec">Preencha os campos sob sua responsabilidade</h3>
+        <app-form-renderer [fields]="d.fillFields" [values]="fillValues" [errors]="fillErrors()"></app-form-renderer>
+      }
+
       @if (detailError()) { <p class="notice error">{{ detailError() }}</p> }
 
       @if (d.actionableTaskId != null && d.status === 'pending') {

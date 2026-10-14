@@ -81,7 +81,9 @@ public class FormService {
         if (!form.isPublished()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Formulário não está publicado.");
         }
-        List<FormField> fields = schema.readFields(form.getSchemaJson());
+        // No envio, valida apenas os campos do solicitante; os campos atribuidos a
+        // papeis sao preenchidos pelos aprovadores durante o fluxo.
+        List<FormField> fields = schema.requesterFields(schema.readFields(form.getSchemaJson()));
         Map<String, String> errors = schema.validate(fields, data);
         if (!errors.isEmpty()) {
             throw new ValidationException(errors);

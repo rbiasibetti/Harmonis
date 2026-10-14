@@ -27,8 +27,9 @@ public final class ProcessDtos {
 
     public record ProcessDetail(
             Long instanceId, String formName, String status, String requestedBy, Instant createdAt,
-            List<FormField> fields, Map<String, Object> data, List<TaskView> timeline, Long actionableTaskId
+            List<FormField> fields, Map<String, Object> data, List<TaskView> timeline, Long actionableTaskId,
+            List<FormField> fillFields
     ) {}
 
-    public record DecideRequest(@NotNull Boolean approved, String comment) {}
+    public record DecideRequest(@NotNull Boolean approved, String comment, Map<String, Object> fieldValues) {}
 }

@@ -22,12 +22,16 @@ class FormSchemaServiceTest {
     }
 
     private FormField field(String type, String label, boolean required, List<String> options) {
-        return new FormField(null, null, type, label, null, null, required, options, null, null, null, null);
+        return new FormField(null, null, type, label, null, null, required, options, null, null, null, null, null);
     }
 
     private FormField field(String key, String type, boolean required, List<String> options,
                             Validation v, FieldCondition vw) {
-        return new FormField(null, key, type, key, null, null, required, options, null, null, v, vw);
+        return new FormField(null, key, type, key, null, null, required, options, null, null, v, vw, null);
+    }
+
+    private FormField roleField(String key, String type, boolean required, String fillRole) {
+        return new FormField(null, key, type, key, null, null, required, null, null, null, null, null, fillRole);
     }
 
     private Validation val() {
@@ -70,9 +74,9 @@ class FormSchemaServiceTest {
 
     @Test
     void display_normalizado_por_tipo() {
-        FormField single = new FormField(null, null, "select", "UF", null, null, false, List.of("SP"), null, null, null, null);
-        FormField radioDisplay = new FormField(null, null, "select", "UF", null, null, false, List.of("SP"), "radio", null, null, null);
-        FormField multi = new FormField(null, null, "multiselect", "Tags", null, null, false, List.of("A"), null, null, null, null);
+        FormField single = new FormField(null, null, "select", "UF", null, null, false, List.of("SP"), null, null, null, null, null);
+        FormField radioDisplay = new FormField(null, null, "select", "UF", null, null, false, List.of("SP"), "radio", null, null, null, null);
+        FormField multi = new FormField(null, null, "multiselect", "Tags", null, null, false, List.of("A"), null, null, null, null, null);
 
         assertEquals("combo", svc.normalize(List.of(single)).get(0).display());
         assertEquals("radio", svc.normalize(List.of(radioDisplay)).get(0).display());
@@ -184,6 +188,29 @@ class FormSchemaServiceTest {
                 field("aceite", "checkbox", true, null, null, null)));
         assertTrue(svc.validate(fields, Map.of("aceite", false)).containsKey("aceite"));
         assertFalse(svc.validate(fields, Map.of("aceite", true)).containsKey("aceite"));
+    }
+
+    @Test
+    void segmentacao_por_papel_separa_solicitante_e_fluxo() {
+        List<FormField> fields = svc.normalize(List.of(
+                roleField("descricao", "text", true, null),       // solicitante
+                roleField("parecer", "text", true, "manager"),    // preenchido pelo gestor no fluxo
+                roleField("visto", "text", true, "admin")));       // preenchido pelo admin no fluxo
+
+        List<FormField> req = svc.requesterFields(fields);
+        assertEquals(1, req.size());
+        assertEquals("descricao", req.get(0).key());
+
+        // no envio so valida o solicitante -> parecer/visto nao sao exigidos
+        assertTrue(svc.validate(req, Map.of("descricao", "ok")).isEmpty());
+
+        // campos pendentes do gestor (ainda vazios)
+        List<FormField> pend = svc.pendingFor(fields, "manager", Map.of("descricao", "ok"));
+        assertEquals(1, pend.size());
+        assertEquals("parecer", pend.get(0).key());
+
+        // apos preenchido, nao fica mais pendente
+        assertTrue(svc.pendingFor(fields, "manager", Map.of("descricao", "ok", "parecer", "aprovado")).isEmpty());
     }
 
     @Test

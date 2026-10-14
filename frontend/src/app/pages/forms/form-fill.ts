@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsService } from '../../core/forms.service';
-import { FormDetail } from '../../core/models';
+import { FormDetail, FormField } from '../../core/models';
 import { FormRenderer } from './form-renderer';
 
 @Component({
@@ -32,9 +32,14 @@ export class FormFill {
     });
   }
 
+  /** Campos preenchidos pelo solicitante no envio (sem fillRole); blocos continuam visíveis. */
+  requesterFields(f: FormDetail): FormField[] {
+    return f.fields.filter((x) => x.type === 'section' || !x.fillRole);
+  }
+
   private reset(f: FormDetail): void {
     const v: Record<string, any> = {};
-    f.fields.forEach((fld) => {
+    this.requesterFields(f).forEach((fld) => {
       if (fld.type === 'section' || !fld.key) return;
       if (fld.type === 'checkbox') v[fld.key] = false;
       else if (fld.type === 'multiselect') v[fld.key] = [];

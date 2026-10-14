@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { InboxItem, MineItem, ProcessDetail, ProcessesService } from '../../core/processes.service';
 import { NotificationsService } from '../../core/notifications.service';
 import { FormField } from '../../core/models';
+import { FormRenderer } from '../forms/form-renderer';
 
 @Component({
   selector: 'app-processes',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, FormRenderer],
   templateUrl: './processes.html',
   styleUrl: './processes.scss',
 })
@@ -24,6 +25,8 @@ export class Processes {
   comment = '';
   deciding = signal(false);
   detailError = signal<string | null>(null);
+  fillValues: Record<string, any> = {};
+  fillErrors = signal<Record<string, string>>({});
 
   constructor() { this.load(); }
 
@@ -35,8 +38,18 @@ export class Processes {
 
   open(instanceId: number): void {
     this.detailError.set(null);
+    this.fillErrors.set({});
     this.comment = '';
-    this.api.detail(instanceId).subscribe({ next: (d) => this.detail.set(d) });
+    this.api.detail(instanceId).subscribe({ next: (d) => { this.detail.set(d); this.initFill(d); } });
+  }
+
+  private initFill(d: ProcessDetail): void {
+    const v: Record<string, any> = {};
+    (d.fillFields ?? []).forEach((f) => {
+      if (!f.key) return;
+      v[f.key] = f.type === 'checkbox' ? false : f.type === 'multiselect' ? [] : '';
+    });
+    this.fillValues = v;
   }
 
   close(): void { this.detail.set(null); }
@@ -44,15 +57,23 @@ export class Processes {
   decide(approved: boolean): void {
     const d = this.detail();
     if (!d || d.actionableTaskId == null) return;
+    this.detailError.set(null);
+    this.fillErrors.set({});
     this.deciding.set(true);
-    this.api.decide(d.actionableTaskId, approved, this.comment).subscribe({
+    // Ao aprovar, envia os campos complementares preenchidos; ao reprovar, não exige preenchimento.
+    const values = approved && (d.fillFields?.length ?? 0) > 0 ? this.fillValues : undefined;
+    this.api.decide(d.actionableTaskId, approved, this.comment, values).subscribe({
       next: () => {
         this.deciding.set(false);
         this.close();
         this.load();
         this.notifications.refresh();
       },
-      error: (e) => { this.deciding.set(false); this.detailError.set(e?.error?.message ?? 'Não foi possível decidir.'); },
+      error: (e) => {
+        this.deciding.set(false);
+        if (e?.status === 422 && e.error?.errors) this.fillErrors.set(e.error.errors);
+        else this.detailError.set(e?.error?.message ?? 'Não foi possível decidir.');
+      },
     });
   }
 
