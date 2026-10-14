@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsService } from '../../core/forms.service';
+import { RolesService } from '../../core/roles.service';
 import { FieldType, FormField } from '../../core/models';
 import { FormRenderer } from './form-renderer';
 
@@ -15,9 +16,11 @@ interface Opt { value: string; label: string; }
 })
 export class FormBuilder {
   private api = inject(FormsService);
+  private rolesApi = inject(RolesService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
+  roleOptions = signal<Opt[]>([]);
   id = signal<number | null>(null);
   name = signal('');
   description = signal('');
@@ -53,6 +56,7 @@ export class FormBuilder {
 
   constructor() {
     this.api.fieldTypes().subscribe({ next: (t) => this.types.set(t) });
+    this.rolesApi.list().subscribe({ next: (r) => this.roleOptions.set(r.map((x) => ({ value: x.name, label: x.label }))) });
     const param = this.route.snapshot.paramMap.get('id');
     if (param) {
       this.id.set(Number(param));
@@ -121,6 +125,7 @@ export class FormBuilder {
         width: 'full',
         validation: {},
         visibleWhen: { field: '', operator: 'not_empty', value: '' },
+        fillRole: null,
       };
     }
     this.fields.set([...this.fields(), f]);

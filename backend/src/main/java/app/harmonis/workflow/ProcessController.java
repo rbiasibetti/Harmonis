@@ -56,6 +56,6 @@ public class ProcessController {
     public void decide(@PathVariable long taskId,
                        @Valid @RequestBody DecideRequest req,
                        @AuthenticationPrincipal AuthPrincipal principal) {
-        service.decide(taskId, req.approved(), req.comment(), currentUser(principal));
+        service.decide(taskId, req.approved(), req.comment(), req.fieldValues(), currentUser(principal));
     }
 }

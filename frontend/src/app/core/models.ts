@@ -116,6 +116,7 @@ export interface FormField {
   width?: string | null;         // full|half|third
   validation?: FieldValidation | null;
   visibleWhen?: FieldCondition | null;
+  fillRole?: string | null;      // null = solicitante (no envio); papel = preenchido no fluxo
 }
 
 export interface FormSummary {

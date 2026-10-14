@@ -1,8 +1,10 @@
 package app.harmonis.workflow;
 
 import app.harmonis.forms.Form;
+import app.harmonis.forms.FormField;
 import app.harmonis.forms.FormRepository;
 import app.harmonis.forms.FormSchemaService;
+import app.harmonis.forms.FormService;
 import app.harmonis.forms.FormSubmission;
 import app.harmonis.forms.FormSubmissionRepository;
 import app.harmonis.identity.User;
@@ -81,7 +83,7 @@ public class ProcessService {
         Form form = forms.findById(inst.getFormId()).orElse(null);
         Map<Long, String> userNames = userNames();
 
-        List<app.harmonis.forms.FormField> fields = form == null ? List.of()
+        List<FormField> fields = form == null ? List.of()
                 : schema.readFields(form.getSchemaJson());
         Map<String, Object> data = submissionData(inst.getSubmissionId());
 
@@ -93,10 +95,16 @@ public class ProcessService {
                 t.getDecidedBy() == null ? null : userNames.get(t.getDecidedBy()),
                 t.getComment(), t.getDecidedAt())).toList();
 
-        Long actionable = all.stream()
+        ProcessTask actionableTask = all.stream()
                 .filter(t -> approvals.canDecide(t, user))
-                .map(ProcessTask::getId)
                 .findFirst().orElse(null);
+        Long actionable = actionableTask == null ? null : actionableTask.getId();
+
+        // Campos complementares que este aprovador (pelo seu papel) precisa preencher.
+        List<FormField> fillFields = List.of();
+        if (actionableTask != null && "role".equals(actionableTask.getApproverType()) && actionableTask.getRole() != null) {
+            fillFields = schema.pendingFor(fields, actionableTask.getRole(), data);
+        }
 
         return new ProcessDetail(
                 inst.getId(),
@@ -104,17 +112,53 @@ public class ProcessService {
                 inst.getStatus(),
                 inst.getCreatedBy() == null ? null : userNames.get(inst.getCreatedBy()),
                 inst.getCreatedAt(),
-                fields, data, timeline, actionable);
+                fields, data, timeline, actionable, fillFields);
     }
 
     @Transactional
-    public void decide(long taskId, boolean approved, String comment, User user) {
+    public void decide(long taskId, boolean approved, String comment, Map<String, Object> fieldValues, User user) {
         ProcessTask task = tasks.findById(taskId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tarefa não encontrada."));
         if (!approvals.canDecide(task, user)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você não pode decidir esta tarefa.");
         }
+        // Ao aprovar, mescla e valida os campos complementares atribuidos ao papel desta tarefa.
+        if (approved) {
+            mergeComplementaryFields(task, fieldValues);
+        }
         approvals.decide(task, approved, comment, user.getId());
+    }
+
+    private void mergeComplementaryFields(ProcessTask task, Map<String, Object> fieldValues) {
+        if (!"role".equals(task.getApproverType()) || task.getRole() == null) return;
+        ProcessInstance inst = task.getInstance();
+        Form form = forms.findById(inst.getFormId()).orElse(null);
+        if (form == null) return;
+
+        List<FormField> all = schema.readFields(form.getSchemaJson());
+        Map<String, Object> data = new HashMap<>(submissionData(inst.getSubmissionId()));
+        List<FormField> assigned = schema.pendingFor(all, task.getRole(), data);
+        if (assigned.isEmpty()) return;
+
+        Set<String> keys = new HashSet<>();
+        assigned.forEach(f -> keys.add(f.key()));
+        if (fieldValues != null) {
+            fieldValues.forEach((k, v) -> { if (keys.contains(k)) data.put(k, v); });
+        }
+
+        Map<String, String> errors = schema.validate(assigned, data);
+        if (!errors.isEmpty()) {
+            throw new FormService.ValidationException(errors);
+        }
+
+        FormSubmission sub = submissions.findById(inst.getSubmissionId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Submissão não encontrada."));
+        try {
+            sub.setDataJson(mapper.writeValueAsString(data));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados inválidos.");
+        }
+        submissions.save(sub);
     }
 
     // ----- helpers -----

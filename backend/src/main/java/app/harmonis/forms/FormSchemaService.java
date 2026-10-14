@@ -70,7 +70,7 @@ public class FormSchemaService {
             if (FieldTypes.isLayout(type)) {
                 // bloco/secao: sem key, sem opcoes, sem validacao
                 out.add(new FormField("s_" + randomToken(8), null, type, f.label().trim(),
-                        null, f.help(), false, null, null, width, null, null));
+                        null, f.help(), false, null, null, width, null, null, null));
                 continue;
             }
 
@@ -92,7 +92,7 @@ public class FormSchemaService {
 
             out.add(new FormField(id, key, type, f.label().trim(),
                     f.placeholder(), f.help(), f.required(), options,
-                    display, width, validation, visibleWhen));
+                    display, width, validation, visibleWhen, nullIfBlank(f.fillRole())));
         }
         return out;
     }
@@ -149,6 +149,30 @@ public class FormSchemaService {
             }
         }
         return errors;
+    }
+
+    // ----- segmentacao por papel (preenchimento durante o fluxo) -----
+
+    /** Campos preenchidos pelo solicitante no envio (sem fillRole). */
+    public List<FormField> requesterFields(List<FormField> fields) {
+        return fields.stream().filter(f -> blank(f.fillRole())).toList();
+    }
+
+    /** Campos atribuidos a um papel, ainda vazios e visiveis sob os dados atuais. */
+    public List<FormField> pendingFor(List<FormField> fields, String role, Map<String, Object> data) {
+        if (role == null || role.isBlank()) return List.of();
+        Map<String, Object> safe = data == null ? Map.of() : data;
+        return fields.stream()
+                .filter(f -> role.equals(f.fillRole()))
+                .filter(f -> isEmptyValue(safe.get(f.key())))
+                .filter(f -> visible(f, safe))
+                .toList();
+    }
+
+    private static boolean isEmptyValue(Object v) {
+        if (v == null) return true;
+        if (v instanceof List<?> l) return l.isEmpty();
+        return v.toString().isBlank();
     }
 
     private void validateNumber(FormField f, String s, Validation v, Map<String, Object> data, Map<String, String> errors) {

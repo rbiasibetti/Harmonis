@@ -107,9 +107,18 @@
             </div>
           }
 
-          <label class="switch" style="margin-top:.6rem">
-            <input type="checkbox" [(ngModel)]="f.required" /><span class="track"></span> Obrigatório
-          </label>
+          <div class="fc-grid" style="margin-top:.6rem">
+            <label class="switch" style="align-self:end;padding-bottom:.6rem">
+              <input type="checkbox" [(ngModel)]="f.required" /><span class="track"></span> Obrigatório
+            </label>
+            <div class="field">
+              <label class="label">Preenchido por</label>
+              <select class="input" [(ngModel)]="f.fillRole">
+                <option [ngValue]="null">Solicitante (no envio)</option>
+                @for (r of roleOptions(); track r.value) { <option [ngValue]="r.value">No fluxo: {{ r.label }}</option> }
+              </select>
+            </div>
+          </div>
 
           @if (supportsValidation(f) && f.validation) {
             <div class="val-box">
