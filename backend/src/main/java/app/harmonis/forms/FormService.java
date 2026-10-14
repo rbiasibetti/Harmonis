@@ -62,6 +62,12 @@ public class FormService {
     @Transactional
     public FormDetail update(long id, SaveFormRequest req) {
         Form form = require(id);
+        // Se ja existe um fluxo, o novo schema nao pode introduzir um "Preenchido por"
+        // cujo papel nenhuma etapa do fluxo aprove (campo ficaria orfao).
+        List<Map<String, Object>> flow = readFlow(form.getApprovalFlow());
+        if (!flow.isEmpty()) {
+            validateFillRolesCovered(req.fields(), flow);
+        }
         form.setName(req.name().trim());
         form.setDescription(blankToNull(req.description()));
         form.setStatus(normalizeStatus(req.status()));
@@ -181,9 +187,12 @@ public class FormService {
     @Transactional
     public FlowView saveFlow(long id, List<Map<String, Object>> nodes) {
         Form form = require(id);
+        List<FormField> fields = schema.readFields(form.getSchemaJson());
         Set<String> fieldKeys = new HashSet<>();
-        schema.readFields(form.getSchemaJson()).forEach(f -> fieldKeys.add(f.key()));
-        validateNodes(nodes == null ? List.of() : nodes, fieldKeys);
+        fields.forEach(f -> fieldKeys.add(f.key()));
+        List<Map<String, Object>> safeNodes = nodes == null ? List.of() : nodes;
+        validateNodes(safeNodes, fieldKeys);
+        validateFillRolesCovered(fields, safeNodes);
         try {
             form.setApprovalFlow(mapper.writeValueAsString(nodes == null ? List.of() : nodes));
         } catch (Exception e) {
@@ -226,6 +235,53 @@ public class FormService {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A etapa \"" + name + "\" precisa de ao menos um aprovador.");
                 }
             }
+        }
+    }
+
+    /**
+     * Garante que todo papel usado em "Preenchido por" (fillRole) seja aprovador de ao menos
+     * uma etapa do fluxo. Sem isso, os campos complementares daquele papel nunca seriam
+     * apresentados durante o processo (ficariam orfaos).
+     */
+    private void validateFillRolesCovered(List<FormField> fields, List<Map<String, Object>> nodes) {
+        if (schema.fillRoles(fields).isEmpty()) return;
+        Set<String> flowRoles = new HashSet<>();
+        collectFlowRoles(nodes, flowRoles);
+        FormField orphan = schema.firstUncoveredFillRole(fields, flowRoles);
+        if (orphan != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "O campo \"" + orphan.label() + "\" é preenchido pelo papel \"" + orphan.fillRole().trim()
+                    + "\", mas nenhuma etapa do fluxo é aprovada por esse papel. "
+                    + "Adicione uma etapa com esse papel ou altere o \"Preenchido por\" do campo.");
+        }
+    }
+
+    /** Coleta os papeis de todos os aprovadores do tipo "role" em toda a arvore do fluxo. */
+    @SuppressWarnings("unchecked")
+    private void collectFlowRoles(List<Map<String, Object>> nodes, Set<String> out) {
+        for (Map<String, Object> node : nodes) {
+            if ("gateway".equals(node.get("type"))) {
+                collectFlowRoles(asNodeList(node.get("then")), out);
+                collectFlowRoles(asNodeList(node.get("else")), out);
+                continue;
+            }
+            List<Map<String, Object>> approvers = asNodeList(node.get("approvers"));
+            if (approvers.isEmpty()) {
+                // legado: approver_type/role no topo da etapa
+                addRole(node.get("approver_type"), node.get("role"), out);
+            } else {
+                for (Map<String, Object> a : approvers) {
+                    addRole(a.get("approver_type"), a.get("role"), out);
+                }
+            }
+        }
+    }
+
+    private static void addRole(Object approverType, Object role, Set<String> out) {
+        String type = approverType == null ? "role" : approverType.toString();
+        if (!"user".equals(type)) {
+            String r = Objects.toString(role, "").trim();
+            if (!r.isEmpty()) out.add(r);
         }
     }
 
