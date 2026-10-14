@@ -97,6 +97,30 @@ public class FormAttachmentService {
         return data;
     }
 
+    /** Remove os arquivos fisicos e os registros de todos os anexos de um formulario. */
+    @Transactional
+    public void deleteAllForForm(long formId) {
+        List<FormAttachment> all = attachments.findByFormId(formId);
+        if (all.isEmpty()) return;
+        all.forEach(a -> storage.delete(a.getStoredPath()));
+        attachments.deleteAll(all);
+    }
+
+    /** Remove um anexo ainda nao vinculado a uma submissao (ex.: desanexado antes do envio). */
+    @Transactional
+    public void deleteUncommitted(long attachmentId, Long userId) {
+        FormAttachment att = attachments.findById(attachmentId).orElse(null);
+        if (att == null) return; // idempotente
+        if (att.getSubmissionId() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Anexo já vinculado a uma resposta.");
+        }
+        if (att.getUploadedBy() != null && !Objects.equals(att.getUploadedBy(), userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você não pode remover este anexo.");
+        }
+        storage.delete(att.getStoredPath());
+        attachments.delete(att);
+    }
+
     @Transactional(readOnly = true)
     public Downloadable download(long attachmentId) {
         FormAttachment att = attachments.findById(attachmentId)

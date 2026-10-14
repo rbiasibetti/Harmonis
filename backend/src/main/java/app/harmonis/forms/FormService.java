@@ -81,7 +81,11 @@ public class FormService {
 
     @Transactional
     public void delete(long id) {
-        forms.delete(require(id));
+        Form form = require(id);
+        // Apaga os arquivos fisicos dos anexos antes de remover o formulario
+        // (o cascade do banco removeria apenas os registros).
+        attachmentsService.deleteAllForForm(form.getId());
+        forms.delete(form);
     }
 
     @Transactional

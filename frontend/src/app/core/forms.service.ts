@@ -55,6 +55,10 @@ export class FormsService {
     return this.http.get(`${API_BASE}/forms/attachments/${attachmentId}/download`, { responseType: 'blob' });
   }
 
+  deleteAttachment(attachmentId: number): Observable<void> {
+    return this.http.delete<void>(`${API_BASE}/forms/attachments/${attachmentId}`);
+  }
+
   getFlow(id: number): Observable<{ nodes: any[]; fields: import('./models').FormField[] }> {
     return this.http.get<{ nodes: any[]; fields: import('./models').FormField[] }>(`${API_BASE}/forms/${id}/flow`);
   }
