@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Integrações (webhooks) — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="10-integracoes.html">
+<main>
+<article>
+
+<div class="crumbs">Integrações</div>
+<h1 id="integracoes">Integrações (webhooks)</h1>
+<p class="lead">Envie os dados de um formulário a outros sistemas automaticamente quando uma solicitação é enviada, aprovada ou reprovada.</p>
+
+<div class="callout note">
+  <b>Permissões necessárias</b>
+  <p>Ver: <code class="perm">integrations.view</code> · criar: <code class="perm">integrations.create</code> · editar e testar: <code class="perm">integrations.update</code> ·
+  excluir: <code class="perm">integrations.delete</code> · publicar/despublicar: <code class="perm">integrations.publish</code> · ver logs: <code class="perm">integrations.logs</code>.
+  Por padrão, só o Administrador as possui, pois envolvem credenciais de outros sistemas.</p>
+</div>
+
+<h2 id="visao">Como funciona</h2>
+<div class="diagram">
+<svg viewBox="0 0 900 200" role="img" aria-label="Etapas: cadastrar, publicar, vincular, disparar, registrar">
+  <defs><marker id="i1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+  <g>
+    <rect x="10" y="60" width="150" height="80" rx="12" class="dg-brand"/><text x="85" y="92" text-anchor="middle" class="dg-t">1. Cadastrar</text><text x="85" y="112" text-anchor="middle" class="dg-s">URL, autenticação,</text><text x="85" y="127" text-anchor="middle" class="dg-s">cabeçalhos</text>
+    <rect x="190" y="60" width="150" height="80" rx="12" class="dg-box"/><text x="265" y="92" text-anchor="middle" class="dg-t">2. Publicar</text><text x="265" y="112" text-anchor="middle" class="dg-s">rascunho → publicada</text>
+    <rect x="370" y="60" width="160" height="80" rx="12" class="dg-box"/><text x="450" y="92" text-anchor="middle" class="dg-t">3. Vincular</text><text x="450" y="112" text-anchor="middle" class="dg-s">no fluxo do formulário:</text><text x="450" y="127" text-anchor="middle" class="dg-s">enviar · aprovar · reprovar</text>
+    <rect x="560" y="60" width="150" height="80" rx="12" class="dg-warn"/><text x="635" y="92" text-anchor="middle" class="dg-t">4. Disparar</text><text x="635" y="112" text-anchor="middle" class="dg-s">em segundo plano,</text><text x="635" y="127" text-anchor="middle" class="dg-s">com retentativas</text>
+    <rect x="740" y="60" width="150" height="80" rx="12" class="dg-ok"/><text x="815" y="92" text-anchor="middle" class="dg-t">5. Registrar</text><text x="815" y="112" text-anchor="middle" class="dg-s">logs de cada</text><text x="815" y="127" text-anchor="middle" class="dg-s">tentativa</text>
+    <path d="M160 100 H188" class="dg-l" marker-end="url(#i1)"/><path d="M340 100 H368" class="dg-l" marker-end="url(#i1)"/>
+    <path d="M530 100 H558" class="dg-l" marker-end="url(#i1)"/><path d="M710 100 H738" class="dg-l" marker-end="url(#i1)"/>
+  </g>
+</svg>
+<figcaption>Do cadastro ao registro: o mesmo cadastro pode ser reaproveitado em vários formulários e eventos.</figcaption>
+</div>
+
+<h2 id="lista">A lista de integrações</h2>
+<figure>
+  <a class="zoom" href="img/integrations-list.png"><img src="img/integrations-list.png" alt="Lista de integrações"></a>
+  <figcaption><b>Menu Integrações.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>+ Nova integração</b> — abre o cadastro (<code class="perm">integrations.create</code>).</li>
+  <li><b>Método e URL</b> — o destino de cada integração (a URL é exibida para quem tem acesso a esta tela).</li>
+  <li><b>Status</b> — <span class="badge ok">Publicada</span> pode ser usada nos fluxos; <span class="badge">Rascunho</span> não.</li>
+  <li><b>Usos</b> — em quantos vínculos (formulário × evento) a integração está ligada.</li>
+  <li><b>Ações</b> — <b>Publicar/Despublicar</b>, ☰ ver logs desta integração, ✎ editar, 🗑 excluir.</li>
+</ol>
+<p>A coluna <b>Último envio</b> mostra o resultado (<span class="badge ok">Sucesso</span>, <span class="badge off">Erro</span> ou <span class="badge">Ignorado</span>) e quando ocorreu.</p>
+
+<h2 id="editor">Cadastrando uma integração</h2>
+<figure>
+  <a class="zoom" href="img/integration-editor-top.png"><img src="img/integration-editor-top.png" alt="Topo do editor de integração"></a>
+  <figcaption><b>Editor de integração.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Título e status</b> — mostra se está <em>Rascunho</em> ou <em>Publicada</em>. Somente integrações publicadas podem ser vinculadas aos fluxos.</li>
+  <li><b>Publicar / Despublicar</b> — alterna o status (<code class="perm">integrations.publish</code>); só existe depois de salvar.</li>
+  <li><b>Salvar</b> — grava as alterações; fica desabilitado sem Nome e URL. Ao salvar uma integração nova, você é levado à edição dela (onde ficam “Testar” e “Onde é usada”).</li>
+</ol>
+
+<h3 id="destino">Destino</h3>
+<figure>
+  <a class="zoom" href="img/integration-destino.png"><img src="img/integration-destino.png" alt="Seção Destino"></a>
+  <figcaption>Seção <b>Destino</b>.</figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Regras</th></tr></thead>
+  <tbody>
+    <tr><td>Nome</td><td><span class="badge off">Obrigatório</span> até 150 caracteres e <b>único</b> na empresa (“Já existe uma integração com esse nome.”). É o que aparece ao vincular no fluxo.</td></tr>
+    <tr><td>Descrição</td><td>Opcional, até 500 caracteres.</td></tr>
+    <tr><td>URL</td><td><span class="badge off">Obrigatório</span> deve começar com <code>http://</code> ou <code>https://</code>. Não aceita usuário/senha na própria URL (use a autenticação), nem fragmento (<code>#</code>). Valem ainda as <a href="#seguranca">regras de segurança de rede</a>.</td></tr>
+    <tr><td>Método</td><td><code>POST</code> (padrão), <code>PUT</code> ou <code>PATCH</code>.</td></tr>
+    <tr><td>Tempo limite (s)</td><td>De 1 a 60; padrão 15. Se o destino não responder nesse prazo, a tentativa falha por “tempo esgotado”.</td></tr>
+    <tr><td>Retentativas</td><td>De 0 a 5; padrão 2. Quantas vezes <em>repetir</em> após falha transitória (veja <a href="#entrega">Entrega</a>). 0 = não repetir.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="autenticacao">Autenticação do destino</h2>
+<p>Escolha como o Harmonis se identifica no sistema de destino. Há seis opções:</p>
+<table class="free">
+  <thead><tr><th>Tipo</th><th>Quando usar</th></tr></thead>
+  <tbody>
+    <tr><td>Sem autenticação</td><td>Destino aberto ou protegido por rede/assinatura.</td></tr>
+    <tr><td>Usuário e senha (Basic)</td><td>APIs que exigem <code>Authorization: Basic</code>.</td></tr>
+    <tr><td>API Key</td><td>APIs com chave em cabeçalho (ex.: <code>X-Api-Key</code>) ou na query.</td></tr>
+    <tr><td>Bearer token</td><td>Token fixo e de longa duração.</td></tr>
+    <tr><td>Bearer com pré-autenticação</td><td>APIs que exigem fazer <em>login</em> com usuário e senha para obter um token temporário.</td></tr>
+    <tr><td>Cabeçalhos customizados</td><td>Esquemas próprios: tudo é feito pelos cabeçalhos da seção seguinte.</td></tr>
+  </tbody>
+</table>
+<div class="callout tip">
+  <b>Segredos são protegidos</b>
+  <p>Senhas, tokens e chaves são <b>cifrados</b> no servidor e <b>nunca voltam</b> para a tela. Ao editar, o campo aparece vazio com “•••••••• (mantida)” e o aviso <em>✓ definida</em>.
+  <b>Deixe em branco para manter</b> o valor atual; digite um novo para substituí-lo. Ao trocar o <em>tipo</em> de autenticação, os segredos do tipo anterior não são aproveitados.</p>
+</div>
+
+<h3 id="auth-none">Sem autenticação</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/auth-none.png"><img src="img/auth-none.png" alt="Autenticação: sem autenticação"></a>
+  <figcaption>Nenhum campo adicional.</figcaption>
+</figure>
+
+<h3 id="auth-basic">Usuário e senha (Basic)</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/auth-basic.png"><img src="img/auth-basic.png" alt="Autenticação Basic"></a>
+  <figcaption>Basic.</figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Usuário</td><td><span class="badge off">Obrigatório</span></td></tr>
+    <tr><td>Senha</td><td><span class="badge off">Obrigatória</span> na criação; vazia na edição = mantém a atual.</td></tr>
+  </tbody>
+</table>
+<p>Envia <code>Authorization: Basic base64(usuário:senha)</code>.</p>
+
+<h3 id="auth-apikey">API Key</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/auth-apikey.png"><img src="img/auth-apikey.png" alt="Autenticação por API Key"></a>
+  <figcaption>API Key.</figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Nome da chave</td><td>Nome do cabeçalho (ex.: <code>X-Api-Key</code>) ou do parâmetro da query (ex.: <code>api_key</code>). Em cabeçalho, deve ser um nome válido e não reservado.</td></tr>
+    <tr><td>Valor</td><td>A chave (segredo).</td></tr>
+    <tr><td>Enviar em</td><td><b>Cabeçalho</b> ou <b>Query string</b> (acrescentada à URL; nos logs, o valor aparece mascarado como <code>***</code>).</td></tr>
+  </tbody>
+</table>
+
+<h3 id="auth-bearer">Bearer token</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/auth-bearer.png"><img src="img/auth-bearer.png" alt="Autenticação Bearer"></a>
+  <figcaption>Bearer token.</figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Token</td><td>O token (segredo).</td></tr>
+    <tr><td>Prefixo</td><td>Palavra antes do token no cabeçalho <code>Authorization</code>. Padrão <code>Bearer</code>; use outro se a API pedir (ex.: <code>Token</code>).</td></tr>
+  </tbody>
+</table>
+
+<h3 id="auth-preauth">Bearer com pré-autenticação</h3>
+<figure>
+  <a class="zoom" href="img/auth-preauth.png"><img src="img/auth-preauth.png" alt="Autenticação Bearer com pré-autenticação"></a>
+  <figcaption>Pré-autenticação: login com usuário e senha para obter o token.</figcaption>
+</figure>
+<p>Antes de enviar o evento, o Harmonis faz uma chamada de <em>login</em> à URL informada, extrai o token da resposta e o usa como Bearer. O token fica em <b>cache</b> até expirar, então
+o login não é refeito a cada envio. Se o destino responder <b>401</b>, o token é descartado, um novo é obtido e o envio é refeito uma vez.</p>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>URL de pré-autenticação (login)</td><td><span class="badge off">Obrigatório</span> endpoint que devolve o token (método <code>POST</code>). Segue as mesmas regras de segurança de rede da URL principal.</td></tr>
+    <tr><td>Usuário / Senha</td><td><span class="badge off">Obrigatórios</span> credenciais do login (a senha é um segredo).</td></tr>
+    <tr><td>Corpo</td><td><b>JSON</b> ou <b>Formulário (urlencoded)</b>: o formato em que usuário e senha são enviados ao login.</td></tr>
+    <tr><td>Campo do usuário / da senha</td><td>Nomes dos campos no corpo. Padrões: <code>username</code> e <code>password</code> (ajuste se a API usa <code>login</code>, <code>user</code>, <code>email</code>…).</td></tr>
+    <tr><td>Campos extras</td><td>Pares nome/valor adicionais no corpo do login (até 10), por exemplo <code>grant_type = password</code> ou <code>client_id</code>.</td></tr>
+    <tr><td>Caminho do token</td><td>Onde está o token na resposta JSON. Padrão <code>access_token</code>; use ponto para aninhar (<code>data.token</code>).</td></tr>
+    <tr><td>Caminho da validade (s)</td><td>Onde está o tempo de vida do token em segundos. Padrão <code>expires_in</code>.</td></tr>
+    <tr><td>Validade padrão (s)</td><td>De 30 a 86400; padrão 3000. Usada quando a resposta não informa a validade.</td></tr>
+    <tr><td>Prefixo no envio</td><td>Padrão <code>Bearer</code>.</td></tr>
+  </tbody>
+</table>
+<div class="callout note">
+  <b>Margem de segurança</b>
+  <p>O Harmonis considera o token vencido <b>30 segundos antes</b> do prazo informado, evitando usar um token prestes a expirar.</p>
+</div>
+<p>Exemplo de login que o Harmonis faria com os campos acima (corpo JSON):</p>
+<pre><code>POST https://api.exemplo.com/auth/login
+Content-Type: application/json
+
+{ "user": "svc-harmonis", "pass": "••••••", "grant_type": "password" }
+
+→ 200 { "data": { "token": "abc123", "expires": 3600 } }   (caminho do token: data.token)</code></pre>
+
+<h3 id="auth-headers">Cabeçalhos customizados</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/auth-headers.png"><img src="img/auth-headers.png" alt="Autenticação somente por cabeçalhos customizados"></a>
+  <figcaption>A autenticação é feita só pelos cabeçalhos da próxima seção.</figcaption>
+</figure>
+
+<h2 id="cabecalhos">Cabeçalhos customizados</h2>
+<figure>
+  <a class="zoom" href="img/integration-headers.png"><img src="img/integration-headers.png" alt="Seção de cabeçalhos customizados"></a>
+  <figcaption>Cabeçalhos extras enviados em toda requisição.</figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Nome</td><td>Nome do cabeçalho (ex.: <code>X-Tenant</code>). Até 20 cabeçalhos; não pode repetir.</td></tr>
+    <tr><td>Valor</td><td>Texto (sem quebras de linha, até 2000 caracteres).</td></tr>
+    <tr><td>secreto</td><td>Marque para <b>cifrar</b> o valor e nunca exibi-lo (ex.: um segredo próprio). Ao editar, deixe o valor em branco para mantê-lo.</td></tr>
+  </tbody>
+</table>
+<div class="callout warn">
+  <b>Cabeçalhos reservados</b>
+  <p>São recusados: <code>Host</code>, <code>Content-Length</code>, <code>Content-Type</code>, <code>Transfer-Encoding</code>, <code>Connection</code>, <code>Upgrade</code>, <code>Expect</code>, <code>TE</code>, <code>Trailer</code>,
+  <code>Keep-Alive</code>, <code>Proxy-Authorization</code> e qualquer <code>X-Harmonis-*</code>. O cabeçalho <code>Authorization</code> só pode ser definido aqui quando a autenticação é
+  <em>Sem autenticação</em> ou <em>Cabeçalhos customizados</em> (nos demais tipos ele já é gerenciado pelo sistema).</p>
+</div>
+<p>O tipo <em>Cabeçalhos customizados</em> exige ao menos um cabeçalho.</p>
+
+<h2 id="assinatura">Assinatura da requisição (HMAC)</h2>
+<figure>
+  <a class="zoom" href="img/integration-hmac.png"><img src="img/integration-hmac.png" alt="Seção de assinatura HMAC"></a>
+  <figcaption>Segredo de assinatura.</figcaption>
+</figure>
+<p>Opcional e independente do tipo de autenticação. Com um <b>segredo compartilhado</b> informado, cada envio inclui o cabeçalho</p>
+<pre><code>X-Harmonis-Signature: sha256=&lt;HMAC-SHA256 do corpo, em hexadecimal&gt;</code></pre>
+<p>para que o destino confirme que a mensagem veio do Harmonis e não foi alterada. Para <b>remover</b> o segredo, marque <em>remover o segredo atual</em> e salve.</p>
+<details>
+  <summary>Como validar a assinatura no destino (exemplos)</summary>
+  <pre><code># Python
+import hmac, hashlib
+esperado = "sha256=" + hmac.new(SEGREDO.encode(), corpo_bruto, hashlib.sha256).hexdigest()
+ok = hmac.compare_digest(esperado, request.headers["X-Harmonis-Signature"])
+
+// Node.js
+const crypto = require('crypto');
+const esperado = 'sha256=' + crypto.createHmac('sha256', SEGREDO).update(corpoBruto).digest('hex');
+const ok = crypto.timingSafeEqual(Buffer.from(esperado), Buffer.from(req.headers['x-harmonis-signature']));</code></pre>
+  <p>Calcule o HMAC sobre os <b>bytes brutos</b> do corpo recebido, antes de qualquer reformatação do JSON.</p>
+</details>
+
+<h2 id="testar">Testar a integração</h2>
+<figure>
+  <a class="zoom" href="img/integration-test.png"><img src="img/integration-test.png" alt="Resultado de um teste de envio"></a>
+  <figcaption>Seção <b>Testar</b> após um envio bem-sucedido.</figcaption>
+</figure>
+<ol class="steps">
+  <li>Salve a integração (o teste usa a configuração <b>salva</b>).</li>
+  <li>Clique em <b>Enviar teste</b>. Um evento de exemplo (<code>event: "test"</code>, com dados fictícios) é enviado imediatamente, <b>mesmo em rascunho</b>.</li>
+  <li>Veja o resultado: <span class="badge ok">Sucesso</span>/<span class="badge off">Erro</span>, código HTTP, duração, mensagem de erro e o início da resposta do destino.</li>
+</ol>
+<p>Todo teste fica registrado nos <a href="11-logs-integracao.html">logs</a>, marcado como <em>manual</em>. Testes <b>não</b> têm retentativas automáticas.</p>
+
+<h2 id="publicacao">Publicar, despublicar e excluir</h2>
+<table class="free">
+  <thead><tr><th>Ação</th><th>Efeito</th></tr></thead>
+  <tbody>
+    <tr><td>Publicar</td><td>Libera a integração para ser vinculada aos fluxos. A URL é revalidada nesse momento.</td></tr>
+    <tr><td>Despublicar</td><td>Volta para rascunho. Vínculos existentes permanecem, mas os envios passam a ser <em>ignorados</em> (registrados como <span class="badge">Ignorado</span>) até nova publicação.</td></tr>
+    <tr><td>Editar</td><td>Vale imediatamente, mesmo para integração publicada. Alterar credenciais descarta tokens em cache.</td></tr>
+    <tr><td>Excluir</td><td>Só é possível <b>sem vínculos</b>. Caso contrário: “A integração está vinculada a formulários. Remova os vínculos no fluxo de cada formulário antes de excluir.” Os <b>logs permanecem</b>.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="onde-usada">Onde é usada</h2>
+<figure>
+  <a class="zoom" href="img/integration-usage.png"><img src="img/integration-usage.png" alt="Seção Onde é usada"></a>
+  <figcaption>Lista os formulários e eventos em que a integração está ligada (cada formulário é um link para seu editor de fluxo).</figcaption>
+</figure>
+
+<h2 id="vincular">Vinculando ao fluxo de um formulário</h2>
+<p>A integração só “faz alguma coisa” depois de vinculada. No <a href="06-fluxo-aprovacao.html#integracoes">editor de fluxo</a> do formulário, escolha em cada coluna
+(<b>Ao enviar</b>, <b>Ao aprovar</b>, <b>Ao reprovar</b>) as integrações publicadas desejadas e clique em <b>Salvar</b>. Quem edita formulários (<code class="perm">forms.update</code>) pode vincular sem ter acesso ao cadastro.</p>
+
+<h2 id="entrega">Como a entrega funciona</h2>
+<ul>
+  <li><b>Depois do commit.</b> O envio só ocorre depois que a ação de origem foi concluída com sucesso; uma operação que falha nunca dispara webhook.</li>
+  <li><b>Em segundo plano.</b> A aprovação não espera nem falha por causa do destino (lento ou fora do ar).</li>
+  <li><b>Retentativas.</b> Em falhas <em>transitórias</em> — erro de rede, tempo esgotado, HTTP 408, 429 e 5xx — o envio é repetido até o limite configurado, com espera crescente
+      (padrão: 5 s, 30 s, 2 min, 5 min e 10 min). Respostas 4xx (exceto 408/429), redirecionamentos e erros de configuração <b>não</b> são repetidos.</li>
+  <li><b>Identificador da entrega.</b> Todas as tentativas de uma mesma entrega levam o mesmo <code>X-Harmonis-Delivery</code>; use-o para evitar duplicidade no destino.</li>
+  <li><b>Sucesso</b> = resposta HTTP 2xx.</li>
+  <li><b>Ordem.</b> Eventos próximos (ex.: enviado e aprovado) podem chegar fora de ordem a integrações diferentes; use <code>occurredAt</code> do corpo.</li>
+</ul>
+
+<h2 id="payload">O que é enviado</h2>
+<p>Requisição <code>POST</code>/<code>PUT</code>/<code>PATCH</code> com <code>Content-Type: application/json; charset=utf-8</code> e estes cabeçalhos:</p>
+<table class="free">
+  <thead><tr><th>Cabeçalho</th><th>Conteúdo</th></tr></thead>
+  <tbody>
+    <tr><td>X-Harmonis-Event</td><td><code>submitted</code> · <code>approved</code> · <code>rejected</code> · <code>test</code></td></tr>
+    <tr><td>X-Harmonis-Delivery</td><td>Identificador único da entrega (igual nas retentativas).</td></tr>
+    <tr><td>X-Harmonis-Signature</td><td>Somente se houver segredo de assinatura.</td></tr>
+    <tr><td>User-Agent</td><td><code>Harmonis-Webhook/1.0</code></td></tr>
+  </tbody>
+</table>
+<p>Exemplo de corpo (evento <em>aprovado</em>):</p>
+<pre><code>{
+  "event": "approved",
+  "occurredAt": "2026-10-16T00:20:40Z",
+  "tenant": "demo",
+  "form": { "id": 1, "name": "Solicitação de compra", "slug": "solicitacao-de-compra" },
+  "submission": {
+    "id": 21,
+    "submittedAt": "2026-10-16T00:20:37Z",
+    "submittedBy": { "id": 2, "name": "João Lima", "email": "joao@demo.test" },
+    "data": { "campo_a1b2c3": "Notebooks para o time comercial", "campo_d4e5f6": 18500 },
+    "answers": [
+      { "key": "campo_a1b2c3", "label": "Assunto", "type": "text", "value": "Notebooks para o time comercial" },
+      { "key": "campo_d4e5f6", "label": "Valor estimado (R$)", "type": "number", "value": 18500 }
+    ]
+  },
+  "process": {
+    "id": 7, "status": "approved",
+    "steps": [
+      { "step": "Aprovação do gestor", "stepIndex": 0, "approver": "papel: manager", "status": "approved",
+        "decidedBy": { "id": 3, "name": "Marina Souza", "email": "marina@demo.test" },
+        "comment": "Aprovado.", "decidedAt": "2026-10-16T00:20:39Z" }
+    ]
+  }
+}</code></pre>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>event, occurredAt, tenant</td><td>Evento, instante em que ocorreu (UTC) e identificador da empresa.</td></tr>
+    <tr><td>form</td><td>Id, nome e slug do formulário.</td></tr>
+    <tr><td>submission.data</td><td>Respostas por <em>identificador do campo</em> (fácil de acessar por chave).</td></tr>
+    <tr><td>submission.answers</td><td>Mesmas respostas em lista, com <em>rótulo</em> e <em>tipo</em> (fácil de apresentar/mapear). Blocos de layout não entram.</td></tr>
+    <tr><td>Anexos</td><td>Aparecem como referência (<code>id</code>, <code>name</code>, <code>size</code>, <code>mime</code>); <b>os arquivos não são enviados</b>.</td></tr>
+    <tr><td>process</td><td>Id, status e histórico das etapas (aprovador, decisor, comentário, data). Ausente se o formulário não tem fluxo.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="seguranca">Segurança</h2>
+<ul>
+  <li><b>Segredos cifrados</b> em repouso (AES-256-GCM) e jamais devolvidos pela interface ou pela API.</li>
+  <li><b>Proteção contra SSRF.</b> Só <code>http</code>/<code>https</code>; sem credenciais na URL; redirecionamentos <b>não são seguidos</b>; o destino é verificado após a resolução de DNS.
+      Endereços <i>link-local</i> (como <code>169.254.169.254</code>, o endpoint de metadados de nuvem) são <b>sempre bloqueados</b>. Destinos em <b>rede privada ou loopback</b>
+      (<code>10.x</code>, <code>172.16–31.x</code>, <code>192.168.x</code>, <code>localhost</code>…) são bloqueados por padrão: se você precisa integrar com sistemas da rede interna, a TI deve habilitar
+      a opção <code>HARMONIS_WEBHOOK_ALLOW_PRIVATE=true</code> (veja <a href="15-implantacao.html">Implantação</a>).</li>
+  <li><b>Cabeçalhos validados</b> (nomes padrão, sem quebras de linha) e reservados recusados.</li>
+  <li><b>Logs sem segredos.</b> URLs são registradas com valores sensíveis mascarados e cabeçalhos de autenticação/tokens não são gravados. O <em>conteúdo enviado</em> é gravado: restrinja <code class="perm">integrations.logs</code>.</li>
+  <li><b>Permissões separadas</b> para cadastro, publicação e logs.</li>
+</ul>
+<div class="callout warn">
+  <b>Mensagens ao salvar</b>
+  <ul>
+    <li>“Pré-autenticação: …” — a URL de login foi recusada pelas regras acima.</li>
+    <li>“Informe a senha / o token / o valor da chave.” — falta um segredo obrigatório (na criação ou ao mudar o tipo de autenticação).</li>
+    <li>“O cabeçalho ‘X’ é reservado e não pode ser definido.”, “Cabeçalho repetido: X”, “Nome de cabeçalho inválido: X”.</li>
+    <li>“O tempo limite deve estar entre 1 e 60 segundos.” / “As retentativas devem estar entre 0 e 5.”</li>
+  </ul>
+</div>
+
+<h2 id="receita">Receita: integrar com um ERP</h2>
+<ol class="steps">
+  <li>Peça ao time do ERP: URL do endpoint, forma de autenticação (login com usuário e senha? chave?) e o formato esperado.</li>
+  <li><b>Integrações → + Nova integração.</b> Preencha o destino e escolha a autenticação (ex.: <em>Bearer com pré-autenticação</em>).</li>
+  <li><b>Salvar</b> → <b>Enviar teste</b>. Se vier <em>Sucesso</em>, está tudo certo; se vier erro, leia a mensagem e consulte os <a href="11-logs-integracao.html#diagnostico">diagnósticos</a>.</li>
+  <li><b>Publicar.</b></li>
+  <li>Abra o <b>fluxo</b> do formulário (⇄), adicione a integração em <em>Ao aprovar</em> e <b>Salvar</b>.</li>
+  <li>Aprove uma solicitação de teste e confira o resultado em <b>Logs de integração</b>.</li>
+</ol>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

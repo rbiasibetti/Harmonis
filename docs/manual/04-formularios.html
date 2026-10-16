@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Construtor de formulários — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="04-formularios.html">
+<main>
+<article>
+
+<div class="crumbs">Formulários e processos</div>
+<h1 id="formularios">Construtor de formulários</h1>
+<p class="lead">Como montar um formulário: tipos de campo, cada propriedade, validações, exibição condicional, anexos e campos preenchidos por aprovadores.</p>
+
+<div class="callout note">
+  <b>Permissões necessárias</b>
+  <p>Ver a lista e preencher: <code class="perm">forms.view</code> · criar: <code class="perm">forms.create</code> · editar campos e fluxo: <code class="perm">forms.update</code> ·
+  excluir: <code class="perm">forms.delete</code> · ver respostas: <code class="perm">forms.submissions</code>.</p>
+</div>
+
+<h2 id="lista">A lista de formulários</h2>
+<figure>
+  <a class="zoom" href="img/forms-list.png"><img src="img/forms-list.png" alt="Lista de formulários"></a>
+  <figcaption><b>Menu Formulários.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>+ Novo formulário</b> — abre o construtor em branco (<code class="perm">forms.create</code>).</li>
+  <li><b>Status</b> — <span class="badge">Rascunho</span> (em construção, não recebe respostas) ou <span class="badge ok">Publicado</span> (aberto a respostas).</li>
+  <li><b>Ações da linha</b> — da esquerda para a direita:
+    <ul>
+      <li>✎ <b>Preencher</b> — só em formulários publicados.</li>
+      <li>📊 <b>Respostas</b> — <code class="perm">forms.submissions</code>.</li>
+      <li>⇄ <b>Fluxo de aprovação</b> — <code class="perm">forms.update</code>.</li>
+      <li>⚙ <b>Editar</b> o formulário (campos) — <code class="perm">forms.update</code>.</li>
+      <li>🗑 <b>Excluir</b> — <code class="perm">forms.delete</code>.</li>
+    </ul>
+  </li>
+</ol>
+<p>As colunas <b>Campos</b> e <b>Respostas</b> mostram, respectivamente, quantos campos o formulário tem e quantas respostas já recebeu.</p>
+<div class="callout warn">
+  <b>Excluir um formulário</b>
+  <p>A exclusão remove o formulário, suas respostas e os arquivos anexados. Nesta versão, formulários que <em>já possuem processos de aprovação</em> podem ser
+  recusados com erro na exclusão. Se precisar tirar um formulário de uso, volte-o para <b>Rascunho</b> (ele deixa de aceitar respostas e some das opções de preenchimento).</p>
+</div>
+
+<h2 id="construtor">O construtor</h2>
+<figure>
+  <a class="zoom" href="img/builder-overview.png"><img src="img/builder-overview.png" alt="Visão geral do construtor de formulários"></a>
+  <figcaption><b>Editar formulário</b> (⚙ na lista). Em um formulário novo, o painel de campos começa vazio.</figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Abas</b> — <em>Campos</em> (edição) e <em>Layout (prévia)</em> (mostra como o solicitante verá o formulário, sem enviar nada).</li>
+  <li><b>Salvar</b> — grava o formulário. Fica desabilitado enquanto o <em>Nome</em> estiver vazio. Ao salvar um formulário novo, você é levado à tela de edição dele.</li>
+  <li><b>Painel de dados</b> — nome, descrição e status do formulário (detalhado abaixo).</li>
+  <li><b>Adicionar</b> — botões para incluir cada <a href="#tipos">tipo de campo</a>. O novo campo entra no <em>final</em> da lista.</li>
+  <li><b>Cartão do campo</b> — todas as propriedades de um campo.</li>
+  <li><b>↑ ↓ 🗑</b> — mover o campo para cima/baixo ou removê-lo. A ordem aqui é a ordem em que os campos aparecem.</li>
+</ol>
+
+<h3 id="dados-formulario">Dados do formulário</h3>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Obrigatório</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Nome</td><td><span class="badge off">Sim</span></td><td>Título exibido nas listas, no preenchimento e nos processos. O sistema deriva dele um endereço único (<em>slug</em>) automaticamente.</td></tr>
+    <tr><td>Descrição (opcional)</td><td>Não</td><td>Frase curta exibida abaixo do nome na lista e no topo do preenchimento.</td></tr>
+    <tr><td>Status</td><td>—</td><td><b>Rascunho</b>: em construção; não aceita respostas. <b>Publicado</b>: aparece com o ícone ✎ e aceita respostas.</td></tr>
+  </tbody>
+</table>
+<div class="callout tip">
+  <b>Fluxo de trabalho recomendado</b>
+  <p>Monte os campos em <em>Rascunho</em>, confira em <em>Layout (prévia)</em>, desenhe o <a href="06-fluxo-aprovacao.html">fluxo</a> e só então <em>Publique</em>.</p>
+</div>
+
+<h2 id="tipos">Tipos de campo</h2>
+<p>São onze tipos. Todos (exceto <em>Bloco/seção</em>) compartilham as <a href="#propriedades">propriedades comuns</a>; alguns têm configurações próprias.</p>
+<table class="free">
+  <thead><tr><th>Tipo</th><th>Como aparece</th><th>Valor guardado</th><th>Configurações específicas</th></tr></thead>
+  <tbody>
+    <tr><td>Texto curto</td><td>Caixa de uma linha.</td><td>Texto</td><td>Validações de tamanho e regex.</td></tr>
+    <tr><td>Texto longo</td><td>Caixa de várias linhas.</td><td>Texto</td><td>Validações de tamanho e regex.</td></tr>
+    <tr><td>Número</td><td>Caixa numérica.</td><td>Número</td><td>Positivo, inteiro, mínimo, máximo, comparação com outro número.</td></tr>
+    <tr><td>E-mail</td><td>Caixa de e-mail (formato é verificado).</td><td>Texto</td><td>Tamanho e regex adicionais.</td></tr>
+    <tr><td>Data</td><td>Seletor de data.</td><td>Data (AAAA-MM-DD)</td><td>Data mínima/máxima, comparação com outra data.</td></tr>
+    <tr><td>Seleção única</td><td>Lista suspensa <em>ou</em> botões de rádio.</td><td>Uma das opções</td><td>Opções; apresentação (combo/radio).</td></tr>
+    <tr><td>Seleção múltipla</td><td>Lista de seleção múltipla <em>ou</em> caixas de seleção.</td><td>Lista de opções</td><td>Opções; apresentação (combo/checkbox).</td></tr>
+    <tr><td>Confirmação (sim/não)</td><td>Interruptor com o rótulo ao lado.</td><td>Sim/Não</td><td>—</td></tr>
+    <tr><td>Anexo (único)</td><td>Botão de enviar um arquivo.</td><td>Referência ao arquivo</td><td>Tipos aceitos e tamanho máximo.</td></tr>
+    <tr><td>Anexo (múltiplo)</td><td>Botão para enviar vários arquivos.</td><td>Lista de referências</td><td>Tipos aceitos e tamanho máximo.</td></tr>
+    <tr><td>Bloco / seção</td><td>Título (e texto de apoio) que separa partes do formulário. Não recebe resposta.</td><td>—</td><td>Título, descrição, largura.</td></tr>
+  </tbody>
+</table>
+
+<h3 id="bloco">Bloco / seção</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/field-section.png"><img src="img/field-section.png" alt="Cartão de bloco/seção"></a>
+  <figcaption>Cartão de um <b>Bloco / seção</b>.</figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Título do bloco</td><td>Texto em destaque que abre a seção (ex.: <em>Dados da solicitação</em>).</td></tr>
+    <tr><td>Descrição (opcional)</td><td>Texto de apoio abaixo do título.</td></tr>
+    <tr><td>Largura</td><td>Sempre ocupa a linha inteira no preenchimento; use para separar visualmente as partes.</td></tr>
+  </tbody>
+</table>
+<p>Blocos não aparecem nas respostas, no CSV nem nos dados enviados às integrações.</p>
+
+<h2 id="propriedades">Propriedades comuns de um campo</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/field-text.png"><img src="img/field-text.png" alt="Cartão de um campo de texto com marcadores"></a>
+  <figcaption><b>Cartão de um campo “Texto curto”.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Tipo</b> — etiqueta que informa o tipo do campo (não pode ser trocado; remova e crie outro se precisar).</li>
+  <li><b>Rótulo</b> — o texto exibido acima do campo e usado nas respostas, no CSV e na linha do tempo.</li>
+  <li><b>Largura</b> — quanto da linha o campo ocupa: <em>Linha inteira</em>, <em>Metade</em> ou <em>Um terço</em>. Campos vizinhos de largura menor ficam lado a lado.</li>
+  <li><b>Placeholder</b> — texto-exemplo cinza dentro do campo vazio (não existe para <em>Confirmação</em>).</li>
+  <li><b>Ajuda (opcional)</b> — texto pequeno exibido sob o campo para orientar o preenchimento.</li>
+  <li><b>Obrigatório</b> — o envio é recusado enquanto estiver vazio. Aparece um <span class="req">*</span> junto ao rótulo.</li>
+  <li><b>Preenchido por</b> — quem completa o campo: o <em>Solicitante (no envio)</em> ou um papel <em>no fluxo</em> (veja <a href="#preenchido-por">abaixo</a>).</li>
+  <li><b>Validações</b> — regras extras conforme o tipo (veja <a href="#validacoes">Validações</a>).</li>
+  <li><b>Mover/remover</b> — ↑ ↓ 🗑.</li>
+</ol>
+<table class="free">
+  <thead><tr><th>Propriedade</th><th>Valores</th><th>Observações</th></tr></thead>
+  <tbody>
+    <tr><td>Rótulo</td><td>Texto</td><td>Novos campos nascem como “Novo campo”. Use rótulos claros: eles viram os títulos das colunas das respostas.</td></tr>
+    <tr><td>Largura</td><td>Linha inteira · Metade · Um terço</td><td>Em telas pequenas todos os campos ocupam a linha inteira.</td></tr>
+    <tr><td>Placeholder</td><td>Texto</td><td>Apenas orientação visual; não é valor.</td></tr>
+    <tr><td>Ajuda</td><td>Texto</td><td>Aparece também para quem preenche durante o fluxo.</td></tr>
+    <tr><td>Obrigatório</td><td>Ligado/desligado</td><td>Campos ocultos por uma condição <em>não</em> são exigidos. Campos “preenchidos no fluxo” são exigidos só na etapa do papel responsável.</td></tr>
+    <tr><td>Preenchido por</td><td>Solicitante · No fluxo: <em>papel</em></td><td>Lista todos os papéis do workspace.</td></tr>
+  </tbody>
+</table>
+<div class="callout note">
+  <b>O identificador interno do campo</b>
+  <p>Ao salvar, cada campo ganha um identificador automático (algo como <code>campo_a1b2c3</code>), usado nas condições, comparações e nos dados enviados às integrações.
+  Por isso, <b>salve o formulário antes</b> de usar um campo recém-criado em uma condição ou comparação — até salvar, ele ainda não aparece nas listas de escolha.</p>
+</div>
+
+<h2 id="opcoes">Opções e apresentação (seleção única e múltipla)</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/field-select.png"><img src="img/field-select.png" alt="Cartão de seleção única com opções"></a>
+  <figcaption>Campo <b>Seleção única</b> com quatro opções, apresentado como lista suspensa.</figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Opções</td><td>Lista de textos. <b>+ Opção</b> acrescenta uma nova (“Opção N”); ✕ remove. A ordem digitada é a ordem exibida. A resposta deve ser uma das opções: valores fora da lista são recusados (“Opção inválida.”).</td></tr>
+    <tr><td>Apresentação — seleção única</td><td><b>Lista suspensa (combo)</b>: economiza espaço. <b>Múltipla escolha (radio)</b>: todas as opções visíveis; melhor para poucas opções.</td></tr>
+    <tr><td>Apresentação — seleção múltipla</td><td><b>Lista de seleção múltipla</b> ou <b>Caixas de seleção (checkbox)</b>: o usuário marca uma ou mais opções.</td></tr>
+  </tbody>
+</table>
+<div class="callout tip">
+  <b>Dica</b>
+  <p>Condições de fluxo e de exibição comparam o <em>texto</em> da opção. Evite renomear opções já usadas em condições sem revisar o fluxo.</p>
+</div>
+
+<h2 id="validacoes">Validações</h2>
+<p>Além de “Obrigatório”, cada tipo oferece regras que são verificadas <b>no envio</b> (e novamente no servidor). A caixa <em>Validações</em> só mostra o que se aplica ao tipo do campo.</p>
+
+<h3 id="val-numero">Número</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/field-number.png"><img src="img/field-number.png" alt="Cartão de campo numérico com validações"></a>
+  <figcaption>Campo <b>Número</b> com validações.</figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Opção</th><th>Efeito</th></tr></thead>
+  <tbody>
+    <tr><td>Somente valores positivos</td><td>Rejeita zero e negativos.</td></tr>
+    <tr><td>Somente números inteiros</td><td>Rejeita casas decimais.</td></tr>
+    <tr><td>Valor mínimo / máximo</td><td>Limites inclusivos.</td></tr>
+    <tr><td>Maior que o campo</td><td>O valor deve ser maior que o de <em>outro campo numérico</em> escolhido (ex.: “Valor final” maior que “Valor inicial”).</td></tr>
+    <tr><td>Menor que o campo</td><td>O valor deve ser menor que o de outro campo numérico.</td></tr>
+  </tbody>
+</table>
+
+<h3 id="val-data">Data</h3>
+<table class="free">
+  <thead><tr><th>Opção</th><th>Efeito</th></tr></thead>
+  <tbody>
+    <tr><td>Data mínima / máxima</td><td>Intervalo permitido (inclusivo).</td></tr>
+    <tr><td>Posterior ao campo</td><td>A data deve ser <em>depois</em> da de outro campo de data (ex.: “Data de fim” posterior a “Data de início”).</td></tr>
+    <tr><td>Anterior ao campo</td><td>A data deve ser <em>antes</em> da de outro campo de data.</td></tr>
+  </tbody>
+</table>
+
+<h3 id="val-texto">Texto curto, texto longo e e-mail</h3>
+<table class="free">
+  <thead><tr><th>Opção</th><th>Efeito</th></tr></thead>
+  <tbody>
+    <tr><td>Tamanho mínimo / máximo</td><td>Quantidade de caracteres permitida.</td></tr>
+    <tr><td>Expressão regular (regex)</td><td>Padrão que o texto precisa obedecer por inteiro (ex.: <code>\d{5}-\d{3}</code> para um CEP).</td></tr>
+    <tr><td>Mensagem se inválido</td><td>Texto exibido quando o padrão falha (ex.: <em>CEP inválido</em>). Sem mensagem, aparece “Formato inválido.”.</td></tr>
+  </tbody>
+</table>
+<div class="callout note">
+  <b>Comparações entre campos</b>
+  <p>Só é possível comparar campos do <b>mesmo tipo</b> (número com número, data com data). A lista de escolha mostra apenas esses campos.</p>
+</div>
+
+<h2 id="condicional">Exibição condicional</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/field-visible.png"><img src="img/field-visible.png" alt="Campo exibido somente quando outra condição é verdadeira"></a>
+  <figcaption>“Justificativa do valor alto” aparece somente quando <b>Valor estimado (R$)</b> <em>for maior que</em> 5000.</figcaption>
+</figure>
+<p>A caixa <b>Exibir somente quando</b> faz o campo aparecer apenas se outro campo atender a uma condição. Deixe em <em>Sempre exibir</em> para que o campo seja sempre mostrado.</p>
+<table class="free">
+  <thead><tr><th>Operador</th><th>Verdadeiro quando…</th><th>Precisa de valor?</th></tr></thead>
+  <tbody>
+    <tr><td>estiver preenchido</td><td>o outro campo tem qualquer valor.</td><td>Não</td></tr>
+    <tr><td>estiver vazio</td><td>o outro campo está vazio.</td><td>Não</td></tr>
+    <tr><td>for igual a</td><td>o valor é igual (números comparam como números; textos ignoram maiúsculas/minúsculas).</td><td>Sim</td></tr>
+    <tr><td>for diferente de</td><td>o valor é diferente.</td><td>Sim</td></tr>
+    <tr><td>for maior que / maior ou igual a</td><td>comparação numérica.</td><td>Sim</td></tr>
+    <tr><td>for menor que / menor ou igual a</td><td>comparação numérica.</td><td>Sim</td></tr>
+    <tr><td>contiver</td><td>o texto contém o trecho (sem diferenciar maiúsculas).</td><td>Sim</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li>Um campo <b>oculto</b> não é exigido nem validado, e não vai nas respostas.</li>
+  <li>Para <em>Confirmação (sim/não)</em>, compare com <code>1</code> (sim) ou <code>0</code> (não).</li>
+  <li>O resultado é recalculado enquanto o usuário digita, no preenchimento.</li>
+</ul>
+
+<h2 id="anexos">Campos de anexo</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/field-file.png"><img src="img/field-file.png" alt="Cartão de campo de anexo"></a>
+  <figcaption>Campo <b>Anexo (único)</b> com a caixa <em>Anexo</em>.</figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Tipos aceitos</td><td>Lista separada por vírgulas de <b>extensões</b> (<code>.pdf</code>, <code>.png</code>) e/ou <b>tipos MIME</b> (<code>image/*</code>). Vazio = qualquer tipo.</td></tr>
+    <tr><td>Tamanho máximo (MB)</td><td>Limite <b>por arquivo</b>, aceita decimais (ex.: 0,5). O servidor impõe ainda um teto geral de <b>10 MB</b> por arquivo.</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li>O arquivo é enviado <b>assim que escolhido</b> (antes de clicar em Enviar). Se o tipo ou o tamanho não forem aceitos, a mensagem de erro aparece logo abaixo do campo.</li>
+  <li>Arquivos enviados e depois removidos (✕) antes do envio do formulário são apagados do servidor.</li>
+  <li>Anexo único aceita um arquivo; anexo múltiplo aceita vários (cada um é validado separadamente).</li>
+  <li>Os arquivos ficam em armazenamento privado; só são baixados por usuários autenticados com acesso (veja <a href="05-preenchimento-respostas.html#resgatar-anexos">resgatar anexos</a>).</li>
+</ul>
+
+<h2 id="preenchido-por">“Preenchido por”: campos completados no fluxo</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/field-fillrole.png"><img src="img/field-fillrole.png" alt="Campo configurado como preenchido pelo papel Financeiro"></a>
+  <figcaption>Campo <b>Número do empenho</b> preenchido pelo papel <em>Financeiro</em> durante o fluxo.</figcaption>
+</figure>
+<p>Por padrão o <b>Solicitante</b> preenche todos os campos ao enviar. Se você escolher <b>No fluxo: &lt;papel&gt;</b>, o campo:</p>
+<ul>
+  <li><b>não aparece</b> para o solicitante no preenchimento;</li>
+  <li>é apresentado ao aprovador daquela etapa, no bloco <em>“Preencha os campos sob sua responsabilidade”</em>, quando ele abre a tarefa para decidir;</li>
+  <li>se for <b>obrigatório</b>, o aprovador não consegue <em>aprovar</em> sem preenchê-lo;</li>
+  <li>é gravado junto à resposta original e passa a constar nas respostas, no CSV e nas integrações.</li>
+</ul>
+<div class="callout danger">
+  <b>Regra de consistência com o fluxo</b>
+  <p>Todo papel usado em “Preenchido por” precisa ser aprovador (por <em>papel</em>) de ao menos uma etapa do fluxo — caso contrário o campo nunca seria apresentado a ninguém.
+  O sistema impede salvar nessa situação e informa: “O campo ‘X’ é preenchido pelo papel ‘Y’, mas nenhuma etapa do fluxo é aprovada por esse papel…”.
+  A verificação acontece ao <b>salvar o fluxo</b> e ao <b>salvar o formulário</b> (quando já existe fluxo).</p>
+</div>
+<div class="callout warn">
+  <b>Cuidado com condições</b>
+  <p>Não use um campo complementar em <em>condições de decisão</em> anteriores à etapa em que ele é preenchido: até lá ele estará vazio, e o caminho escolhido pelo fluxo poderá mudar quando o valor for informado.</p>
+</div>
+
+<h2 id="layout">Aba “Layout (prévia)”</h2>
+<figure>
+  <a class="zoom" href="img/builder-layout.png"><img src="img/builder-layout.png" alt="Prévia do layout do formulário"></a>
+  <figcaption>A prévia mostra os campos como o solicitante os verá (somente leitura), inclusive larguras e blocos. Campos “preenchidos no fluxo” também aparecem aqui para você conferir o formulário completo.</figcaption>
+</figure>
+
+<h2 id="boas-praticas">Boas práticas</h2>
+<ul>
+  <li>Agrupe campos relacionados em <b>blocos</b> e use larguras (<em>metade</em>, <em>um terço</em>) para formulários curtos e fáceis de escanear.</li>
+  <li>Prefira <b>seleção</b> a texto livre quando as respostas alimentam condições de fluxo (evita erros de digitação).</li>
+  <li>Use <b>Ajuda</b> para explicar formatos e <b>Placeholder</b> para exemplos.</li>
+  <li>Marque como <b>obrigatório</b> só o que o processo realmente exige.</li>
+  <li>Teste: publique, envie uma resposta de teste e percorra o fluxo antes de divulgar.</li>
+  <li>Evite apagar campos de um formulário em uso: respostas antigas continuam guardadas, mas condições do fluxo que apontam para o campo precisam ser ajustadas (o fluxo recusa condições para campos inexistentes: “Campo de condição inexistente”).</li>
+</ul>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>
