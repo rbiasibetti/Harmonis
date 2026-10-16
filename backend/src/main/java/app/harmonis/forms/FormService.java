@@ -3,7 +3,9 @@ package app.harmonis.forms;
 import app.harmonis.forms.FormDtos.*;
 import app.harmonis.identity.User;
 import app.harmonis.identity.UserRepository;
+import app.harmonis.notifications.NotificationRepository;
 import app.harmonis.workflow.ApprovalService;
+import app.harmonis.workflow.ProcessInstanceRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Lazy;
@@ -24,11 +26,14 @@ public class FormService {
     private final FormSchemaService schema;
     private final ApprovalService approvals;
     private final FormAttachmentService attachmentsService;
+    private final ProcessInstanceRepository instances;
+    private final NotificationRepository notifications;
     private final ObjectMapper mapper;
 
     public FormService(FormRepository forms, FormSubmissionRepository submissions,
                        UserRepository users, FormSchemaService schema,
                        @Lazy ApprovalService approvals, FormAttachmentService attachmentsService,
+                       ProcessInstanceRepository instances, NotificationRepository notifications,
                        ObjectMapper mapper) {
         this.forms = forms;
         this.submissions = submissions;
@@ -36,6 +41,8 @@ public class FormService {
         this.schema = schema;
         this.approvals = approvals;
         this.attachmentsService = attachmentsService;
+        this.instances = instances;
+        this.notifications = notifications;
         this.mapper = mapper;
     }
 
@@ -85,6 +92,11 @@ public class FormService {
         // Apaga os arquivos fisicos dos anexos antes de remover o formulario
         // (o cascade do banco removeria apenas os registros).
         attachmentsService.deleteAllForForm(form.getId());
+        // Processos de aprovacao referenciam o formulario e as respostas sem ON DELETE CASCADE:
+        // remove, em ordem, notificacoes -> instancias (tarefas caem em cascata) -> formulario
+        // (respostas caem em cascata). Tudo na mesma transacao: falhou, nada e apagado.
+        notifications.deleteByProcessFormId(form.getId());
+        instances.deleteByFormId(form.getId());
         forms.delete(form);
     }
 
