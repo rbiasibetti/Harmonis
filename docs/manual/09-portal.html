@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal e páginas — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="09-portal.html">
+<main>
+<article>
+
+<div class="crumbs">Conteúdo</div>
+<h1 id="portal">Portal e páginas</h1>
+<p class="lead">O espaço de comunicados da empresa: páginas escritas em Markdown, com rascunho, pré-visualização e publicação.</p>
+
+<div class="callout note">
+  <b>Permissões necessárias</b>
+  <p>Ler o portal: <code class="perm">pages.view</code> · listar/editar páginas: <code class="perm">pages.update</code> · criar: <code class="perm">pages.create</code> ·
+  excluir: <code class="perm">pages.delete</code>.</p>
+</div>
+
+<h2 id="lendo">Lendo o portal</h2>
+<figure>
+  <a class="zoom" href="img/portal-home.png"><img src="img/portal-home.png" alt="Página inicial do portal com cartões"></a>
+  <figcaption><b>Menu Portal.</b> Cada página publicada vira um cartão com título, resumo e data de publicação.</figcaption>
+</figure>
+<p>Clique em um cartão para ler a página. Quem tem <code class="perm">pages.update</code> também vê o botão <b>Gerenciar páginas</b>.</p>
+<figure>
+  <a class="zoom" href="img/portal-page.png"><img src="img/portal-page.png" alt="Página do portal aberta"></a>
+  <figcaption>Uma página publicada, renderizada a partir do Markdown.</figcaption>
+</figure>
+
+<h2 id="gerenciando">Gerenciando páginas</h2>
+<figure>
+  <a class="zoom" href="img/pages-admin.png"><img src="img/pages-admin.png" alt="Lista de páginas para gestão"></a>
+  <figcaption><b>Portal → Gerenciar páginas.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>+ Nova página</b> — abre o editor em branco (<code class="perm">pages.create</code>).</li>
+  <li><b>Status</b> — <span class="badge ok">Publicada</span> aparece no portal; <span class="badge">Rascunho</span> só aparece aqui.</li>
+  <li><b>Ações</b> — 👁 ver no portal (só publicadas), ✎ editar, 🗑 excluir (<code class="perm">pages.delete</code>, pede confirmação).</li>
+</ol>
+<p>A lista mostra o <b>título</b>, o endereço (<code>/slug</code>), o <b>status</b> e a data da última atualização. Ela inclui rascunhos, ao contrário do portal.</p>
+
+<h2 id="editor">O editor de páginas</h2>
+<figure>
+  <a class="zoom" href="img/page-editor.png"><img src="img/page-editor.png" alt="Editor de página com abas Markdown e Pré-visualizar"></a>
+  <figcaption><b>Editar página.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Título</b> — obrigatório (o botão Salvar fica desabilitado sem ele). Dele é derivado o endereço único da página.</li>
+  <li><b>Resumo (opcional)</b> — frase curta exibida no cartão do portal.</li>
+  <li><b>Status</b> — <em>Rascunho</em> ou <em>Publicada</em>. Rascunhos não aparecem no portal. A data de publicação é registrada na <em>primeira</em> publicação.</li>
+  <li><b>Aba Markdown</b> — onde você escreve.</li>
+  <li><b>Aba Pré-visualizar</b> — mostra o resultado já com a mesma sanitização usada no portal.</li>
+</ol>
+<figure>
+  <a class="zoom" href="img/page-preview.png"><img src="img/page-preview.png" alt="Pré-visualização da página"></a>
+  <figcaption>Pré-visualização do conteúdo do exemplo.</figcaption>
+</figure>
+
+<h2 id="markdown">Guia rápido de Markdown</h2>
+<div class="two">
+<pre><code># Título grande
+## Subtítulo
+### Seção menor
+
+Texto com **negrito**, *itálico* e `código`.
+
+- item de lista
+- outro item
+
+1. passo um
+2. passo dois
+
+&gt; Citação / destaque
+
+[texto do link](https://exemplo.com)
+</code></pre>
+<div>
+<table class="free">
+  <thead><tr><th>Escreva</th><th>Resultado</th></tr></thead>
+  <tbody>
+    <tr><td><code>#</code> a <code>######</code></td><td>Títulos de nível 1 a 6.</td></tr>
+    <tr><td><code>**x**</code> / <code>*x*</code></td><td>Negrito / itálico.</td></tr>
+    <tr><td><code>-</code> ou <code>1.</code></td><td>Lista com marcadores / numerada.</td></tr>
+    <tr><td><code>&gt;</code></td><td>Citação em destaque.</td></tr>
+    <tr><td><code>[t](url)</code></td><td>Link.</td></tr>
+    <tr><td><code>`x`</code> e blocos <code>```</code></td><td>Código.</td></tr>
+  </tbody>
+</table>
+</div>
+</div>
+<div class="callout warn">
+  <b>Segurança e limites</b>
+  <ul>
+    <li>O HTML gerado é <b>sanitizado</b>: scripts, atributos de evento (<code>onclick</code>…), links <code>javascript:</code> e quadros (<code>iframe</code>) são removidos.</li>
+    <li><b>Tabelas Markdown não são suportadas</b>: o texto aparece com os traços e barras. Use listas.</li>
+    <li>Imagens e arquivos devem ser hospedados em outro lugar; o portal não possui upload de imagens (para arquivos, use <a href="08-documentos.html">Documentos</a>).</li>
+  </ul>
+</div>
+<div class="callout tip">
+  <b>Boas práticas</b>
+  <p>Escreva um <b>resumo</b> claro (é o que aparece no cartão), use títulos para estruturar a página e publique somente depois de conferir a pré-visualização.</p>
+</div>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

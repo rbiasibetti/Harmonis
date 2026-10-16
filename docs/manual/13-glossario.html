@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossário — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="13-glossario.html">
+<main>
+<article>
+
+<div class="crumbs">Consulta</div>
+<h1 id="glossario">Glossário</h1>
+<p class="lead">Os termos usados no Harmonis, em ordem alfabética.</p>
+
+<table class="free">
+  <thead><tr><th>Termo</th><th>Definição</th></tr></thead>
+  <tbody>
+    <tr><td id="g-aprovador">Aprovador</td><td>Pessoa (ou papel) responsável por decidir uma etapa do fluxo.</td></tr>
+    <tr><td id="g-api-key">API Key</td><td>Chave secreta enviada a um sistema externo para identificar o Harmonis, em cabeçalho ou na query da URL.</td></tr>
+    <tr><td id="g-basic">Basic (autenticação)</td><td>Autenticação por usuário e senha enviados no cabeçalho <code>Authorization</code>.</td></tr>
+    <tr><td id="g-bearer">Bearer (token)</td><td>Token enviado no cabeçalho <code>Authorization: Bearer …</code>. Pode ser fixo ou obtido por <em>pré-autenticação</em>.</td></tr>
+    <tr><td id="g-campo-complementar">Campo complementar</td><td>Campo “preenchido por” um papel durante o fluxo, e não pelo solicitante.</td></tr>
+    <tr><td id="g-condicao">Condição</td><td>Regra <em>campo + operador + valor</em> avaliada sobre as respostas; usada em etapas, decisões e exibição de campos.</td></tr>
+    <tr><td id="g-csv">CSV</td><td>Arquivo de planilha simples gerado pela exportação de respostas (separador “;”, UTF-8).</td></tr>
+    <tr><td id="g-dashboard">Dashboard</td><td>Tela inicial com indicadores e listas rápidas.</td></tr>
+    <tr><td id="g-decisao">Decisão (gateway)</td><td>Nó do fluxo que escolhe entre dois ramos (“se verdadeiro” / “se falso”) conforme uma condição.</td></tr>
+    <tr><td id="g-dispensado">Dispensado</td><td>Status de uma tarefa que deixou de ser necessária (outro aprovador decidiu, ou o processo foi encerrado).</td></tr>
+    <tr><td id="g-empresa">Empresa (tenant)</td><td>Ambiente isolado de um cliente, com banco de dados, usuários e conteúdo próprios.</td></tr>
+    <tr><td id="g-entrega">Entrega</td><td>Um envio de webhook, formado por uma ou mais tentativas (identificadas pelo mesmo <code>X-Harmonis-Delivery</code>).</td></tr>
+    <tr><td id="g-etapa">Etapa</td><td>Um passo do fluxo com um ou mais aprovadores.</td></tr>
+    <tr><td id="g-evento">Evento</td><td>Situação que dispara integrações: enviado, aprovado ou reprovado (e “teste”).</td></tr>
+    <tr><td id="g-fluxo">Fluxo de aprovação</td><td>Sequência de etapas e decisões associada a um formulário.</td></tr>
+    <tr><td id="g-formulario">Formulário</td><td>Conjunto de campos usado para coletar informações. Pode estar em rascunho ou publicado.</td></tr>
+    <tr><td id="g-ged">GED</td><td>Gestão Eletrônica de Documentos: o módulo Documentos.</td></tr>
+    <tr><td id="g-hmac">HMAC</td><td>Assinatura criptográfica do corpo da requisição, calculada com um segredo compartilhado, para provar a origem e a integridade.</td></tr>
+    <tr><td id="g-integracao">Integração</td><td>Cadastro de um webhook de saída (destino, autenticação, cabeçalhos).</td></tr>
+    <tr><td id="g-json">JSON</td><td>Formato de texto estruturado usado no conteúdo enviado aos webhooks.</td></tr>
+    <tr><td id="g-markdown">Markdown</td><td>Linguagem de marcação simples usada para escrever páginas do portal.</td></tr>
+    <tr><td id="g-metadado">Metadado</td><td>Par chave/valor livre associado a um documento (ex.: área = Compras).</td></tr>
+    <tr><td id="g-modo">Modo de aprovação</td><td>Regra de uma etapa com vários aprovadores: <em>todos</em> ou <em>basta um</em>.</td></tr>
+    <tr><td id="g-papel">Papel</td><td>Conjunto de permissões atribuído a usuários. Também identifica aprovadores e “Preenchido por”.</td></tr>
+    <tr><td id="g-permissao">Permissão</td><td>Direito de executar uma ação, no formato <code>recurso.ação</code>.</td></tr>
+    <tr><td id="g-preauth">Pré-autenticação</td><td>Login prévio com usuário e senha, em outro endpoint, para obter um token temporário antes do envio do webhook.</td></tr>
+    <tr><td id="g-processo">Processo</td><td>Execução do fluxo de aprovação para uma resposta específica.</td></tr>
+    <tr><td id="g-proprietario">Proprietário</td><td>Usuário principal da empresa: tem todas as permissões e não pode ser removido ou desativado.</td></tr>
+    <tr><td id="g-publicado">Publicado / Publicada</td><td>Estado em que um formulário aceita respostas, uma integração pode ser usada e uma página aparece no portal.</td></tr>
+    <tr><td id="g-rascunho">Rascunho</td><td>Estado em construção, ainda não disponível para uso.</td></tr>
+    <tr><td id="g-resposta">Resposta</td><td>Os dados enviados por alguém a um formulário.</td></tr>
+    <tr><td id="g-retentativa">Retentativa</td><td>Novo envio automático de um webhook após falha transitória.</td></tr>
+    <tr><td id="g-slug">Slug</td><td>Identificador curto e único, derivado do nome, usado em endereços (formulários e páginas).</td></tr>
+    <tr><td id="g-solicitante">Solicitante</td><td>Quem envia o formulário e inicia o processo.</td></tr>
+    <tr><td id="g-tarefa">Tarefa</td><td>Pendência individual de aprovação criada para cada aprovador de uma etapa.</td></tr>
+    <tr><td id="g-versao">Versão</td><td>Cada upload de um documento; as anteriores são preservadas.</td></tr>
+    <tr><td id="g-webhook">Webhook</td><td>Chamada HTTP automática que o Harmonis faz a outro sistema quando um evento acontece.</td></tr>
+  </tbody>
+</table>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

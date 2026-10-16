@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Processos e aprovações — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="07-processos.html">
+<main>
+<article>
+
+<div class="crumbs">Formulários e processos</div>
+<h1 id="processos">Processos e aprovações</h1>
+<p class="lead">Onde aprovadores decidem e solicitantes acompanham: caixa de aprovações, detalhe do processo, linha do tempo, campos sob responsabilidade e status.</p>
+
+<div class="callout note">
+  <b>Permissão necessária</b>
+  <p><code class="perm">processes.view</code> — dá acesso a todo o módulo, incluindo decidir tarefas (que, além disso, exigem ser o aprovador da etapa).</p>
+</div>
+
+<h2 id="caixa">Caixa de aprovações</h2>
+<figure>
+  <a class="zoom" href="img/processes-inbox.png"><img src="img/processes-inbox.png" alt="Caixa de aprovações"></a>
+  <figcaption><b>Processos → Aprovações.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Aprovações</b> — aba com as tarefas que <em>você</em> pode decidir; o número indica quantas.</li>
+  <li><b>Minhas solicitações</b> — aba com o que você mesmo enviou.</li>
+  <li><b>Revisar</b> — abre o detalhe do processo para decidir.</li>
+</ol>
+<p>Colunas: <b>Formulário</b>, <b>Etapa</b> (a etapa que aguarda você), <b>Solicitante</b> e <b>Data</b>. Uma tarefa aparece aqui quando você é o aprovador nomeado, tem o papel indicado — ou é o proprietário.
+O mesmo contador aparece no cartão <em>Aprovações pendentes</em> do dashboard.</p>
+
+<h2 id="decidir">Revisando e decidindo</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/process-detail.png"><img src="img/process-detail.png" alt="Detalhe de um processo pendente"></a>
+  <figcaption><b>Detalhe do processo</b> (janela aberta por “Revisar”).</figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Cabeçalho</b> — nome do formulário, status do processo e quem solicitou, com data.</li>
+  <li><b>Dados enviados</b> — todas as respostas, na ordem do formulário. Anexos aparecem como links 📎 para baixar. Campos ainda não preenchidos (por exemplo, os do financeiro) mostram “—”.</li>
+  <li><b>Fluxo de aprovação</b> — linha do tempo das etapas (veja <a href="#timeline">abaixo</a>).</li>
+  <li><b>Comentário (opcional)</b> — registre a justificativa; ela fica visível na linha do tempo.</li>
+  <li><b>Reprovar / Aprovar</b> — registram a decisão. A janela é fechada e a lista é atualizada.</li>
+</ol>
+<div class="callout warn">
+  <b>A decisão não pode ser desfeita</b>
+  <p>Depois de aprovar ou reprovar, a tarefa não pode ser reaberta pela interface. Confira os dados antes de decidir. Se você não é um dos aprovadores da etapa, a janela mostra apenas <b>Fechar</b>.</p>
+</div>
+
+<h3 id="campos-complementares">Campos sob sua responsabilidade</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/process-fillfields.png"><img src="img/process-fillfields.png" alt="Aprovador preenchendo campos complementares"></a>
+  <figcaption>O Financeiro completa os campos antes de aprovar.</figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Preencha os campos sob sua responsabilidade</b> — aparece quando o formulário tem campos “preenchidos por” o seu papel e eles ainda estão vazios.</li>
+  <li><b>Decisão</b> — ao <em>Aprovar</em>, os campos obrigatórios são validados; faltando algum, a aprovação é recusada e a mensagem aparece sob o campo. <em>Reprovar</em> não exige o preenchimento.</li>
+</ol>
+<p>Os valores informados são gravados na resposta original e passam a constar nas respostas, no CSV e nos dados enviados às integrações. Anexos também podem ser pedidos nessa fase.</p>
+
+<h2 id="timeline">A linha do tempo</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/process-approved.png"><img src="img/process-approved.png" alt="Processo aprovado com linha do tempo"></a>
+  <figcaption>Processo <b>Aprovado</b>: duas etapas, cada uma com decisor, data e comentário.</figcaption>
+</figure>
+<p>Cada etapa mostra:</p>
+<ul>
+  <li><b>Nome da etapa</b> e <b>status</b> da tarefa;</li>
+  <li><b>Quem era o aprovador</b>: <em>Papel: gestor</em> ou o nome do usuário designado;</li>
+  <li><b>Quem decidiu</b> (“por Fulano”) e <b>quando</b>;</li>
+  <li>o <b>comentário</b>, entre aspas, se houver.</li>
+</ul>
+<p>Uma etapa pulada por condição, ou fora do ramo escolhido, simplesmente não aparece. Etapas de um ramo não escolhido nunca são criadas.</p>
+
+<h3 id="status">Status</h3>
+<table class="free">
+  <thead><tr><th>Status</th><th>Onde aparece</th><th>Significado</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge">Pendente</span></td><td>Processo e tarefa</td><td>Aguardando decisão.</td></tr>
+    <tr><td><span class="badge ok">Aprovado</span></td><td>Processo e tarefa</td><td>Processo: todas as etapas aprovadas. Tarefa: aprovada pelo decisor.</td></tr>
+    <tr><td><span class="badge off">Reprovado</span></td><td>Processo e tarefa</td><td>Processo encerrado por reprovação. Tarefa: reprovada pelo decisor.</td></tr>
+    <tr><td><span class="badge">Dispensado</span></td><td>Tarefa</td><td>Tarefa que deixou de ser necessária (por exemplo, outro aprovador já decidiu no modo “basta um”, ou o processo foi reprovado).</td></tr>
+  </tbody>
+</table>
+
+<h2 id="minhas">Minhas solicitações</h2>
+<figure>
+  <a class="zoom" href="img/processes-mine.png"><img src="img/processes-mine.png" alt="Aba Minhas solicitações"></a>
+  <figcaption><b>Processos → Minhas solicitações.</b></figcaption>
+</figure>
+<p>Lista tudo o que você enviou: <b>Formulário</b>, <b>Status</b>, <b>Etapa atual</b> (onde o processo está parado), <b>Data</b> e o botão <b>Ver</b>, que abre o mesmo detalhe — sem os botões de decisão, a menos que você também seja o aprovador.</p>
+<div class="two">
+  <figure class="small">
+    <a class="zoom" href="img/process-rejected.png"><img src="img/process-rejected.png" alt="Processo reprovado"></a>
+    <figcaption>Processo <b>Reprovado</b>: o comentário do decisor explica o motivo.</figcaption>
+  </figure>
+  <div>
+    <h4>Entendendo um processo reprovado</h4>
+    <p>Quando uma etapa reprova, o processo termina imediatamente. A linha do tempo mostra quem reprovou e o comentário. Para tentar de novo, o solicitante envia uma <em>nova</em> solicitação.</p>
+    <h4>Quando o status é “Pendente”</h4>
+    <p>Veja <em>Etapa atual</em>: é onde o processo está parado e quem precisa agir. Se a espera for longa, avise o aprovador indicado na linha do tempo.</p>
+  </div>
+</div>
+
+<h2 id="notificacoes">Notificações e integrações</h2>
+<ul>
+  <li>Quando uma etapa é aberta, os aprovadores recebem a notificação <b>“Aprovação solicitada”</b> (o solicitante não é notificado das próprias solicitações).</li>
+  <li>Quando o processo termina, o solicitante recebe <b>“Solicitação aprovada/reprovada”</b>.</li>
+  <li>Ao final, as <a href="10-integracoes.html">integrações</a> ligadas a <em>Ao aprovar</em> ou <em>Ao reprovar</em> são disparadas; o conteúdo enviado inclui o histórico de decisões (etapa, decisor, comentário, data).</li>
+</ul>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

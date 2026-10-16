@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluxo de aprovação — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="06-fluxo-aprovacao.html">
+<main>
+<article>
+
+<div class="crumbs">Formulários e processos</div>
+<h1 id="fluxo">Fluxo de aprovação</h1>
+<p class="lead">Como desenhar o caminho que uma resposta percorre: etapas, aprovadores, condições, decisões e integrações disparadas em cada situação.</p>
+
+<div class="callout note">
+  <b>Permissão necessária</b>
+  <p><code class="perm">forms.update</code> — abra o editor pelo ícone ⇄ na lista de formulários.</p>
+</div>
+
+<h2 id="conceito">Como o fluxo funciona</h2>
+<p>O fluxo é uma lista de <b>nós</b> executados de cima para baixo. Existem dois tipos de nó:</p>
+<div class="two">
+  <div class="callout note"><b>Etapa</b><p>Um passo de aprovação, com um ou mais aprovadores e, opcionalmente, uma condição para ser executada.</p></div>
+  <div class="callout warn"><b>Decisão (gateway)</b><p>Um desvio: avalia uma condição sobre as respostas e segue por <em>“Se verdadeiro”</em> ou <em>“Se falso”</em>, cada ramo com suas etapas.</p></div>
+</div>
+<div class="diagram">
+<svg viewBox="0 0 900 270" role="img" aria-label="Exemplo de fluxo com decisão">
+  <defs><marker id="f1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+  <rect x="10" y="100" width="80" height="44" rx="22" class="dg-brand"/><text x="50" y="127" text-anchor="middle" class="dg-t">Início</text>
+  <rect x="120" y="90" width="150" height="64" rx="12" class="dg-box"/><text x="195" y="118" text-anchor="middle" class="dg-t">Aprovação</text><text x="195" y="136" text-anchor="middle" class="dg-s">do gestor</text>
+  <path d="M370 85 L430 122 L370 159 L310 122 Z" class="dg-warn"/><text x="370" y="119" text-anchor="middle" class="dg-t">Valor</text><text x="370" y="136" text-anchor="middle" class="dg-t">&gt; 5.000?</text>
+  <rect x="470" y="20" width="160" height="64" rx="12" class="dg-box"/><text x="550" y="48" text-anchor="middle" class="dg-t">Aprovação</text><text x="550" y="66" text-anchor="middle" class="dg-s">da diretoria</text>
+  <text x="440" y="70" class="dg-s" style="fill:var(--ok)">verdadeiro</text><text x="440" y="190" class="dg-s" style="fill:var(--danger)">falso (nenhuma etapa)</text>
+  <rect x="680" y="90" width="150" height="64" rx="12" class="dg-box"/><text x="755" y="118" text-anchor="middle" class="dg-t">Análise</text><text x="755" y="136" text-anchor="middle" class="dg-s">financeira</text>
+  <rect x="780" y="195" width="110" height="44" rx="22" class="dg-ok"/><text x="835" y="222" text-anchor="middle" class="dg-t">Concluído</text>
+  <path d="M90 122 H118" class="dg-l" marker-end="url(#f1)"/><path d="M270 122 H308" class="dg-l" marker-end="url(#f1)"/>
+  <path d="M370 85 V52 H468" class="dg-l" marker-end="url(#f1)"/><path d="M630 52 H655 V110 H678" class="dg-l" marker-end="url(#f1)"/>
+  <path d="M370 159 V205 H655 V135 H678" class="dg-l" marker-end="url(#f1)"/><path d="M755 154 V175 H835 V193" class="dg-l" marker-end="url(#f1)"/>
+</svg>
+<figcaption>O fluxo do formulário de exemplo: valor até R$ 5.000 vai direto do gestor ao financeiro; acima disso passa pela diretoria.</figcaption>
+</div>
+
+<h2 id="editor">O editor de fluxo</h2>
+<figure>
+  <a class="zoom" href="img/flow-top.png"><img src="img/flow-top.png" alt="Topo do editor de fluxo"></a>
+  <figcaption><b>Topo do editor.</b> Integrações por evento, zoom e mini-mapa.</figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Integrações (webhooks)</b> — escolha, para este formulário, o que disparar em cada situação (veja <a href="#integracoes">abaixo</a>).</li>
+  <li><b>Ao enviar</b> — quando o solicitante envia o formulário.</li>
+  <li><b>Ao aprovar</b> — quando todas as etapas são aprovadas.</li>
+  <li><b>Ao reprovar</b> — quando uma etapa reprova o processo.</li>
+  <li><b>Zoom</b> — − / + de 50% a 150% para enxergar fluxos longos.</li>
+  <li><b>Mini-mapa</b> — lista as etapas e decisões do nível principal; clique em uma para rolar até ela.</li>
+  <li><b>Início</b> — ponto de partida (fixo). Abaixo dele ficam os nós, na ordem de execução.</li>
+</ol>
+<p>O botão <b>Salvar</b> (canto superior direito) grava <em>juntos</em> o fluxo e as integrações escolhidas; o selo <span class="badge ok">Salvo</span> confirma.
+Enquanto você não salvar, nada muda para quem usa o formulário.</p>
+
+<figure class="narrow">
+  <a class="zoom" href="img/flow-full.png"><img src="img/flow-full.png" alt="Fluxo completo com etapa, decisão e ramos"></a>
+  <figcaption><b>Fluxo de “Solicitação de compra”.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Início</b> — fixo.</li>
+  <li><b>Etapa</b> — cartão de uma etapa de aprovação.</li>
+  <li><b>Aprovadores</b> — quem decide a etapa.</li>
+  <li><b>Condição (opcional)</b> — faz a etapa ser executada só quando a regra for verdadeira.</li>
+  <li><b>Decisão (gateway)</b> — nó que escolhe um dos ramos conforme os dados.</li>
+  <li><b>Se verdadeiro</b> — etapas executadas quando a condição da decisão é atendida.</li>
+  <li><b>Se falso</b> — etapas executadas quando não é atendida (pode ficar vazio).</li>
+  <li><b>+ Etapa / + Decisão</b> — adiciona um novo nó ao final do fluxo.</li>
+  <li><b>Concluído</b> — fim do fluxo: se chegou aqui sem reprovação, o processo está <em>Aprovado</em>.</li>
+</ol>
+<div class="callout tip">
+  <b>Reordenar</b>
+  <p>Arraste uma etapa ou decisão pela alça <b>⠿</b> (à esquerda do cartão) ou use os botões ↑ ↓. 🗑 remove o nó.</p>
+</div>
+
+<h2 id="etapa">Configurando uma etapa</h2>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Nome da etapa</td><td><span class="badge off">Obrigatório</span> Aparece na caixa de aprovações e na linha do tempo (ex.: <em>Aprovação do gestor</em>).</td></tr>
+    <tr><td>Aprovadores</td><td>Uma ou mais linhas. <b>+ Aprovador</b> acrescenta; ✕ remove (a etapa precisa de ao menos um).</td></tr>
+    <tr><td>&nbsp;&nbsp;Tipo: <em>Por papel</em></td><td>Escolha um papel. <b>Qualquer pessoa com esse papel</b> pode decidir a tarefa (a primeira decisão encerra aquela tarefa).</td></tr>
+    <tr><td>&nbsp;&nbsp;Tipo: <em>Usuário específico</em></td><td>Escolha uma pessoa. Somente ela (ou o proprietário) decide.</td></tr>
+    <tr><td>Quando houver vários aprovadores</td><td>Só aparece com 2+ aprovadores. <b>Exige aprovação de todos</b> ou <b>Basta um aprovar</b> (veja <a href="#modos">modos</a>).</td></tr>
+    <tr><td>Condição (opcional)</td><td><em>Sempre executar</em>, ou um campo + operador + valor. Se a condição for falsa para a resposta, a etapa é <b>pulada</b>.</td></tr>
+  </tbody>
+</table>
+<div class="callout note">
+  <b>“Por papel” e “todos”</b>
+  <p>No modo “todos”, a exigência vale <em>por linha de aprovador</em>, não por pessoa. Uma etapa com <em>uma</em> linha “papel Gestor” cria <em>uma</em> tarefa, decidida por quem do papel agir primeiro.
+  Para exigir duas pessoas, use duas linhas (por exemplo, dois usuários específicos).</p>
+</div>
+
+<h3 id="condicoes">Condições</h3>
+<p>Em etapas e decisões, a condição é <b>campo + operador + valor</b>, sobre as respostas do formulário.</p>
+<table class="free">
+  <thead><tr><th>Operador</th><th>Significado</th></tr></thead>
+  <tbody>
+    <tr><td>igual a / diferente de</td><td>Compara números como números e textos sem diferenciar maiúsculas.</td></tr>
+    <tr><td>maior que / maior ou igual / menor que / menor ou igual</td><td>Comparação numérica (se algum lado não for número, a condição é falsa).</td></tr>
+    <tr><td>contém</td><td>O texto do campo contém o trecho informado.</td></tr>
+    <tr><td>vazio / preenchido</td><td>O campo não tem / tem valor (sem precisar informar valor).</td></tr>
+  </tbody>
+</table>
+<p>As condições só enxergam campos que existem no formulário e não são blocos. Se um campo for removido, o fluxo recusa salvar até a condição ser corrigida.</p>
+
+<h2 id="decisao">Decisões (gateways)</h2>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Nome da decisão</td><td><span class="badge off">Obrigatório</span> Ex.: <em>Valor acima de R$ 5.000?</em></td></tr>
+    <tr><td>Condição</td><td><span class="badge off">Obrigatória</span> campo + operador + valor.</td></tr>
+    <tr><td>Se verdadeiro / Se falso</td><td>Cada ramo é uma lista de etapas (com <b>+ Etapa</b>). Os ramos aceitam apenas etapas — não há decisões aninhadas.</td></tr>
+  </tbody>
+</table>
+<p>A decisão é avaliada com os dados da resposta no momento em que o processo chega a ela; o resultado escolhe o ramo, e <b>só as etapas do ramo escolhido</b> são executadas.</p>
+
+<h2 id="execucao">Como o processo é executado</h2>
+<ol class="steps">
+  <li><b>Plano.</b> O sistema “achata” o fluxo em uma lista linear de etapas, resolvendo as decisões com os dados da resposta.</li>
+  <li><b>Abertura da etapa.</b> A primeira etapa cuja condição é atendida é aberta: cria-se uma tarefa por aprovador e notificam-se os aprovadores. Etapas condicionais não atendidas são puladas.</li>
+  <li><b>Decisão.</b> Cada tarefa é aprovada ou reprovada. O resultado depende do modo (abaixo).</li>
+  <li><b>Avanço.</b> Etapa concluída → próxima. Sem mais etapas → o processo é <span class="badge ok">Aprovado</span>.</li>
+</ol>
+
+<h3 id="modos">Modos de aprovação</h3>
+<table class="free">
+  <thead><tr><th>Modo</th><th>Aprovação</th><th>Reprovação</th></tr></thead>
+  <tbody>
+    <tr><td>Exige aprovação de todos</td><td>A etapa só avança quando <b>todas</b> as tarefas forem aprovadas.</td><td><b>Qualquer</b> reprovação encerra o processo como <span class="badge off">Reprovado</span>; tarefas restantes ficam <span class="badge">Dispensado</span>.</td></tr>
+    <tr><td>Basta um aprovar</td><td>A <b>primeira</b> aprovação avança a etapa; as demais tarefas viram <span class="badge">Dispensado</span>.</td><td>O processo só é reprovado se <b>todos</b> reprovarem (sem nenhuma aprovação).</td></tr>
+  </tbody>
+</table>
+<p>Com um único aprovador, os dois modos são equivalentes.</p>
+<div class="callout note">
+  <b>Proprietário</b>
+  <p>O <b>proprietário</b> do workspace pode decidir qualquer tarefa pendente, mesmo que não seja um dos aprovadores.</p>
+</div>
+<div class="callout warn">
+  <b>Mudar o fluxo com processos em andamento</b>
+  <p>Processos pendentes continuam a ser conduzidos pela <em>versão atual</em> do fluxo do formulário. Alterar etapas ou decisões enquanto há solicitações em aberto pode mudar o caminho (ou a ordem) delas.
+  Prefira ajustar fluxos fora de picos de uso ou quando não houver pendências.</p>
+</div>
+
+<h2 id="integracoes">Integrações por evento</h2>
+<p>No topo do editor você define quais <a href="10-integracoes.html">integrações</a> (webhooks) são disparadas em cada situação do processo.</p>
+<table class="free">
+  <thead><tr><th>Coluna</th><th>Quando dispara</th><th>Exemplos de uso</th></tr></thead>
+  <tbody>
+    <tr><td>Ao enviar</td><td>Assim que o solicitante envia o formulário (com ou sem fluxo).</td><td>Avisar um canal de chat; criar um rascunho no ERP.</td></tr>
+    <tr><td>Ao aprovar</td><td>Quando todas as etapas são aprovadas.</td><td>Criar o pedido de compra no ERP; atualizar o BI.</td></tr>
+    <tr><td>Ao reprovar</td><td>Quando uma reprovação encerra o processo.</td><td>Notificar o financeiro; cancelar uma reserva.</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li>Cada coluna aceita <b>várias integrações</b> (todas disparam). Use o seletor <em>+ Adicionar integração…</em>; ✕ remove.</li>
+  <li>Apenas integrações <b>publicadas</b> aparecem na lista. Integrações em rascunho precisam ser publicadas antes (<a href="10-integracoes.html#publicacao">capítulo 10</a>).</li>
+  <li>A mesma integração pode ser usada em vários formulários e em eventos diferentes; <b>integrações diferentes</b> podem ser ligadas a “aprovado” e “reprovado”.</li>
+  <li>Se uma integração já vinculada for <em>despublicada</em> depois, ela continua listada com o aviso <span class="badge warn">não publicada (será ignorada)</span> — os envios são registrados como <em>Ignorado</em> nos logs até que ela seja publicada de novo.</li>
+  <li>Ver a lista exige apenas <code class="perm">forms.update</code>: quem edita formulários enxerga somente o <b>nome</b> das integrações, nunca endereços ou credenciais.</li>
+</ul>
+<div class="callout tip">
+  <b>Formulário só com integrações</b>
+  <p>É possível ter integrações sem etapas de aprovação (fluxo vazio): o evento <em>Ao enviar</em> continua disparando a cada resposta.</p>
+</div>
+
+<h2 id="validacoes">Validações ao salvar</h2>
+<p>O servidor recusa o fluxo, com uma mensagem no topo da tela, nos casos abaixo:</p>
+<table class="free">
+  <thead><tr><th>Mensagem</th><th>Como resolver</th></tr></thead>
+  <tbody>
+    <tr><td>Toda etapa precisa de um nome. / Toda decisão precisa de um nome.</td><td>Preencha o campo de nome do nó indicado.</td></tr>
+    <tr><td>A etapa “X” precisa de ao menos um aprovador.</td><td>Adicione um aprovador (papel ou usuário).</td></tr>
+    <tr><td>A decisão “X” precisa de um campo de condição.</td><td>Escolha o campo da condição da decisão.</td></tr>
+    <tr><td>Campo de condição inexistente: …</td><td>O campo foi removido do formulário; escolha outro ou remova a condição.</td></tr>
+    <tr><td>O campo “X” é preenchido pelo papel “Y”, mas nenhuma etapa do fluxo é aprovada por esse papel…</td><td>Adicione uma etapa com esse papel como aprovador ou mude o “Preenchido por” do campo.</td></tr>
+    <tr><td>A integração “X” não está publicada.</td><td>Publique a integração (ou escolha outra) antes de vinculá-la.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="exemplo">Exemplo completo: Solicitação de compra</h2>
+<ol class="steps">
+  <li><b>Etapa “Aprovação do gestor”</b> — aprovador: papel <em>Gestor</em>.</li>
+  <li><b>Decisão “Valor acima de R$ 5.000?”</b> — condição: <em>Valor estimado (R$) maior que 5000</em>.
+      <br><em>Se verdadeiro:</em> etapa “Aprovação da diretoria” (usuário: Administrador). <em>Se falso:</em> vazio.</li>
+  <li><b>Etapa “Análise financeira”</b> — aprovador: papel <em>Financeiro</em>. Os campos <em>Número do empenho</em> e <em>Forma de pagamento</em> são “preenchidos por Financeiro” e aparecem aqui.</li>
+  <li><b>Integrações</b> — <em>Ao enviar:</em> chat corporativo · <em>Ao aprovar:</em> ERP e BI · <em>Ao reprovar:</em> sistema financeiro.</li>
+</ol>
+<p>Uma compra de R$ 380 percorre: gestor → financeiro. Uma de R$ 18.500: gestor → diretoria → financeiro.</p>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

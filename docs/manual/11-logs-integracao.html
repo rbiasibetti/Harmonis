@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logs de integração — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="11-logs-integracao.html">
+<main>
+<article>
+
+<div class="crumbs">Integrações</div>
+<h1 id="logs">Logs de integração</h1>
+<p class="lead">O histórico de cada tentativa de envio de webhook: o que foi enviado, o que o destino respondeu e quanto tempo levou.</p>
+
+<div class="callout note">
+  <b>Permissões necessárias</b>
+  <p>Ver os logs: <code class="perm">integrations.logs</code>. Reenviar: <code class="perm">integrations.logs</code> <b>e</b> <code class="perm">integrations.update</code>.
+  Os logs mostram o conteúdo enviado (dados dos formulários); conceda a permissão somente a quem pode vê-los.</p>
+</div>
+
+<h2 id="tela">A tela de logs</h2>
+<figure>
+  <a class="zoom" href="img/logs-list.png"><img src="img/logs-list.png" alt="Tela de logs de integração"></a>
+  <figcaption><b>Menu Logs de integração.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Contadores das últimas 24 h</b> — sucessos, erros e ignorados.</li>
+  <li><b>Filtros</b> — status, evento, integração, período e busca livre.</li>
+  <li><b>Registro</b> — cada linha é uma tentativa; clique para abrir o detalhe.</li>
+  <li><b>Etiquetas</b> — <em>manual</em> (teste ou reenvio feito por uma pessoa) e <em>tentativa N</em> (retentativa automática).</li>
+  <li><b>Paginação</b> — 25 registros por página, do mais recente ao mais antigo.</li>
+</ol>
+
+<h3 id="filtros">Filtros</h3>
+<table class="free">
+  <thead><tr><th>Filtro</th><th>Opções</th></tr></thead>
+  <tbody>
+    <tr><td>Status</td><td>Todos · Sucesso · Erro · Ignorado.</td></tr>
+    <tr><td>Evento</td><td>Todos · Formulário enviado · Processo aprovado · Processo reprovado · Teste.</td></tr>
+    <tr><td>Integração</td><td>Todas ou uma integração específica (lista disponível a quem também tem <code class="perm">integrations.view</code>).</td></tr>
+    <tr><td>Período</td><td>Últimas 24 horas · Últimos 7 dias (padrão) · Últimos 30 dias · Todo o período.</td></tr>
+    <tr><td>Busca</td><td>Procura no nome da integração, no nome do formulário e na mensagem de erro (tecle <kbd>Enter</kbd>).</td></tr>
+  </tbody>
+</table>
+<p>Ao abrir os logs pelo ícone ☰ de uma integração, o filtro de integração já vem preenchido.</p>
+
+<h3 id="colunas">Colunas</h3>
+<table class="free">
+  <thead><tr><th>Coluna</th><th>Conteúdo</th></tr></thead>
+  <tbody>
+    <tr><td>Quando</td><td>Data e hora da tentativa.</td></tr>
+    <tr><td>Integração</td><td>Nome (como era no momento do envio), formulário de origem e etiquetas <em>manual</em>/<em>tentativa N</em>.</td></tr>
+    <tr><td>Evento</td><td>Formulário enviado, Processo aprovado, Processo reprovado ou Teste.</td></tr>
+    <tr><td>Status</td><td><span class="badge ok">Sucesso</span>, <span class="badge off">Erro</span>, <span class="badge off">Erro · repetirá</span> ou <span class="badge">Ignorado</span>, com a mensagem de erro abaixo.</td></tr>
+    <tr><td>HTTP</td><td>Código de resposta do destino (— se não houve resposta).</td></tr>
+    <tr><td>Duração</td><td>Tempo da tentativa em milissegundos.</td></tr>
+  </tbody>
+</table>
+
+<h3 id="status">Os status</h3>
+<table class="free">
+  <thead><tr><th>Status</th><th>Significado</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge ok">Sucesso</span></td><td>O destino respondeu HTTP 2xx.</td></tr>
+    <tr><td><span class="badge off">Erro</span></td><td>A tentativa falhou e não será repetida (ou era a última).</td></tr>
+    <tr><td><span class="badge off">Erro · repetirá</span></td><td>Falha transitória: uma nova tentativa já está agendada. Ela aparecerá como outra linha, com a etiqueta <em>tentativa N</em>.</td></tr>
+    <tr><td><span class="badge">Ignorado</span></td><td>Nenhum envio foi feito: a integração estava <em>despublicada</em> ou foi <em>excluída</em>.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="detalhe">Detalhe de um registro</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/log-detail.png"><img src="img/log-detail.png" alt="Detalhe de um registro de log com erro"></a>
+  <figcaption><b>Detalhe</b> de uma tentativa com erro (HTTP 401).</figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Resumo</b> — quando, evento, formulário (e resposta de origem), método e URL (com valores sensíveis mascarados), resposta HTTP e duração, número da tentativa e o identificador da entrega.</li>
+  <li><b>Mensagem</b> — o motivo do erro, em destaque.</li>
+  <li><b>Conteúdo enviado</b> — o JSON exato que foi enviado ao destino, formatado.</li>
+  <li><b>Reenviar</b> — envia o <em>mesmo conteúdo</em> novamente (e <b>Fechar</b>).</li>
+</ol>
+<p>Abaixo do conteúdo enviado aparece também a <b>Resposta do destino</b> (até 4.000 caracteres).</p>
+
+<h3 id="reenvio">Reenviar manualmente</h3>
+<p>Útil depois de corrigir a causa de um erro (credencial, URL, sistema de destino fora do ar):</p>
+<ol class="steps">
+  <li>Corrija a integração (se necessário) e confira com <b>Enviar teste</b>.</li>
+  <li>Abra o registro com erro nos logs e clique em <b>↻ Reenviar</b>.</li>
+  <li>O resultado aparece na hora na mesma janela e uma nova linha (<em>manual</em>) é adicionada à lista.</li>
+</ol>
+<ul>
+  <li>O reenvio usa o conteúdo <b>original</b> gravado no log (não recalcula os dados), com um novo identificador de entrega.</li>
+  <li>Funciona mesmo que a integração esteja em rascunho; <b>não</b> funciona se ela foi excluída (“A integração deste registro foi excluída.”).</li>
+  <li>Não há retentativas automáticas em reenvios manuais.</li>
+</ul>
+
+<h2 id="diagnostico">Diagnóstico de erros comuns</h2>
+<table class="free">
+  <thead><tr><th>Mensagem no log</th><th>O que significa / o que fazer</th></tr></thead>
+  <tbody>
+    <tr><td>O destino respondeu HTTP 401 / 403.</td><td>Credencial inválida ou sem permissão. Revise a autenticação (um segredo digitado errado é a causa mais comum) e use <b>Enviar teste</b>.</td></tr>
+    <tr><td>O destino respondeu HTTP 400 / 404 / 422.</td><td>O destino recusou a requisição: URL ou método incorretos, ou o corpo não tem o formato esperado. Veja a <em>Resposta do destino</em> no detalhe — costuma explicar o motivo. Não é repetido automaticamente.</td></tr>
+    <tr><td>O destino respondeu HTTP 5xx / 429 / 408.</td><td>Problema temporário no destino. É repetido automaticamente conforme as retentativas da integração.</td></tr>
+    <tr><td>Tempo esgotado após N s.</td><td>O destino demorou demais. Aumente o <em>Tempo limite</em> se for lento por natureza, ou verifique o sistema de destino.</td></tr>
+    <tr><td>Falha de rede: …</td><td>Não foi possível conectar (host fora do ar, porta fechada, certificado inválido). Verifique a URL e a rede.</td></tr>
+    <tr><td>Redirecionamento não seguido (HTTP 301/302…).</td><td>O destino redirecionou para outro endereço; por segurança o Harmonis não segue. Use a URL final diretamente.</td></tr>
+    <tr><td>Destino em rede privada/loopback bloqueado…</td><td>A empresa não habilitou integrações com a rede interna. Peça à TI (<code>HARMONIS_WEBHOOK_ALLOW_PRIVATE</code>).</td></tr>
+    <tr><td>Endereços link-local (ex.: metadados de nuvem) são bloqueados.</td><td>Destino proibido por segurança; não há como liberar.</td></tr>
+    <tr><td>Não foi possível resolver o host: …</td><td>O nome do servidor não existe ou o DNS não resolve. Confira a URL.</td></tr>
+    <tr><td>Pré-autenticação falhou (HTTP N).</td><td>O login do token falhou. Confira URL de login, usuário, senha, formato do corpo e nomes dos campos.</td></tr>
+    <tr><td>A resposta da pré-autenticação não contém o campo “…”.</td><td>O <em>Caminho do token</em> está errado. Ajuste (ex.: <code>data.token</code>).</td></tr>
+    <tr><td>Não autorizado (HTTP 401) mesmo após renovar o token.</td><td>O novo token também foi recusado: o usuário de integração não tem acesso ao endpoint.</td></tr>
+    <tr><td>A integração não está publicada; entrega ignorada.</td><td>Publique a integração.</td></tr>
+    <tr><td>A integração foi excluída; entrega ignorada.</td><td>Havia um vínculo antigo; já não há o que enviar.</td></tr>
+    <tr><td>Não foi possível montar o payload: …</td><td>Problema ao ler a resposta/formulário no momento do envio (ex.: formulário removido). Fale com a TI.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="retencao">Retenção</h2>
+<div class="callout note">
+  <b>Os logs não são apagados automaticamente</b>
+  <p>Eles permanecem mesmo que a integração ou o formulário sejam excluídos (o nome e a URL são guardados no próprio registro). Em empresas com muito volume, a TI deve planejar uma rotina de limpeza periódica.</p>
+</div>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Usuários, papéis e permissões — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="03-usuarios-papeis.html">
+<main>
+<article>
+
+<div class="crumbs">Administração</div>
+<h1 id="usuarios-papeis">Usuários, papéis e permissões</h1>
+<p class="lead">Quem acessa o sistema, o que cada pessoa pode fazer e como montar papéis sob medida.</p>
+
+<div class="callout note">
+  <b>Permissões necessárias</b>
+  <p>Ver usuários: <code class="perm">users.view</code> · criar: <code class="perm">users.create</code> · editar: <code class="perm">users.update</code> ·
+  remover: <code class="perm">users.delete</code>. Para papéis: <code class="perm">roles.view</code>, <code class="perm">roles.create</code>,
+  <code class="perm">roles.update</code>, <code class="perm">roles.delete</code>.</p>
+</div>
+
+<h2 id="usuarios">Usuários</h2>
+<figure>
+  <a class="zoom" href="img/users-list.png"><img src="img/users-list.png" alt="Lista de usuários"></a>
+  <figcaption><b>Menu Usuários.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>+ Novo usuário</b> — abre o cadastro (visível com <code class="perm">users.create</code>).</li>
+  <li><b>Busca</b> — procura por nome ou e-mail; tecle <kbd>Enter</kbd> ou clique em <b>Buscar</b>.</li>
+  <li><b>Papéis</b> — etiquetas com o identificador de cada papel do usuário.</li>
+  <li><b>Ações</b> — ✎ editar e 🗑 remover. O <span class="badge">Proprietário</span> não pode ser removido.</li>
+</ol>
+<p>Colunas da tabela: <b>Nome</b> (com a etiqueta <span class="badge">Proprietário</span> quando for o caso), <b>E-mail</b>, <b>Cargo</b>,
+<b>Papéis</b> e <b>Status</b> (<span class="badge ok">Ativo</span> ou <span class="badge off">Inativo</span>).</p>
+
+<h3 id="novo-usuario">Cadastrar um usuário</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/users-modal-new.png"><img src="img/users-modal-new.png" alt="Janela de novo usuário"></a>
+  <figcaption><b>Novo usuário.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Nome</b> — obrigatório. Aparece nas listas, notificações e na linha do tempo dos processos.</li>
+  <li><b>E-mail</b> — obrigatório, único na empresa e usado para entrar. <em>Não pode ser alterado depois</em>.</li>
+  <li><b>Cargo (opcional)</b> — texto livre exibido na lista.</li>
+  <li><b>Papéis</b> — marque um ou mais. As permissões somam-se. O identificador do papel aparece ao lado do nome.</li>
+</ol>
+
+<h3 id="senha-inicial">Senha inicial</h3>
+<p>Ao salvar, o sistema <strong>gera uma senha inicial</strong> e a exibe <strong>uma única vez</strong> na janela (“Usuário criado! Senha inicial: …”).
+Anote e entregue à pessoa por um canal seguro — ela não será mostrada novamente.</p>
+<div class="callout warn">
+  <b>Atenção</b>
+  <p>Não há, nesta versão, tela para a pessoa trocar a própria senha nem envio automático por e-mail. Se a senha inicial se perder,
+  acione a TI (veja <a href="14-faq.html#esqueci-senha">Dúvidas</a>).</p>
+</div>
+
+<h3 id="editar-usuario">Editar e desativar</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/users-modal-edit.png"><img src="img/users-modal-edit.png" alt="Janela de edição de usuário"></a>
+  <figcaption><b>Editar usuário.</b> O e-mail aparece desabilitado.</figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Regras</th></tr></thead>
+  <tbody>
+    <tr><td>Nome, Cargo</td><td>Editáveis.</td></tr>
+    <tr><td>E-mail</td><td>Somente leitura na edição.</td></tr>
+    <tr><td>Papéis</td><td>Editáveis. Para o <b>proprietário</b> o campo é substituído por um aviso: ele mantém o papel de administrador.</td></tr>
+    <tr><td>Ativo / Inativo</td><td>Interruptor exibido só na edição. Usuário <b>inativo</b> não consegue entrar, mas seu histórico é preservado (aprovações já decididas, respostas enviadas).</td></tr>
+  </tbody>
+</table>
+<div class="callout danger">
+  <b>Restrições de segurança</b>
+  <ul>
+    <li>O <b>proprietário</b> não pode ser <em>desativado</em> nem <em>removido</em>.</li>
+    <li>Você <b>não pode desativar nem remover a si mesmo</b>.</li>
+    <li>E-mails duplicados são recusados (“Já existe um usuário com este e-mail.”).</li>
+  </ul>
+</div>
+<div class="callout tip">
+  <b>Dica</b>
+  <p>Em vez de remover alguém que saiu da empresa, <b>desative</b>: os registros históricos continuam consistentes e o acesso é bloqueado.</p>
+</div>
+
+<h2 id="papeis">Papéis e permissões</h2>
+<p>Um <b>papel</b> agrupa permissões. Atribuir papéis a usuários é a única forma de conceder acesso (exceto o proprietário, que tem tudo).
+O mesmo papel também é usado no <a href="06-fluxo-aprovacao.html">fluxo de aprovação</a> (“aprovador por papel”) e em
+<a href="04-formularios.html#preenchido-por">“Preenchido por”</a>.</p>
+<figure>
+  <a class="zoom" href="img/roles-list.png"><img src="img/roles-list.png" alt="Lista de papéis"></a>
+  <figcaption><b>Menu Papéis.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>+ Novo papel</b> — cria um papel personalizado (<code class="perm">roles.create</code>).</li>
+  <li><b>Sistema</b> — papéis nativos (Administrador, Gestor, Colaborador): só podem ser consultados (<b>Ver</b>).</li>
+  <li><b>Personalizado</b> — criados por você; podem ser editados e removidos.</li>
+  <li><b>Ações do cartão</b> — <b>Ver/Editar</b> abre a janela de permissões; 🗑 remove (apenas personalizados).</li>
+</ol>
+
+<h3 id="editor-papel">Criar ou editar um papel</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/roles-modal.png"><img src="img/roles-modal.png" alt="Janela de edição de papel com permissões"></a>
+  <figcaption><b>Editor de papel.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Rótulo</b> — o nome amigável exibido nas telas (ex.: <em>Financeiro</em>).</li>
+  <li><b>Caixa do grupo</b> — marca/desmarca todas as permissões do grupo de uma vez; fica “indeterminada” (–) quando só parte está marcada.</li>
+  <li><b>Permissões</b> — cada uma representa uma ação (ex.: <code class="perm">forms.view</code>). Marque apenas o necessário.</li>
+  <li><b>Salvar</b> — grava o papel. Usuários com ele passam a ter as permissões no <em>próximo login</em>.</li>
+</ol>
+<table class="free">
+  <thead><tr><th>Campo</th><th>Descrição e regras</th></tr></thead>
+  <tbody>
+    <tr><td>Nome (identificador)</td><td>Só ao criar. Vira letras minúsculas, sem acentos, com espaços trocados por “_” e sem símbolos (ex.: “Suporte Nível 2” → <code>suporte_nivel_2</code>). Não pode repetir um papel existente nem usar o nome de um papel de sistema.</td></tr>
+    <tr><td>Rótulo</td><td>Texto exibido ao usuário.</td></tr>
+    <tr><td>Permissões</td><td>Lista agrupada por recurso. Veja a <a href="12-permissoes.html">matriz completa</a>.</td></tr>
+  </tbody>
+</table>
+<div class="callout warn">
+  <b>Alterações valem no próximo login</b>
+  <p>As permissões de uma pessoa são lidas ao entrar. Depois de mudar papéis ou permissões, peça que a pessoa saia e entre novamente.</p>
+</div>
+<div class="callout note">
+  <b>Papéis de sistema</b>
+  <p>“Papéis de sistema não podem ser editados” nem removidos. Se precisar de algo parecido, crie um papel personalizado com as permissões desejadas.</p>
+</div>
+
+<h3 id="exemplos-papeis">Exemplos de papéis personalizados</h3>
+<table class="free">
+  <thead><tr><th>Papel</th><th>Permissões sugeridas</th><th>Serve para</th></tr></thead>
+  <tbody>
+    <tr><td>Financeiro</td><td><code class="perm">forms.view</code> <code class="perm">processes.view</code> <code class="perm">documents.view</code> <code class="perm">pages.view</code></td><td>Aprovar etapas e preencher campos complementares (“Preenchido por: Financeiro”).</td></tr>
+    <tr><td>Auditoria de integrações</td><td><code class="perm">integrations.logs</code></td><td>Consultar logs de webhooks sem ver credenciais.</td></tr>
+    <tr><td>Editor de portal</td><td><code class="perm">pages.view</code> <code class="perm">pages.create</code> <code class="perm">pages.update</code> <code class="perm">pages.delete</code></td><td>Equipe de comunicação.</td></tr>
+  </tbody>
+</table>
+<div class="callout tip">
+  <b>Aprovar não exige permissão especial</b>
+  <p>Quem decide uma etapa precisa apenas ter o <b>papel</b> indicado como aprovador (ou ser o usuário nomeado) e a permissão <code class="perm">processes.view</code> para ver a caixa de aprovações.</p>
+</div>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

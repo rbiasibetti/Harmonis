@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentos (GED) — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="08-documentos.html">
+<main>
+<article>
+
+<div class="crumbs">Conteúdo</div>
+<h1 id="documentos">Documentos (GED)</h1>
+<p class="lead">Gestão eletrônica de documentos: pastas hierárquicas, versões que preservam o histórico, metadados e busca em toda a base.</p>
+
+<div class="callout note">
+  <b>Permissões necessárias</b>
+  <p>Ver e baixar: <code class="perm">documents.view</code> · enviar arquivos, criar pastas e novas versões: <code class="perm">documents.create</code> ·
+  renomear pastas e editar dados do documento: <code class="perm">documents.update</code> · excluir: <code class="perm">documents.delete</code>.</p>
+</div>
+
+<h2 id="navegacao">Navegando</h2>
+<figure>
+  <a class="zoom" href="img/documents-root.png"><img src="img/documents-root.png" alt="Tela de documentos na raiz"></a>
+  <figcaption><b>Menu Documentos</b> — raiz do repositório.</figcaption>
+</figure>
+<ol class="legend">
+  <li><b>+ Pasta</b> — cria uma pasta <em>dentro da pasta atual</em>.</li>
+  <li><b>⬆ Enviar arquivo</b> — envia um arquivo para a pasta atual (abre o seletor de arquivos do computador).</li>
+  <li><b>Busca</b> — procura em <em>todas</em> as pastas (veja <a href="#busca">Busca</a>).</li>
+  <li><b>Caminho (breadcrumb)</b> — mostra onde você está; clique em <em>Raiz</em> ou em uma pasta para voltar.</li>
+</ol>
+<p>A tabela lista primeiro as <b>pastas</b> (🗀) e depois os <b>documentos</b> (📄). Colunas: <b>Nome</b>, <b>Tipo</b> (Pasta ou Documento) e <b>Detalhes</b> — data de criação para pastas; para documentos,
+a versão atual (<code>v2</code>) e quantos metadados possuem. Clique no nome de uma pasta para abri-la, ou no de um documento para ver o detalhe. O ícone ⬇ baixa a versão atual.</p>
+<figure>
+  <a class="zoom" href="img/documents-folder.png"><img src="img/documents-folder.png" alt="Conteúdo de uma pasta"></a>
+  <figcaption>Dentro da pasta <em>Políticas</em>: o caminho mostra “Raiz / Políticas”.</figcaption>
+</figure>
+
+<h2 id="pastas">Pastas</h2>
+<table class="free">
+  <thead><tr><th>Ação</th><th>Como fazer</th><th>Detalhes</th></tr></thead>
+  <tbody>
+    <tr><td>Criar</td><td><b>+ Pasta</b> → informe o <b>Nome</b> → <b>Criar</b> (ou <kbd>Enter</kbd>).</td><td>Pastas podem conter outras pastas, sem limite de níveis.</td></tr>
+    <tr><td>Renomear</td><td>✎ na linha da pasta → digite o novo nome.</td><td><code class="perm">documents.update</code></td></tr>
+    <tr><td>Excluir</td><td>🗑 na linha da pasta → confirmar.</td><td>Pergunta: “Excluir a pasta ‘X’ e todo o conteúdo?”. <b>Remove subpastas e documentos</b> (e seus arquivos físicos). <code class="perm">documents.delete</code></td></tr>
+  </tbody>
+</table>
+<figure class="small">
+  <a class="zoom" href="img/documents-newfolder.png"><img src="img/documents-newfolder.png" alt="Janela de nova pasta"></a>
+  <figcaption>Janela <b>Nova pasta</b>.</figcaption>
+</figure>
+
+<h2 id="upload">Enviando documentos</h2>
+<ol class="steps">
+  <li>Abra a pasta de destino (ou fique na raiz).</li>
+  <li>Clique em <b>⬆ Enviar arquivo</b> e escolha o arquivo. O envio começa em seguida (o botão mostra <em>Enviando…</em>).</li>
+  <li>O documento aparece na lista como <code>v1</code>, com o nome do arquivo. Clique nele para ajustar nome, descrição e metadados.</li>
+</ol>
+<ul>
+  <li>Tamanho máximo: <b>10 MB</b> por arquivo.</li>
+  <li>Qualquer tipo de arquivo é aceito.</li>
+  <li>Os arquivos ficam em armazenamento privado e <b>só são baixados por usuários autenticados</b> — não existe link público.</li>
+</ul>
+
+<h2 id="detalhe">Detalhe do documento</h2>
+<figure>
+  <a class="zoom" href="img/document-detail.png"><img src="img/document-detail.png" alt="Detalhe de um documento com versões e metadados"></a>
+  <figcaption><b>Detalhe do documento</b> (clique no nome).</figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Cabeçalho</b> — nome e versão atual.</li>
+  <li><b>Metadados</b> — pares chave/valor livres (ex.: <em>área = Compras</em>, <em>vigência = 2026</em>). <b>+ Metadado</b> acrescenta; ✕ remove.</li>
+  <li><b>Versões</b> — todas as versões, da mais recente à mais antiga, com nome do arquivo original, tamanho, quem enviou e quando. ⬇ baixa aquela versão específica.</li>
+  <li><b>Ações</b> — <b>⬆ Nova versão</b>, <b>Excluir</b> e <b>Fechar</b>.</li>
+</ol>
+<table class="free">
+  <thead><tr><th>Campo / ação</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td>Nome</td><td>Nome exibido do documento (pode diferir do nome do arquivo).</td></tr>
+    <tr><td>Descrição</td><td>Texto livre sobre o conteúdo.</td></tr>
+    <tr><td>Metadados</td><td>Chave e valor. Entram na busca. Linhas sem chave são ignoradas.</td></tr>
+    <tr><td>Salvar alterações</td><td>Grava nome, descrição e metadados (<code class="perm">documents.update</code>). Sem essa permissão, os dados aparecem somente para leitura.</td></tr>
+    <tr><td>⬆ Nova versão</td><td>Envia um novo arquivo para o mesmo documento: a versão atual passa a <code>v2</code>, <code>v3</code>… e <b>as anteriores continuam disponíveis</b> para download (<code class="perm">documents.create</code>).</td></tr>
+    <tr><td>Excluir</td><td>Remove o documento e <b>todas as versões</b>, inclusive os arquivos no servidor. Pede confirmação. (<code class="perm">documents.delete</code>)</td></tr>
+  </tbody>
+</table>
+<div class="callout tip">
+  <b>Versionamento no dia a dia</b>
+  <p>Em vez de enviar “Contrato_final_v2_revisado.pdf” como um novo documento, abra o documento existente e use <b>Nova versão</b>: o histórico fica junto e todo mundo vê sempre a versão atual.</p>
+</div>
+
+<h2 id="busca">Busca</h2>
+<p>Digite um termo na caixa de busca e clique em <b>Buscar</b> (ou <kbd>Enter</kbd>). A busca percorre <b>todas as pastas</b> e compara com:</p>
+<ul>
+  <li>o <b>nome</b> do documento;</li>
+  <li>a <b>descrição</b>;</li>
+  <li>os <b>metadados</b> (chaves e valores);</li>
+  <li>o <b>nome original</b> dos arquivos enviados.</li>
+</ul>
+<p>O resultado lista <b>Documento</b>, <b>Pasta</b> onde está, <b>Versão</b> e o atalho ⬇. Clique no nome para abrir o detalhe; <b>Limpar</b> volta à navegação por pastas.</p>
+<div class="callout note">
+  <b>A busca não lê o conteúdo dos arquivos</b>
+  <p>Ela usa apenas os dados cadastrais (nome, descrição, metadados e nome do arquivo). Para tornar um documento fácil de achar, preencha a descrição e os metadados.</p>
+</div>
+
+<h2 id="anexos-de-formularios">Anexos de formulários não ficam aqui</h2>
+<p>Arquivos anexados às respostas de formulários ficam vinculados à resposta e são acessados em <a href="05-preenchimento-respostas.html#respostas">Respostas</a> ou no <a href="07-processos.html">detalhe do processo</a>; eles <b>não</b> aparecem no módulo Documentos.</p>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>
