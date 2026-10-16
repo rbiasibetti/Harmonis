@@ -3,9 +3,13 @@ package app.harmonis.forms;
 import app.harmonis.forms.FormDtos.*;
 import app.harmonis.identity.User;
 import app.harmonis.identity.UserRepository;
+import app.harmonis.integrations.HookBindingService;
+import app.harmonis.integrations.WebhookEvents;
+import app.harmonis.tenancy.TenantContext;
 import app.harmonis.workflow.ApprovalService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -13,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.text.Normalizer;
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -24,11 +29,14 @@ public class FormService {
     private final FormSchemaService schema;
     private final ApprovalService approvals;
     private final FormAttachmentService attachmentsService;
+    private final HookBindingService hookBindings;
+    private final ApplicationEventPublisher events;
     private final ObjectMapper mapper;
 
     public FormService(FormRepository forms, FormSubmissionRepository submissions,
                        UserRepository users, FormSchemaService schema,
                        @Lazy ApprovalService approvals, FormAttachmentService attachmentsService,
+                       HookBindingService hookBindings, ApplicationEventPublisher events,
                        ObjectMapper mapper) {
         this.forms = forms;
         this.submissions = submissions;
@@ -36,6 +44,8 @@ public class FormService {
         this.schema = schema;
         this.approvals = approvals;
         this.attachmentsService = attachmentsService;
+        this.hookBindings = hookBindings;
+        this.events = events;
         this.mapper = mapper;
     }
 
@@ -115,6 +125,11 @@ public class FormService {
             sub.setDataJson(writeData(committed));
             submissions.save(sub);
         }
+
+        // Webhooks "ao enviar": publicado ANTES de iniciar o processo para preservar a ordem
+        // dos eventos (um processo sem etapas aplicaveis ja nasce aprovado). So dispara apos o commit.
+        events.publishEvent(new WebhookEvents.Trigger(TenantContext.require(), form.getId(),
+                WebhookEvents.SUBMITTED, sub.getId(), null, Instant.now()));
 
         // Se o formulario tem fluxo de aprovacao, inicia o processo.
         String flow = form.getApprovalFlow();
@@ -197,11 +212,12 @@ public class FormService {
     @Transactional(readOnly = true)
     public FlowView getFlow(long id) {
         Form form = require(id);
-        return new FlowView(readFlow(form.getApprovalFlow()), schema.readFields(form.getSchemaJson()));
+        return new FlowView(readFlow(form.getApprovalFlow()), schema.readFields(form.getSchemaJson()),
+                hookBindings.refsFor(form.getId()));
     }
 
     @Transactional
-    public FlowView saveFlow(long id, List<Map<String, Object>> nodes) {
+    public FlowView saveFlow(long id, List<Map<String, Object>> nodes, Map<String, List<Long>> hooks) {
         Form form = require(id);
         List<FormField> fields = schema.readFields(form.getSchemaJson());
         Set<String> fieldKeys = new HashSet<>();
@@ -215,7 +231,11 @@ public class FormService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fluxo inválido.");
         }
         forms.save(form);
-        return new FlowView(readFlow(form.getApprovalFlow()), schema.readFields(form.getSchemaJson()));
+        if (hooks != null) {
+            hookBindings.replace(form.getId(), hooks);
+        }
+        return new FlowView(readFlow(form.getApprovalFlow()), schema.readFields(form.getSchemaJson()),
+                hookBindings.refsFor(form.getId()));
     }
 
     @SuppressWarnings("unchecked")

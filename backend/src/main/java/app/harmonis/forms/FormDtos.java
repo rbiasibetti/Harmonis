@@ -1,5 +1,6 @@
 package app.harmonis.forms;
 
+import app.harmonis.integrations.IntegrationDtos.HookRef;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -35,9 +36,11 @@ public final class FormDtos {
     ) {}
 
     /** Fluxo de aprovacao + campos do formulario (para o editor de condicoes). */
-    public record FlowView(List<Map<String, Object>> nodes, List<FormField> fields) {}
+    public record FlowView(List<Map<String, Object>> nodes, List<FormField> fields,
+                           Map<String, List<HookRef>> hooks) {}
 
-    public record SaveFlowRequest(@NotNull List<Map<String, Object>> nodes) {}
+    /** hooks: evento -> ids de integracoes; nulo = nao altera os vinculos atuais. */
+    public record SaveFlowRequest(@NotNull List<Map<String, Object>> nodes, Map<String, List<Long>> hooks) {}
 
     /** Referencia de um anexo (retornada no upload e guardada na resposta). */
     public record AttachmentRef(Long id, String name, long size, String mime) {}
