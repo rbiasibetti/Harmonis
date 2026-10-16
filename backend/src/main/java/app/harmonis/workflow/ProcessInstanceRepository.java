@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProcessInstanceRepository extends JpaRepository<ProcessInstance, Long> {
     List<ProcessInstance> findByCreatedByOrderByCreatedAtDesc(Long createdBy);
@@ -15,4 +16,5 @@ public interface ProcessInstanceRepository extends JpaRepository<ProcessInstance
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("delete from ProcessInstance i where i.formId = :formId")
     void deleteByFormId(@Param("formId") Long formId);
+    Optional<ProcessInstance> findFirstBySubmissionId(Long submissionId);
 }

@@ -1,0 +1,72 @@
+<div class="page-head">
+  <div>
+    <h1>Integrações</h1>
+    <p class="muted">Webhooks de saída. Cadastre, publique e vincule aos fluxos de aprovação de cada formulário.</p>
+  </div>
+  <div class="head-actions">
+    @if (auth.can('integrations.logs')) {
+      <a class="btn btn-ghost" routerLink="/integration-logs">Ver logs</a>
+    }
+    @if (auth.can('integrations.create')) {
+      <a class="btn btn-primary" routerLink="/integrations/new">+ Nova integração</a>
+    }
+  </div>
+</div>
+
+@if (error()) { <p class="notice error">{{ error() }}</p> }
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr><th>Integração</th><th>Autenticação</th><th>Status</th><th>Usos</th><th>Último envio</th><th></th></tr>
+    </thead>
+    <tbody>
+      @for (i of items(); track i.id) {
+        <tr>
+          <td>
+            <strong>{{ i.name }}</strong>
+            @if (i.description) { <div class="muted desc">{{ i.description }}</div> }
+            <div class="url"><span class="method">{{ i.method }}</span> {{ i.url }}</div>
+          </td>
+          <td>{{ authLabel(i.authType) }}</td>
+          <td>
+            @if (i.status === 'published') { <span class="badge ok">Publicada</span> }
+            @else { <span class="badge gray">Rascunho</span> }
+          </td>
+          <td class="muted">{{ i.usageCount }}</td>
+          <td>
+            @if (i.lastAt) {
+              <span class="badge" [class.ok]="i.lastStatus === 'success'" [class.off]="i.lastStatus === 'error'"
+                    [class.gray]="i.lastStatus === 'skipped'">
+                {{ i.lastStatus === 'success' ? 'Sucesso' : i.lastStatus === 'error' ? 'Erro' : 'Ignorado' }}
+              </span>
+              <div class="muted desc">{{ i.lastAt | date:'short' }}</div>
+            } @else { <span class="muted">—</span> }
+          </td>
+          <td>
+            <div class="row-actions">
+              @if (auth.can('integrations.publish')) {
+                <button class="btn btn-ghost sm" [disabled]="busy() === i.id" (click)="togglePublish(i)">
+                  {{ i.status === 'published' ? 'Despublicar' : 'Publicar' }}
+                </button>
+              }
+              @if (auth.can('integrations.logs')) {
+                <a class="icon-action" title="Ver logs" [routerLink]="['/integration-logs']" [queryParams]="{ integrationId: i.id }">☰</a>
+              }
+              @if (auth.can('integrations.update')) {
+                <a class="icon-action" title="Editar" [routerLink]="['/integrations', i.id, 'edit']">✎</a>
+              }
+              @if (auth.can('integrations.delete')) {
+                <button class="icon-action danger" title="Excluir" (click)="remove(i)">🗑</button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">
+          {{ loading() ? 'Carregando…' : 'Nenhuma integração cadastrada ainda.' }}
+        </td></tr>
+      }
+    </tbody>
+  </table>
+</div>

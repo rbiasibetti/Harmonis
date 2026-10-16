@@ -1,6 +1,7 @@
 package app.harmonis.forms;
 
 import app.harmonis.identity.UserRepository;
+import app.harmonis.integrations.HookBindingService;
 import app.harmonis.notifications.NotificationRepository;
 import app.harmonis.workflow.ApprovalService;
 import app.harmonis.workflow.ProcessInstanceRepository;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,7 +35,8 @@ class FormServiceDeleteTest {
         notifications = mock(NotificationRepository.class);
         service = new FormService(forms, mock(FormSubmissionRepository.class), mock(UserRepository.class),
                 mock(FormSchemaService.class), mock(ApprovalService.class), attachments,
-                instances, notifications, new ObjectMapper());
+                instances, notifications, mock(HookBindingService.class),
+                mock(ApplicationEventPublisher.class), new ObjectMapper());
     }
 
     @Test
