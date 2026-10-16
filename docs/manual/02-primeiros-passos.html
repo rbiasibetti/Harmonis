@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primeiros passos — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="02-primeiros-passos.html">
+<main>
+<article>
+
+<div class="crumbs">Comece por aqui</div>
+<h1 id="primeiros-passos">Primeiros passos</h1>
+<p class="lead">Como entrar, o que há em cada área da tela, como funcionam as notificações e como usar o Harmonis no celular ou no tema escuro.</p>
+
+<h2 id="login">Entrando no sistema</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/login.png"><img src="img/login.png" alt="Tela de login"></a>
+  <figcaption><b>Tela de login.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Empresa (tenant)</b> — o identificador do seu ambiente (ex.: <code>demo</code>). Quem administra o sistema informa esse valor. Ele é obrigatório porque cada empresa tem seu próprio banco de dados.</li>
+  <li><b>E-mail</b> — o e-mail cadastrado para você (maiúsculas e minúsculas não importam).</li>
+  <li><b>Senha</b> — sua senha. Usuários novos recebem uma <em>senha inicial</em> gerada pelo sistema (veja <a href="03-usuarios-papeis.html#senha-inicial">Senha inicial</a>).</li>
+  <li><b>Entrar</b> — valida os dados e abre o dashboard.</li>
+  <li><b>Tema</b> — alterna entre tema claro e escuro; a escolha fica salva neste navegador.</li>
+</ol>
+<div class="callout warn">
+  <b>Mensagens de erro no login</b>
+  <ul>
+    <li><b>Credenciais inválidas.</b> — empresa, e-mail ou senha incorretos, <em>ou usuário inativo</em>. Por segurança a mensagem é a mesma em todos os casos.</li>
+    <li><b>Não foi possível entrar. Verifique o servidor.</b> — o servidor não respondeu (ou a empresa informada não existe). Avise a TI.</li>
+  </ul>
+</div>
+<div class="callout note">
+  <b>Duração da sessão</b>
+  <p>Após o login você permanece conectado por um período definido pela TI (padrão: 8 horas). Quando expira, as telas deixam de carregar dados:
+  clique em <b>Sair</b> e entre novamente. A versão atual não possui tela para trocar a própria senha nem recuperação por e-mail;
+  em caso de esquecimento, acione a TI (veja <a href="14-faq.html#esqueci-senha">Dúvidas</a>).</p>
+</div>
+
+<h2 id="anatomia">Anatomia da tela</h2>
+<figure>
+  <a class="zoom" href="img/dashboard.png"><img src="img/dashboard.png" alt="Dashboard com marcadores numerados"></a>
+  <figcaption><b>Dashboard</b> — a primeira tela depois do login.</figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Menu lateral</b> — um item por módulo. Só aparecem os módulos permitidos ao seu papel. O item ativo fica destacado.</li>
+  <li><b>Sino de notificações</b> — o número vermelho indica notificações não lidas (veja <a href="#notificacoes">abaixo</a>).</li>
+  <li><b>Tema</b> — alterna claro/escuro em qualquer tela.</li>
+  <li><b>Usuário</b> — mostra nome e e-mail logados; <b>Sair</b> encerra a sessão.</li>
+  <li><b>Cartões de indicadores</b> — clicáveis, levam ao módulo correspondente.</li>
+  <li><b>Listas rápidas</b> — últimas pendências e solicitações.</li>
+</ol>
+
+<h3 id="dashboard">O que o dashboard mostra</h3>
+<p>Cada cartão e lista só aparece se você tiver a permissão relacionada:</p>
+<table class="free">
+  <thead><tr><th>Item</th><th>Conteúdo</th><th>Permissão</th></tr></thead>
+  <tbody>
+    <tr><td>Aprovações pendentes</td><td>Quantas tarefas aguardam a sua decisão.</td><td><code class="perm">processes.view</code></td></tr>
+    <tr><td>Processos ativos</td><td>Processos ainda em andamento na empresa.</td><td><code class="perm">processes.view</code></td></tr>
+    <tr><td>Formulários publicados</td><td>Total de formulários abertos a respostas.</td><td><code class="perm">forms.view</code></td></tr>
+    <tr><td>Documentos</td><td>Total de documentos no GED.</td><td><code class="perm">documents.view</code></td></tr>
+    <tr><td>Páginas publicadas</td><td>Total de páginas no portal.</td><td><code class="perm">pages.view</code></td></tr>
+    <tr><td>Usuários ativos</td><td>Pessoas com acesso liberado.</td><td><code class="perm">users.view</code></td></tr>
+    <tr><td>Aprovações pendentes (lista)</td><td>As tarefas mais recentes que você pode decidir.</td><td><code class="perm">processes.view</code></td></tr>
+    <tr><td>Minhas solicitações (lista)</td><td>Suas últimas solicitações e o status de cada uma.</td><td><code class="perm">processes.view</code></td></tr>
+    <tr><td>Respostas recentes (lista)</td><td>Últimas respostas recebidas pelos formulários.</td><td><code class="perm">forms.submissions</code></td></tr>
+  </tbody>
+</table>
+
+<h2 id="notificacoes">Notificações</h2>
+<figure>
+  <a class="zoom" href="img/notifications.png"><img src="img/notifications.png" alt="Lista de notificações aberta"></a>
+  <figcaption><b>Sino aberto.</b> Itens não lidos têm destaque; ao clicar, a notificação é marcada como lida e você vai direto ao assunto.</figcaption>
+</figure>
+<p>O Harmonis cria notificações dentro do sistema em dois casos:</p>
+<ul>
+  <li><b>Aprovação solicitada</b> — quando uma etapa é aberta, todos os aprovadores dela são avisados (o próprio solicitante não é avisado de suas solicitações).</li>
+  <li><b>Solicitação aprovada / reprovada</b> — quando o processo termina, o solicitante é avisado.</li>
+</ul>
+<p>Use <b>Marcar todas como lidas</b> para limpar o contador. Notificações levam à tela <em>Processos</em>.</p>
+<div class="callout note">
+  <b>Atualização</b>
+  <p>O contador é atualizado quando a tela é carregada e ao abrir o sino. Para ver algo recém-criado, abra o sino ou recarregue a página.</p>
+</div>
+
+<h2 id="convencoes">Convenções da interface</h2>
+<table class="free">
+  <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
+  <tbody>
+    <tr><td>✎</td><td>Editar (em formulários, na lista, significa <em>Preencher</em>).</td></tr>
+    <tr><td>⚙</td><td>Editar a definição do formulário (campos).</td></tr>
+    <tr><td>⇄</td><td>Abrir o fluxo de aprovação do formulário.</td></tr>
+    <tr><td>📊</td><td>Ver as respostas do formulário.</td></tr>
+    <tr><td>🗑</td><td>Excluir/remover (sempre pede confirmação).</td></tr>
+    <tr><td>⬇ / ⬆</td><td>Baixar / enviar arquivo.</td></tr>
+    <tr><td>↑ ↓</td><td>Mover um item para cima ou para baixo.</td></tr>
+    <tr><td>✕</td><td>Remover um item de uma lista (opção, metadado, aprovador, cabeçalho…).</td></tr>
+    <tr><td>☰</td><td>Ver os logs (nas integrações) / abrir o menu (no celular).</td></tr>
+    <tr><td><span class="badge ok">Verde</span> · <span class="badge off">Vermelho</span> · <span class="badge">Cinza</span></td><td>Sucesso/ativo/publicado · erro/inativo/reprovado · neutro/pendente/rascunho.</td></tr>
+    <tr><td><span class="req">*</span></td><td>Campo obrigatório no formulário.</td></tr>
+    <tr><td>Janelas (modais)</td><td>Abrem sobre a tela; clique fora ou em <b>Cancelar/Fechar</b> para sair sem salvar.</td></tr>
+  </tbody>
+</table>
+<div class="callout note">
+  <b>Datas e horas</b>
+  <p>As datas das listas (ex.: “10/15/26, 9:52 PM”) seguem o formato do navegador/idioma configurado na aplicação. Os campos de data dos formulários seguem o idioma do seu navegador.</p>
+</div>
+
+<h2 id="tema-celular">Tema escuro e uso no celular</h2>
+<div class="two">
+  <figure class="small">
+    <a class="zoom" href="img/dark-dashboard.png"><img src="img/dark-dashboard.png" alt="Dashboard no tema escuro"></a>
+    <figcaption><b>Tema escuro.</b> Alterne pelo botão ☾/☀︎ na barra superior (ou na tela de login).</figcaption>
+  </figure>
+  <figure class="small">
+    <a class="zoom" href="img/mobile-menu.png"><img src="img/mobile-menu.png" alt="Menu no celular"></a>
+    <figcaption><b>No celular.</b> O menu vira um painel que abre pelo botão ☰ no canto superior esquerdo.</figcaption>
+  </figure>
+</div>
+<p>As telas se adaptam a telas pequenas: o menu vira um painel e os campos dos formulários se reorganizam em uma coluna.
+O <a href="06-fluxo-aprovacao.html">editor de fluxo</a> funciona melhor em tela larga.</p>
+<figure class="small">
+  <a class="zoom" href="img/mobile-dashboard.png"><img src="img/mobile-dashboard.png" alt="Dashboard no celular"></a>
+  <figcaption><b>Dashboard no celular.</b></figcaption>
+</figure>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

@@ -16,6 +16,7 @@
 
 ## Índice
 
+- [Manual do usuário](#manual-do-usuário)
 - [Sobre o projeto](#sobre-o-projeto)
 - [Recursos](#recursos)
 - [Como funciona (arquitetura)](#como-funciona-arquitetura)
@@ -39,6 +40,13 @@
 - [Licença](#licença)
 
 ---
+
+## Manual do usuário
+
+Há um **manual completo e ilustrado** (HTML navegável, com busca, tema escuro e capturas de tela numeradas)
+em [`docs/manual/`](docs/manual/index.html). Abra `docs/manual/index.html` no navegador — não exige servidor nem build.
+Ele descreve cada tela, cada campo e cada fluxo: usuários e papéis, construtor de formulários, fluxo de aprovação,
+processos, documentos, portal, integrações (webhooks) e logs, além de glossário, FAQ e resumo de implantação.
 
 ## Sobre o projeto
 
@@ -195,7 +203,7 @@ mapeia cada cliente ao seu banco (`harmonis_<slug>`). No login, o tenant é reso
 │   ├── catalog/0001_create_tenants.sql hm_tenants + tenant "acme"
 │   └── tenant/000X_*.sql               identidade, formulários, workflow, documentos, portal, anexos, integrações
 ├── tools/            Utilitários de desenvolvimento (ex.: MigrationRunner)
-└── docs/             Especificação de domínio e handoff
+└── docs/manual/      Manual do usuário (HTML navegável e ilustrado)
 ```
 
 ---

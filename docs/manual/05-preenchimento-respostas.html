@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preenchimento e respostas — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="05-preenchimento-respostas.html">
+<main>
+<article>
+
+<div class="crumbs">Formulários e processos</div>
+<h1 id="preenchimento">Preenchimento e respostas</h1>
+<p class="lead">Como o solicitante preenche e envia um formulário, o que acontece depois do envio e como consultar e exportar as respostas.</p>
+
+<div class="callout note">
+  <b>Permissões necessárias</b>
+  <p>Preencher: <code class="perm">forms.view</code> (o formulário precisa estar <span class="badge ok">Publicado</span>). Ver respostas e exportar: <code class="perm">forms.submissions</code>.</p>
+</div>
+
+<h2 id="preencher">Preenchendo um formulário</h2>
+<ol class="steps">
+  <li>Abra <b>Formulários</b> e clique em ✎ na linha do formulário desejado (o ícone só existe para formulários publicados).</li>
+  <li>Preencha os campos. Os marcados com <span class="req">*</span> são obrigatórios.</li>
+  <li>Anexe os arquivos solicitados (veja <a href="#anexando">Anexando arquivos</a>).</li>
+  <li>Clique em <b>Enviar</b>. Aparece <em>“Resposta enviada com sucesso!”</em>; use <b>Enviar outra</b> para preencher novamente.</li>
+</ol>
+<figure>
+  <a class="zoom" href="img/fill-form.png"><img src="img/fill-form.png" alt="Formulário Solicitação de compra em branco"></a>
+  <figcaption><b>Formulário “Solicitação de compra”.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Bloco</b> — título (e texto de apoio) que agrupa os campos seguintes.</li>
+  <li><b>Asterisco vermelho</b> — campo obrigatório.</li>
+  <li><b>Campos lado a lado</b> — cada um ocupa <em>metade</em> ou <em>um terço</em> da linha, conforme configurado no construtor.</li>
+  <li><b>Texto de ajuda</b> — orientação cinza sob o campo (ex.: “Valor total da compra.”).</li>
+</ol>
+<div class="callout note">
+  <b>Campos que você não vê</b>
+  <p>Campos configurados como <a href="04-formularios.html#preenchido-por">“preenchidos no fluxo”</a> não aparecem para o solicitante — no exemplo, o bloco
+  <em>Parecer financeiro</em> está vazio porque o Financeiro o completa durante a aprovação. Campos com <a href="04-formularios.html#condicional">exibição condicional</a> só aparecem quando a condição é atendida.</p>
+</div>
+
+<h3 id="campos-condicionais">Campos que aparecem sozinhos</h3>
+<figure>
+  <a class="zoom" href="img/fill-conditional.png"><img src="img/fill-conditional.png" alt="Campo condicional exibido após informar valor alto"></a>
+  <figcaption>Ao informar <b>8500</b> em <em>Valor estimado</em>, surge o campo <em>Justificativa do valor alto</em> (regra: valor maior que 5000).</figcaption>
+</figure>
+
+<h2 id="validacao">Mensagens de validação</h2>
+<p>Se algo estiver incorreto, o envio é recusado e as mensagens aparecem em vermelho sob cada campo — nada é enviado até que tudo esteja correto.</p>
+<figure>
+  <a class="zoom" href="img/fill-errors.png"><img src="img/fill-errors.png" alt="Formulário com mensagens de erro de validação"></a>
+  <figcaption><b>Enviando com campos obrigatórios em branco.</b></figcaption>
+</figure>
+<table class="free">
+  <thead><tr><th>Mensagem</th><th>Causa</th></tr></thead>
+  <tbody>
+    <tr><td>Campo obrigatório.</td><td>Um campo obrigatório visível está vazio.</td></tr>
+    <tr><td>Anexo obrigatório.</td><td>Um campo de anexo obrigatório está sem arquivo.</td></tr>
+    <tr><td>Informe um e-mail válido.</td><td>O texto não tem formato de e-mail.</td></tr>
+    <tr><td>Opção inválida.</td><td>O valor escolhido não está entre as opções do campo.</td></tr>
+    <tr><td>Formato inválido. <em>(ou a mensagem definida no construtor)</em></td><td>O texto não obedece à expressão regular do campo.</td></tr>
+    <tr><td>Mensagens de número, data e tamanho</td><td>Descrevem o limite violado (mínimo/máximo, positivo, inteiro, comparação com outro campo, datas, tamanho do texto).</td></tr>
+  </tbody>
+</table>
+
+<h2 id="anexando">Anexando arquivos</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/fill-attachment.png"><img src="img/fill-attachment.png" alt="Campo de anexo com arquivo enviado"></a>
+  <figcaption>Campo de anexo com um arquivo já enviado: nome (clicável), tamanho e ✕ para remover.</figcaption>
+</figure>
+<ul>
+  <li>O arquivo é <b>enviado ao escolher</b>. Se o tipo ou o tamanho não forem aceitos, a mensagem aparece abaixo do campo e o arquivo não é anexado.</li>
+  <li>Em <b>anexo único</b>, depois de anexar, o botão de escolha some; remova o arquivo (✕) para trocar.</li>
+  <li>Em <b>anexo múltiplo</b>, você pode continuar adicionando arquivos; cada um é validado separadamente.</li>
+  <li>Clicar no nome do arquivo baixa uma cópia. Ao remover (✕) <em>antes</em> do envio, o arquivo é apagado do servidor.</li>
+  <li>Os limites (tipos e tamanho) são definidos por campo no construtor; o servidor aceita no máximo <b>10 MB por arquivo</b>.</li>
+</ul>
+<div class="callout warn">
+  <b>Atenção</b>
+  <p>Se fechar a página sem enviar o formulário, arquivos já carregados ficam “soltos” no servidor e não aparecem em lugar algum. Remova-os com ✕ antes de sair, se possível.</p>
+</div>
+
+<h2 id="depois-do-envio">O que acontece depois de enviar</h2>
+<ol class="steps">
+  <li>A resposta é <b>registrada</b> e os anexos são vinculados a ela (eles deixam de poder ser removidos pelo solicitante).</li>
+  <li>Se o formulário tem <a href="06-fluxo-aprovacao.html">fluxo de aprovação</a>, um <b>processo</b> é criado e a primeira etapa aplicável é aberta; os aprovadores recebem uma notificação.</li>
+  <li>Integrações vinculadas a <b>Ao enviar</b> são disparadas (em segundo plano).</li>
+  <li>Você acompanha o andamento em <b>Processos → Minhas solicitações</b> (<a href="07-processos.html">capítulo 7</a>).</li>
+</ol>
+<div class="callout note">
+  <b>Editar ou excluir uma resposta enviada</b>
+  <p>A interface não permite editar nem excluir respostas já enviadas. Para corrigir um dado, envie uma nova resposta (e, se for o caso, reprove a anterior).</p>
+</div>
+
+<h2 id="respostas">Consultando as respostas</h2>
+<p>Em <b>Formulários</b>, clique em 📊 na linha do formulário (exige <code class="perm">forms.submissions</code>).</p>
+<figure>
+  <a class="zoom" href="img/submissions.png"><img src="img/submissions.png" alt="Tabela de respostas de um formulário"></a>
+  <figcaption><b>Respostas — Solicitação de compra.</b></figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Exportar CSV</b> — baixa todas as respostas em planilha (aparece quando há respostas).</li>
+  <li><b>Colunas fixas</b> — <em>#</em> (numeração, a mais recente tem o maior número), <em>Enviado por</em> e <em>Data</em>; depois, uma coluna por campo (blocos de layout não viram coluna).</li>
+  <li><b>Anexos</b> — cada arquivo aparece como link 📎; clique para baixar.</li>
+</ol>
+<p>Campos de seleção múltipla mostram os valores separados por vírgula; confirmações mostram <em>Sim</em>/<em>Não</em>. Campos completados durante o fluxo também aparecem aqui assim que preenchidos.</p>
+
+<h3 id="csv">Exportação em CSV</h3>
+<table class="free">
+  <thead><tr><th>Característica</th><th>Detalhe</th></tr></thead>
+  <tbody>
+    <tr><td>Codificação</td><td>UTF-8 com <em>BOM</em> (o Excel abre corretamente os acentos).</td></tr>
+    <tr><td>Separador</td><td>Ponto e vírgula (<code>;</code>) — padrão do Excel em português.</td></tr>
+    <tr><td>Colunas</td><td><code>#</code>, <code>Enviado por</code>, <code>Data</code> e um rótulo por campo (sem os blocos).</td></tr>
+    <tr><td>Valores</td><td>Confirmação → <em>Sim</em>/<em>Não</em>; seleção múltipla → itens separados por “, ”; anexos → nomes dos arquivos.</td></tr>
+    <tr><td>Data</td><td>Data e hora de envio em formato ISO (UTC).</td></tr>
+  </tbody>
+</table>
+
+<h3 id="resgatar-anexos">Resgatar anexos</h3>
+<p>Os arquivos enviados nunca ficam acessíveis por um endereço público. Para baixar, você precisa estar autenticado e ter acesso à tela em que o link aparece
+(<em>Respostas</em> ou o detalhe do <em>Processo</em>). O download usa o nome original do arquivo.</p>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

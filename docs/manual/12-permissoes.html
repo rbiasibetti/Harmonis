@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matriz de permissões — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="12-permissoes.html">
+<main>
+<article>
+
+<div class="crumbs">Consulta</div>
+<h1 id="permissoes">Matriz de permissões</h1>
+<p class="lead">Quem pode o quê: todas as permissões do sistema, o que cada uma libera e como os papéis padrão as recebem.</p>
+
+<h2 id="como-funciona">Como o acesso é decidido</h2>
+<ul>
+  <li>Cada usuário tem um ou mais <b>papéis</b>; cada papel reúne <b>permissões</b>. As permissões de todos os papéis do usuário <b>se somam</b>.</li>
+  <li>O <b>proprietário</b> da empresa tem <b>todas</b> as permissões, sempre.</li>
+  <li>As permissões são lidas <b>no login</b>: após mudar papéis, o usuário precisa sair e entrar de novo.</li>
+  <li>O menu esconde o que você não pode usar, e o servidor <b>recusa</b> qualquer ação sem permissão (acessar o endereço direto não contorna).</li>
+  <li>Decidir uma tarefa de aprovação depende de ser o <b>aprovador da etapa</b> (papel ou usuário) — além de <code class="perm">processes.view</code>.</li>
+</ul>
+
+<h2 id="papeis-padrao">Papéis padrão</h2>
+<table class="free">
+  <thead><tr><th>Papel</th><th>Perfil</th></tr></thead>
+  <tbody>
+    <tr><td>Administrador (<code>admin</code>)</td><td>Todas as permissões, inclusive Integrações.</td></tr>
+    <tr><td>Gestor (<code>manager</code>)</td><td>Gerencia formulários (criar/editar/ver respostas), fluxo, documentos e portal; vê usuários (e pode criar/editar), vê papéis; vê processos. <b>Não</b> tem Integrações nem exclusão de formulários/usuários.</td></tr>
+    <tr><td>Colaborador (<code>member</code>)</td><td>Preenche formulários, vê processos, lê documentos e portal e pode enviar documentos.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="matriz">Todas as permissões</h2>
+<p>✔ = incluída no papel padrão; — = não incluída. Papéis personalizados podem combinar qualquer conjunto.</p>
+
+<h3 id="m-usuarios">Usuários e papéis</h3>
+<table>
+  <thead><tr><th>Permissão</th><th>O que libera</th><th>Admin</th><th>Gestor</th><th>Colab.</th></tr></thead>
+  <tbody>
+    <tr><td><code class="perm">users.view</code></td><td>Ver a lista de usuários e o menu Usuários; cartão “Usuários ativos” no dashboard.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">users.create</code></td><td>Cadastrar usuários (gera senha inicial).</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">users.update</code></td><td>Editar nome, cargo, papéis e ativar/desativar.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">users.delete</code></td><td>Remover usuários.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">roles.view</code></td><td>Ver papéis e permissões; também alimenta as listas de papéis nos construtores.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">roles.create</code></td><td>Criar papéis personalizados.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">roles.update</code></td><td>Editar papéis personalizados.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">roles.delete</code></td><td>Remover papéis personalizados.</td><td>✔</td><td>—</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<h3 id="m-formularios">Formulários e processos</h3>
+<table>
+  <thead><tr><th>Permissão</th><th>O que libera</th><th>Admin</th><th>Gestor</th><th>Colab.</th></tr></thead>
+  <tbody>
+    <tr><td><code class="perm">forms.view</code></td><td>Ver a lista de formulários, preencher e enviar, enviar anexos; usar o resgate de anexos.</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td><code class="perm">forms.create</code></td><td>Criar formulários.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">forms.update</code></td><td>Editar campos, abrir e salvar o <b>fluxo de aprovação</b> e vincular integrações publicadas.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">forms.delete</code></td><td>Excluir formulários.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">forms.submissions</code></td><td>Ver a tabela de respostas e exportar CSV; “Respostas recentes” no dashboard.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">processes.view</code></td><td>Acessar Processos: caixa de aprovações, minhas solicitações, detalhe e <b>decidir</b> tarefas das quais seja aprovador; notificações e cartões de processos no dashboard.</td><td>✔</td><td>✔</td><td>✔</td></tr>
+  </tbody>
+</table>
+
+<h3 id="m-conteudo">Documentos e portal</h3>
+<table>
+  <thead><tr><th>Permissão</th><th>O que libera</th><th>Admin</th><th>Gestor</th><th>Colab.</th></tr></thead>
+  <tbody>
+    <tr><td><code class="perm">documents.view</code></td><td>Navegar, buscar e baixar documentos.</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td><code class="perm">documents.create</code></td><td>Criar pastas, enviar arquivos e novas versões.</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td><code class="perm">documents.update</code></td><td>Renomear pastas; editar nome, descrição e metadados.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">documents.delete</code></td><td>Excluir pastas e documentos.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">pages.view</code></td><td>Ler o portal.</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td><code class="perm">pages.create</code></td><td>Criar páginas.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">pages.update</code></td><td>Listar (inclusive rascunhos), editar e publicar páginas; botão “Gerenciar páginas”.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">pages.delete</code></td><td>Excluir páginas.</td><td>✔</td><td>✔</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<h3 id="m-integracoes">Integrações</h3>
+<table>
+  <thead><tr><th>Permissão</th><th>O que libera</th><th>Admin</th><th>Gestor</th><th>Colab.</th></tr></thead>
+  <tbody>
+    <tr><td><code class="perm">integrations.view</code></td><td>Ver o cadastro de integrações (inclusive URLs) e onde são usadas.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">integrations.create</code></td><td>Cadastrar integrações.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">integrations.update</code></td><td>Editar, <b>testar</b> e (junto com <code>integrations.logs</code>) <b>reenviar</b>.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">integrations.delete</code></td><td>Excluir integrações (sem vínculos).</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">integrations.publish</code></td><td>Publicar e despublicar.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">integrations.logs</code></td><td>Ver os logs de integração e seus contadores.</td><td>✔</td><td>—</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<h2 id="telas">Tela por tela</h2>
+<table class="free">
+  <thead><tr><th>Tela / ação</th><th>Permissão necessária</th></tr></thead>
+  <tbody>
+    <tr><td>Dashboard</td><td>Qualquer usuário; cada cartão/lista exige a permissão do respectivo módulo.</td></tr>
+    <tr><td>Menu Usuários · Papéis</td><td><code class="perm">users.view</code> · <code class="perm">roles.view</code></td></tr>
+    <tr><td>Menu Formulários · Processos · Documentos · Portal</td><td><code class="perm">forms.view</code> · <code class="perm">processes.view</code> · <code class="perm">documents.view</code> · <code class="perm">pages.view</code></td></tr>
+    <tr><td>Menu Integrações · Logs de integração</td><td><code class="perm">integrations.view</code> · <code class="perm">integrations.logs</code></td></tr>
+    <tr><td>Construtor de formulário (ícone ⚙) e editor de fluxo (⇄)</td><td><code class="perm">forms.update</code> (novo formulário: <code class="perm">forms.create</code>)</td></tr>
+    <tr><td>Respostas e CSV (📊)</td><td><code class="perm">forms.submissions</code></td></tr>
+    <tr><td>Decidir uma aprovação</td><td><code class="perm">processes.view</code> + ser o aprovador da etapa (ou ser o proprietário)</td></tr>
+    <tr><td>Escolher integrações no fluxo</td><td><code class="perm">forms.update</code> (basta; não precisa de <code>integrations.*</code>)</td></tr>
+    <tr><td>Gerenciar páginas do portal</td><td><code class="perm">pages.update</code></td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <b>Quem monta fluxos precisa enxergar papéis e usuários</b>
+  <p>O editor de fluxo e o construtor listam os <em>papéis</em> e os <em>usuários</em> para você escolher aprovadores e “Preenchido por”. Essas listas vêm de
+  <code class="perm">roles.view</code> e <code class="perm">users.view</code>. O papel Gestor já tem ambas; em um papel personalizado que edite formulários, inclua-as — senão as listas de escolha ficam vazias.</p>
+</div>
+
+<div class="callout tip">
+  <b>Princípio do menor privilégio</b>
+  <p>Comece com o papel padrão mais restrito que atende a pessoa e crie papéis personalizados para necessidades específicas (por exemplo, um papel só com <code class="perm">integrations.logs</code> para auditoria).</p>
+</div>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

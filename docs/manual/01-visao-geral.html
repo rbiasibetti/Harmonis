@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visão geral e conceitos — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="01-visao-geral.html">
+<main>
+<article>
+
+<div class="crumbs">Comece por aqui</div>
+<h1 id="visao-geral">Visão geral e conceitos</h1>
+<p class="lead">O que cada parte do Harmonis faz, como as partes se conectam e o vocabulário que você verá em todas as telas.</p>
+
+<h2 id="modulos">Os módulos</h2>
+<p>O menu lateral reúne os módulos. Você só vê os itens para os quais seu papel tem permissão.</p>
+<table class="free">
+  <thead><tr><th>Menu</th><th>Para que serve</th><th>Uso típico</th></tr></thead>
+  <tbody>
+    <tr><td>Dashboard</td><td>Visão geral: indicadores, aprovações pendentes, suas solicitações e respostas recentes.</td><td>Todos</td></tr>
+    <tr><td>Usuários</td><td>Cadastro das pessoas que acessam o workspace.</td><td>Administradores</td></tr>
+    <tr><td>Papéis</td><td>Conjuntos de permissões atribuídos aos usuários.</td><td>Administradores</td></tr>
+    <tr><td>Formulários</td><td>Criar, publicar e preencher formulários; ver respostas; montar o fluxo de aprovação.</td><td>Solicitantes e gestores de formulários</td></tr>
+    <tr><td>Processos</td><td>Caixa de aprovações e acompanhamento das próprias solicitações.</td><td>Aprovadores e solicitantes</td></tr>
+    <tr><td>Documentos</td><td>Gestão eletrônica de documentos: pastas, versões, metadados, busca.</td><td>Todos (leitura); equipes (edição)</td></tr>
+    <tr><td>Portal</td><td>Páginas e comunicados internos publicados em Markdown.</td><td>Todos (leitura); comunicação (edição)</td></tr>
+    <tr><td>Integrações</td><td>Cadastro dos webhooks que enviam dados a sistemas externos.</td><td>Administradores / TI</td></tr>
+    <tr><td>Logs de integração</td><td>Histórico de cada envio, com sucesso/erro, conteúdo e reenvio.</td><td>TI / auditoria</td></tr>
+  </tbody>
+</table>
+
+<h2 id="como-se-conectam">Como as peças se conectam</h2>
+<p>O coração do sistema é o caminho <strong>formulário → resposta → processo de aprovação</strong>. Em torno dele, as
+<strong>integrações</strong> avisam outros sistemas e os <strong>papéis</strong> decidem quem pode fazer cada coisa.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 900 340" role="img" aria-label="Diagrama: formulário, resposta, processo, aprovado/reprovado e integrações">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" class="dg-ahb"/></marker>
+  </defs>
+  <rect x="20" y="40" width="170" height="70" rx="12" class="dg-brand"/>
+  <text x="105" y="70" text-anchor="middle" class="dg-t">Formulário</text><text x="105" y="90" text-anchor="middle" class="dg-s">publicado</text>
+  <rect x="240" y="40" width="170" height="70" rx="12" class="dg-box"/>
+  <text x="325" y="70" text-anchor="middle" class="dg-t">Resposta</text><text x="325" y="90" text-anchor="middle" class="dg-s">dados + anexos</text>
+  <rect x="460" y="40" width="170" height="70" rx="12" class="dg-box"/>
+  <text x="545" y="70" text-anchor="middle" class="dg-t">Processo</text><text x="545" y="90" text-anchor="middle" class="dg-s">etapas e decisões</text>
+  <rect x="700" y="8" width="170" height="60" rx="12" class="dg-ok"/>
+  <text x="785" y="36" text-anchor="middle" class="dg-t">Aprovado</text><text x="785" y="54" text-anchor="middle" class="dg-s">todas as etapas ok</text>
+  <rect x="700" y="84" width="170" height="60" rx="12" class="dg-off"/>
+  <text x="785" y="112" text-anchor="middle" class="dg-t">Reprovado</text><text x="785" y="130" text-anchor="middle" class="dg-s">uma etapa recusou</text>
+  <path d="M190 75 H238" class="dg-l" marker-end="url(#a1)"/><text x="214" y="66" text-anchor="middle" class="dg-s">envia</text>
+  <path d="M410 75 H458" class="dg-l" marker-end="url(#a1)"/><text x="434" y="66" text-anchor="middle" class="dg-s">inicia</text>
+  <path d="M630 60 C665 60 665 38 698 38" class="dg-l" marker-end="url(#a1)"/>
+  <path d="M630 90 C665 90 665 114 698 114" class="dg-l" marker-end="url(#a1)"/>
+
+  <rect x="190" y="220" width="520" height="86" rx="14" class="dg-warn"/>
+  <text x="450" y="250" text-anchor="middle" class="dg-t">Integrações (webhooks)</text>
+  <text x="450" y="272" text-anchor="middle" class="dg-s">cada formulário escolhe o que disparar em cada situação</text>
+  <text x="450" y="292" text-anchor="middle" class="dg-s">ERP · CRM · chat · BI · automações</text>
+  <path d="M325 112 V218" class="dg-d" marker-end="url(#a2)"/><text x="333" y="168" class="dg-tag">AO ENVIAR</text>
+  <path d="M785 70 V190 H640 V218" class="dg-d" marker-end="url(#a2)"/><text x="660" y="180" class="dg-tag">AO APROVAR</text>
+  <path d="M845 145 V200 H690 V218" class="dg-d" marker-end="url(#a2)"/><text x="713" y="212" class="dg-tag" style="display:none">AO REPROVAR</text>
+  <text x="852" y="188" text-anchor="end" class="dg-tag">AO REPROVAR</text>
+
+  <rect x="20" y="220" width="150" height="86" rx="12" class="dg-box"/>
+  <text x="95" y="250" text-anchor="middle" class="dg-t">Papéis</text><text x="95" y="270" text-anchor="middle" class="dg-s">definem quem vê,</text><text x="95" y="286" text-anchor="middle" class="dg-s">cria e aprova</text>
+</svg>
+<figcaption>Fluxo geral: o formulário publicado recebe respostas; cada resposta inicia um processo; o resultado aprovado ou reprovado
+(e também o envio) pode disparar integrações. Os papéis permeiam tudo.</figcaption>
+</div>
+
+<h2 id="conceitos">Conceitos-chave</h2>
+<table class="free">
+  <thead><tr><th>Conceito</th><th>Significado</th></tr></thead>
+  <tbody>
+    <tr><td>Empresa (tenant)</td><td>Seu ambiente isolado. Cada empresa tem seu próprio banco de dados, usuários, formulários e documentos. Você informa a empresa ao entrar.</td></tr>
+    <tr><td>Proprietário</td><td>O primeiro usuário da empresa. Tem todas as permissões, não pode ser removido nem desativado e mantém o papel de administrador.</td></tr>
+    <tr><td>Papel</td><td>Um conjunto de permissões (ex.: Gestor, Financeiro). Um usuário pode ter vários papéis; as permissões se somam.</td></tr>
+    <tr><td>Permissão</td><td>Direito de fazer algo, no formato <code class="perm">recurso.ação</code> (ex.: <code class="perm">forms.create</code>).</td></tr>
+    <tr><td>Formulário</td><td>Um conjunto de campos. Fica em <span class="badge">Rascunho</span> até ser <span class="badge ok">Publicado</span>; só publicado recebe respostas.</td></tr>
+    <tr><td>Resposta</td><td>Os dados enviados por alguém para um formulário.</td></tr>
+    <tr><td>Fluxo de aprovação</td><td>A sequência de etapas (e decisões condicionais) que uma resposta percorre. É configurado por formulário.</td></tr>
+    <tr><td>Etapa</td><td>Um passo do fluxo com um ou mais aprovadores (por papel ou usuário específico).</td></tr>
+    <tr><td>Decisão (gateway)</td><td>Um desvio no fluxo: “se a condição for verdadeira, siga por A; senão, por B”.</td></tr>
+    <tr><td>Processo</td><td>A execução do fluxo para uma resposta específica. Tem status <span class="badge">Pendente</span>, <span class="badge ok">Aprovado</span> ou <span class="badge off">Reprovado</span>.</td></tr>
+    <tr><td>Tarefa</td><td>Uma pendência individual de aprovação criada para cada aprovador de uma etapa.</td></tr>
+    <tr><td>Campo complementar</td><td>Campo do formulário marcado como “Preenchido por” um papel: é completado por um aprovador durante o fluxo, não pelo solicitante.</td></tr>
+    <tr><td>Integração</td><td>Um webhook de saída cadastrado (destino, autenticação, cabeçalhos). Precisa estar <em>Publicada</em> para ser usada.</td></tr>
+    <tr><td>Evento</td><td>Situação que dispara integrações: <strong>enviado</strong>, <strong>aprovado</strong> ou <strong>reprovado</strong>.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="ciclo-de-vida">Ciclo de vida de uma solicitação</h2>
+<div class="diagram">
+<svg viewBox="0 0 900 250" role="img" aria-label="Estados de um processo">
+  <defs><marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+  <rect x="20" y="85" width="150" height="60" rx="30" class="dg-brand"/><text x="95" y="120" text-anchor="middle" class="dg-t">Envio</text>
+  <rect x="250" y="85" width="170" height="60" rx="30" class="dg-box"/><text x="335" y="112" text-anchor="middle" class="dg-t">Pendente</text><text x="335" y="130" text-anchor="middle" class="dg-s">etapa em andamento</text>
+  <rect x="690" y="20" width="190" height="60" rx="30" class="dg-ok"/><text x="785" y="56" text-anchor="middle" class="dg-t">Aprovado</text>
+  <rect x="690" y="150" width="190" height="60" rx="30" class="dg-off"/><text x="785" y="186" text-anchor="middle" class="dg-t">Reprovado</text>
+  <path d="M170 115 H248" class="dg-l" marker-end="url(#b1)"/>
+  <path d="M420 105 C520 105 560 50 688 50" class="dg-l" marker-end="url(#b1)"/>
+  <text x="560" y="68" class="dg-s">todas as etapas aprovadas</text>
+  <path d="M420 125 C520 125 560 180 688 180" class="dg-l" marker-end="url(#b1)"/>
+  <text x="540" y="172" class="dg-s">reprovação que encerra o processo</text>
+  <path d="M335 85 C335 30 400 30 400 70" class="dg-l" marker-end="url(#b1)"/><text x="365" y="26" text-anchor="middle" class="dg-s">próxima etapa</text>
+</svg>
+<figcaption>Enquanto houver etapas a decidir, o processo permanece <b>Pendente</b>, avançando etapa a etapa.</figcaption>
+</div>
+<ol class="steps">
+  <li><b>Envio.</b> O solicitante preenche e envia o formulário. A resposta é registrada e, se o formulário tem fluxo, um processo é criado.
+      Integrações vinculadas a <em>Ao enviar</em> são disparadas.</li>
+  <li><b>Etapas.</b> A primeira etapa aplicável é aberta e cada aprovador recebe uma <em>tarefa</em> (e uma notificação). Etapas cuja
+      condição não é atendida são puladas.</li>
+  <li><b>Decisões.</b> Cada aprovador aprova ou reprova (com comentário opcional). Dependendo do modo da etapa (<em>todos</em> ou
+      <em>basta um</em>) o processo avança ou é encerrado.</li>
+  <li><b>Conclusão.</b> Sem mais etapas: <span class="badge ok">Aprovado</span>. Se uma etapa reprova: <span class="badge off">Reprovado</span>.
+      O solicitante é notificado e as integrações de <em>Ao aprovar</em> ou <em>Ao reprovar</em> são disparadas.</li>
+</ol>
+<div class="callout note">
+  <b>Formulário sem fluxo</b>
+  <p>Se o formulário não tem etapas, a resposta é apenas registrada (nenhum processo é criado). Integrações de <em>Ao enviar</em> ainda disparam.</p>
+</div>
+
+<h2 id="perfis">Perfis típicos de uso</h2>
+<table class="free">
+  <thead><tr><th>Perfil</th><th>O que faz</th><th>Capítulos</th></tr></thead>
+  <tbody>
+    <tr><td>Solicitante</td><td>Preenche formulários, anexa arquivos, acompanha “Minhas solicitações”.</td><td><a href="05-preenchimento-respostas.html">5</a>, <a href="07-processos.html">7</a></td></tr>
+    <tr><td>Aprovador</td><td>Revisa dados, comenta, aprova/reprova e completa campos complementares.</td><td><a href="07-processos.html">7</a></td></tr>
+    <tr><td>Gestor de formulários</td><td>Desenha formulários e fluxos; vincula integrações; analisa respostas.</td><td><a href="04-formularios.html">4</a>, <a href="06-fluxo-aprovacao.html">6</a>, <a href="05-preenchimento-respostas.html">5</a></td></tr>
+    <tr><td>Administrador</td><td>Gerencia usuários e papéis; cadastra integrações.</td><td><a href="03-usuarios-papeis.html">3</a>, <a href="10-integracoes.html">10</a></td></tr>
+    <tr><td>Integrador / TI</td><td>Configura webhooks, valida assinatura, monitora logs; instala o sistema.</td><td><a href="10-integracoes.html">10</a>, <a href="11-logs-integracao.html">11</a>, <a href="15-implantacao.html">15</a></td></tr>
+  </tbody>
+</table>
+
+<h2 id="papeis-padrao">Papéis que já vêm no sistema</h2>
+<p>Toda empresa nasce com três papéis de sistema (não editáveis), além dos que você criar:</p>
+<table class="free">
+  <thead><tr><th>Papel</th><th>Identificador</th><th>Acesso</th></tr></thead>
+  <tbody>
+    <tr><td>Administrador</td><td><code>admin</code></td><td>Todas as permissões.</td></tr>
+    <tr><td>Gestor</td><td><code>manager</code></td><td>Gestão de formulários, documentos, portal e processos; consulta de usuários e papéis.</td></tr>
+    <tr><td>Colaborador</td><td><code>member</code></td><td>Preenche formulários, acompanha processos, lê o portal e envia documentos.</td></tr>
+  </tbody>
+</table>
+<p>Detalhes e a matriz completa em <a href="12-permissoes.html">Matriz de permissões</a>.</p>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dúvidas e solução de problemas — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="14-faq.html">
+<main>
+<article>
+
+<div class="crumbs">Consulta</div>
+<h1 id="faq">Dúvidas e solução de problemas</h1>
+<p class="lead">Respostas rápidas para as situações mais comuns, organizadas por assunto.</p>
+
+<h2 id="acesso">Acesso e conta</h2>
+<details id="esqueci-senha"><summary>Esqueci minha senha. O que faço?</summary>
+  <p>A versão atual não tem tela de troca ou recuperação de senha. Fale com o administrador ou a TI. Uma alternativa segura é criar para você um novo usuário (com outro e-mail) e desativar o antigo.
+  A atualização direta da senha no banco de dados só deve ser feita pela TI.</p>
+</details>
+<details><summary>Aparece “Credenciais inválidas.” ao entrar.</summary>
+  <p>Confira a <b>Empresa (tenant)</b>, o e-mail e a senha. A mesma mensagem aparece se o seu usuário estiver <b>inativo</b>. Peça a um administrador para verificar o cadastro.</p>
+</details>
+<details><summary>“Não foi possível entrar. Verifique o servidor.”</summary>
+  <p>O servidor não respondeu ou a empresa informada não existe. Tente novamente e, persistindo, acione a TI.</p>
+</details>
+<details><summary>As telas pararam de carregar dados / aparecem erros em tudo.</summary>
+  <p>Provavelmente sua sessão expirou (padrão: 8 horas). Clique em <b>Sair</b> e entre novamente.</p>
+</details>
+<details><summary>Um menu que eu usava sumiu.</summary>
+  <p>Seu papel mudou ou a permissão foi retirada. Se alguém alterou seus papéis, saia e entre de novo para atualizar. Se o item deveria existir, peça ao administrador (veja a <a href="12-permissoes.html">matriz</a>).</p>
+</details>
+<details><summary>Criei um usuário e perdi a senha inicial.</summary>
+  <p>Ela só é exibida uma vez. Veja “Esqueci minha senha”.</p>
+</details>
+
+<h2 id="formularios">Formulários</h2>
+<details><summary>Não vejo o ícone ✎ (preencher) no meu formulário.</summary>
+  <p>Ele só aparece para formulários <b>Publicados</b>. Abra o construtor (⚙) e mude o <em>Status</em> para <em>Publicado</em>; salve.</p>
+</details>
+<details><summary>Salvei o formulário e o campo novo não aparece nas listas de condição.</summary>
+  <p>Campos novos só ganham identificador depois de <b>salvos</b>. Salve e abra a condição novamente.</p>
+</details>
+<details><summary>Um campo “sumiu” do preenchimento.</summary>
+  <p>Ou ele é <em>“preenchido por”</em> um papel do fluxo (aparece só para o aprovador), ou tem <em>exibição condicional</em> e a condição ainda não foi atendida.</p>
+</details>
+<details><summary>“O campo ‘X’ é preenchido pelo papel ‘Y’, mas nenhuma etapa do fluxo é aprovada por esse papel…”</summary>
+  <p>Adicione ao fluxo uma etapa com aprovador <b>por papel</b> <em>Y</em>, ou mude o “Preenchido por” do campo para <em>Solicitante</em> ou outro papel que já aprove uma etapa.</p>
+</details>
+<details><summary>Não consigo excluir um formulário.</summary>
+  <p>Formulários que já têm processos de aprovação podem ser recusados na exclusão nesta versão. Volte o formulário para <b>Rascunho</b> para impedir novos envios.</p>
+</details>
+<details><summary>O anexo é recusado.</summary>
+  <p>Verifique o <b>tipo</b> (extensões aceitas) e o <b>tamanho</b> máximo definidos no campo — e lembre-se do teto de 10 MB do servidor. A mensagem aparece logo abaixo do campo.</p>
+</details>
+<details><summary>Enviei por engano. Posso editar ou apagar a resposta?</summary>
+  <p>Não pela interface. Envie uma nova resposta; se houver fluxo, o aprovador pode reprovar a anterior com um comentário.</p>
+</details>
+
+<h2 id="fluxo">Fluxo e processos</h2>
+<details><summary>Minha solicitação está “Pendente” há dias.</summary>
+  <p>Abra <b>Minhas solicitações → Ver</b> e olhe a linha do tempo: a etapa pendente indica o papel ou a pessoa que precisa agir. Avise-os; eles veem a pendência em <b>Processos → Aprovações</b>.</p>
+</details>
+<details><summary>Não vejo a aprovação que deveria ser minha.</summary>
+  <p>Confira se você tem o <b>papel</b> indicado na etapa (ou se é o usuário designado) e a permissão <code class="perm">processes.view</code>. Lembre-se de sair e entrar de novo depois de mudar papéis.</p>
+</details>
+<details><summary>Quem pode aprovar uma etapa “Por papel”?</summary>
+  <p>Qualquer usuário com esse papel. A primeira decisão encerra aquela tarefa. Para exigir mais de uma pessoa, adicione mais aprovadores à etapa (modo “todos”).</p>
+</details>
+<details><summary>Ao aprovar aparece erro sob um campo.</summary>
+  <p>O formulário tem campos <em>sob sua responsabilidade</em> obrigatórios ainda vazios. Preencha-os e aprove novamente.</p>
+</details>
+<details><summary>Aprovei sem querer. Dá para desfazer?</summary>
+  <p>Não. A decisão é definitiva. Se necessário, o solicitante pode enviar uma nova solicitação.</p>
+</details>
+<details><summary>Mudei o fluxo e processos antigos se comportaram diferente.</summary>
+  <p>Processos pendentes seguem a versão <em>atual</em> do fluxo. Evite alterar fluxos com solicitações em andamento.</p>
+</details>
+
+<h2 id="integracoes">Integrações</h2>
+<details><summary>A integração não aparece na lista do fluxo.</summary>
+  <p>Só integrações <b>publicadas</b> aparecem. Publique-a em <em>Integrações</em> (exige <code class="perm">integrations.publish</code>).</p>
+</details>
+<details><summary>Vinculei, mas nada foi enviado.</summary>
+  <p>Confira: (1) salvou o fluxo depois de vincular? (2) a integração está <b>publicada</b>? (3) o evento certo (enviar/aprovar/reprovar) está ligado? Veja os <a href="11-logs-integracao.html">logs</a>: se aparecer <em>Ignorado</em>, ela estava despublicada.</p>
+</details>
+<details><summary>O teste dá erro 401.</summary>
+  <p>Credencial incorreta. Redigite o segredo (deixar em branco mantém o antigo, que pode estar errado) e teste novamente. Em <em>Bearer com pré-autenticação</em>, confira também URL de login, nomes dos campos e caminho do token.</p>
+</details>
+<details><summary>“Destino em rede privada/loopback bloqueado”.</summary>
+  <p>Por segurança, destinos da rede interna ficam bloqueados por padrão. A TI pode habilitar com <code>HARMONIS_WEBHOOK_ALLOW_PRIVATE=true</code> (veja <a href="15-implantacao.html">Implantação</a>).</p>
+</details>
+<details><summary>O destino recebeu o mesmo evento duas vezes.</summary>
+  <p>Pode ter havido <b>retentativa</b> (a primeira resposta falhou ou demorou) ou um <b>reenvio manual</b>. Use o cabeçalho <code>X-Harmonis-Delivery</code> para deduplicar: ele é igual em todas as tentativas da mesma entrega.</p>
+</details>
+<details><summary>Não consigo excluir a integração.</summary>
+  <p>Ela está vinculada a formulários. Em <em>Integrações → ✎ → Onde é usada</em> veja quais, remova os vínculos nos respectivos fluxos e tente de novo.</p>
+</details>
+<details><summary>Esqueci o segredo que configurei.</summary>
+  <p>Segredos não podem ser consultados nem pela interface nem pela API. Defina um novo valor no campo e salve.</p>
+</details>
+
+<h2 id="documentos-portal">Documentos e portal</h2>
+<details><summary>O arquivo não sobe.</summary>
+  <p>O limite é de 10 MB por arquivo. Verifique também se você tem <code class="perm">documents.create</code>.</p>
+</details>
+<details><summary>A busca de documentos não encontra pelo conteúdo do arquivo.</summary>
+  <p>A busca usa nome, descrição, metadados e nome original do arquivo — não lê o conteúdo. Preencha descrição e metadados.</p>
+</details>
+<details><summary>Minha tabela em Markdown aparece como texto cheio de barras.</summary>
+  <p>Tabelas Markdown não são suportadas pelo portal. Use listas.</p>
+</details>
+<details><summary>A página publicada não aparece no portal.</summary>
+  <p>Confirme que o <em>Status</em> é <b>Publicada</b> e que você salvou.</p>
+</details>
+
+<h2 id="geral">Geral</h2>
+<details><summary>As datas aparecem como “10/15/26, 9:52 PM”.</summary>
+  <p>As listas seguem o formato de data configurado no aplicativo (padrão internacional). Os campos de data dos formulários usam o idioma do seu navegador.</p>
+</details>
+<details><summary>A tela parece desatualizada.</summary>
+  <p>As listas são carregadas ao abrir a tela. Recarregue a página (<kbd>F5</kbd>) para ver as mudanças mais recentes.</p>
+</details>
+
+<div class="callout tip">
+  <b>Não achou o que procurava?</b>
+  <p>Use a <b>busca</b> no topo deste manual (<kbd>/</kbd>) ou fale com a equipe responsável pelo Harmonis na sua empresa, informando a tela, o que você fez e a mensagem exibida.</p>
+</div>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>
