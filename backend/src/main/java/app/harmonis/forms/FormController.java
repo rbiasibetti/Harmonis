@@ -126,7 +126,7 @@ public class FormController {
     @PutMapping("/{id}/flow")
     @PreAuthorize("hasAuthority('forms.update')")
     public FlowView saveFlow(@PathVariable long id, @Valid @RequestBody SaveFlowRequest req) {
-        return service.saveFlow(id, req.nodes());
+        return service.saveFlow(id, req.nodes(), req.hooks());
     }
 
     @GetMapping("/{id}/submissions.csv")

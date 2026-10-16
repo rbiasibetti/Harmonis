@@ -30,6 +30,7 @@
 - [Configuração](#configuração)
 - [Implantação em produção](#implantação-em-produção)
 - [Provisionar um novo cliente (tenant)](#provisionar-um-novo-cliente-tenant)
+- [Integrações (webhooks)](#integrações-webhooks)
 - [Referência da API](#referência-da-api)
 - [Modelo de permissões](#modelo-de-permissões)
 - [Testes](#testes)
@@ -90,6 +91,19 @@ as de outros sistemas no mesmo banco (todas as tabelas usam o prefixo `hm_`).
 - **Modelador visual** com arrastar-e-soltar, zoom e mini-mapa.
 - **Caixa de aprovações**, acompanhamento das próprias solicitações e **timeline** por processo.
 - **Notificações** in-app (sino) para solicitações e conclusões.
+
+### Integrações (webhooks)
+- **Cadastro reutilizável** de webhooks de saída, com ciclo *rascunho → publicada*: só integrações
+  publicadas podem ser usadas nos fluxos.
+- **Vínculo por formulário e situação**: cada formulário dispara integrações diferentes **ao enviar**,
+  **ao aprovar** e **ao reprovar** (a mesma integração pode ser reaproveitada em vários formulários).
+- **Autenticação** do destino: usuário e senha (Basic), API Key (cabeçalho ou query), Bearer estático,
+  **Bearer com pré-autenticação** (login com usuário e senha, token em cache e renovado) e
+  **cabeçalhos customizados**; opcionalmente **assinatura HMAC-SHA256** do corpo.
+- **Entrega assíncrona** após o commit, com **retentativas** em falhas transitórias.
+- **Logs de integração** por tentativa (conteúdo enviado, resposta, HTTP, duração), com filtros,
+  **reenvio manual** e botão **Testar**.
+- Áreas de cadastro e de logs com **permissões próprias**.
 
 ### ECM / GED
 - Pastas hierárquicas com navegação por *breadcrumb* e exclusão recursiva.
@@ -168,6 +182,7 @@ mapeia cada cliente ao seu banco (`harmonis_<slug>`). No login, o tenant é reso
 │   │   ├── documents/      ECM/GED
 │   │   ├── forms/          formulários, schema, anexos
 │   │   ├── identity/       usuários, papéis, permissões (ACL)
+│   │   ├── integrations/   webhooks de saída: cadastro, entrega, logs
 │   │   ├── notifications/  notificações in-app
 │   │   ├── portal/         páginas Markdown
 │   │   ├── security/       filtro JWT, configuração de segurança
@@ -178,7 +193,7 @@ mapeia cada cliente ao seu banco (`harmonis_<slug>`). No login, o tenant é reso
 ├── migrations/       Scripts SQL (SQL Server), aplicados manualmente
 │   ├── 000_create_databases.sql        cria catálogo + tenant de demo (contexto: master)
 │   ├── catalog/0001_create_tenants.sql hm_tenants + tenant "acme"
-│   └── tenant/000X_*.sql               identidade, formulários, workflow, documentos, portal, anexos
+│   └── tenant/000X_*.sql               identidade, formulários, workflow, documentos, portal, anexos, integrações
 ├── tools/            Utilitários de desenvolvimento (ex.: MigrationRunner)
 └── docs/             Especificação de domínio e handoff
 ```
@@ -281,11 +296,17 @@ ambiente:
 | `HARMONIS_JWT_TTL` | `480` | Validade do token, em minutos |
 | `HARMONIS_CORS` | `http://localhost:4200,http://127.0.0.1:4200` | Origens permitidas (CSV) |
 | `HARMONIS_DOCS_DIR` | `storage/documents` | Raiz dos arquivos (documentos e anexos) |
+| `HARMONIS_SECRET_KEY` | *(dev)* | Chave de cifragem (AES-256-GCM) dos segredos das integrações (**obrigatória em produção; não a perca**) |
+| `HARMONIS_WEBHOOK_ALLOW_PRIVATE` | `false` | `true` permite webhooks para redes privadas/loopback (ver [Integrações](#integrações-webhooks)) |
+| `HARMONIS_WEBHOOK_POOL` | `4` | Threads de entrega de webhooks |
+| `HARMONIS_WEBHOOK_RETRY_DELAYS` | `5,30,120,300,600` | Espera (s) antes de cada retentativa |
 
 Limite de upload (multipart): **10 MB por arquivo / 15 MB por requisição** (em `application.yml`).
 
-> **Segurança:** em produção defina `HARMONIS_JWT_SECRET` com um valor forte e exclusivo, use um
-> usuário de banco com privilégios mínimos (em vez de `sa`) e sirva tudo sob HTTPS.
+> **Segurança:** em produção defina `HARMONIS_JWT_SECRET` e `HARMONIS_SECRET_KEY` com valores fortes
+> e exclusivos, use um usuário de banco com privilégios mínimos (em vez de `sa`) e sirva tudo sob HTTPS.
+> Trocar `HARMONIS_SECRET_KEY` torna **ilegíveis** os segredos de integrações já gravados (será preciso
+> informá-los novamente).
 
 ---
 
@@ -355,6 +376,120 @@ antes de construir o frontend.
    ```bash
    java -jar harmonis-backend.jar --harmonis.seed.tenant=<slug>
    ```
+
+---
+
+## Integrações (webhooks)
+
+Permite enviar os dados de um formulário a sistemas externos (ERP, CRM, automações) quando algo
+acontece no processo de aprovação.
+
+```
+Cadastrar integração ─▶ Publicar ─▶ Vincular no fluxo do formulário ─▶ Evento ocorre ─▶ Entrega + log
+ (URL, autenticação)    (rascunho→    (ao enviar · ao aprovar ·         (commit no       (assíncrona,
+                         publicada)    ao reprovar)                      banco)           com retentativas)
+```
+
+1. **Integrações** (menu): cadastre o destino (URL, método, autenticação, cabeçalhos, tempo limite e
+   retentativas). Use **Testar** para enviar um evento de exemplo — funciona em rascunho — e **Publicar**.
+2. **Editor de fluxo** do formulário (`/forms/{id}/flow`): em *Integrações (webhooks)*, escolha quais
+   integrações publicadas disparam **ao enviar**, **ao aprovar** e **ao reprovar**. Uma integração pode
+   atender vários formulários e eventos; cada situação pode usar integrações diferentes.
+3. **Logs de integração** (menu): acompanhe cada tentativa, abra o conteúdo enviado e a resposta, filtre
+   por status/evento/integração/período e **reenvie** manualmente.
+
+### Autenticação suportada
+
+| Tipo | O que o Harmonis envia |
+|---|---|
+| Sem autenticação | Apenas os cabeçalhos padrão e os customizados |
+| Usuário e senha (Basic) | `Authorization: Basic base64(usuário:senha)` |
+| API Key | Nome/valor da chave em um **cabeçalho** ou **parâmetro de query** |
+| Bearer token | `Authorization: Bearer <token>` (prefixo configurável) |
+| Bearer com pré-autenticação | Antes de enviar, faz login na URL informada (usuário e senha, corpo JSON ou *urlencoded*, campos extras como `grant_type`), extrai o token da resposta (caminho configurável, ex.: `data.token`), guarda em cache até expirar (`expires_in` ou validade padrão) e o envia como Bearer. Se o destino responder **401**, renova o token e refaz o envio uma vez |
+| Cabeçalhos customizados | Quaisquer cabeçalhos (inclusive `Authorization` próprio); valores podem ser marcados como **secretos** |
+
+Em todos os tipos é possível definir um **segredo de assinatura**: cada envio leva
+`X-Harmonis-Signature: sha256=<HMAC-SHA256 do corpo>` para o destino validar a origem.
+
+### O que é enviado
+
+`POST`/`PUT`/`PATCH` com `Content-Type: application/json` e os cabeçalhos
+`X-Harmonis-Event` (`submitted` · `approved` · `rejected` · `test`),
+`X-Harmonis-Delivery` (identificador da entrega — o mesmo nas retentativas, útil para idempotência)
+e, se configurado, `X-Harmonis-Signature`. Exemplo de corpo:
+
+```json
+{
+  "event": "approved",
+  "occurredAt": "2026-10-16T00:20:40Z",
+  "tenant": "acme",
+  "form": { "id": 11, "name": "Solicitação de compra", "slug": "solicitacao-de-compra" },
+  "submission": {
+    "id": 21,
+    "submittedAt": "2026-10-16T00:20:37Z",
+    "submittedBy": { "id": 1, "name": "Administrador", "email": "admin@acme.test" },
+    "data": { "campo_a1b2c3": "Compra de notebook" },
+    "answers": [
+      { "key": "campo_a1b2c3", "label": "Assunto", "type": "text", "value": "Compra de notebook" }
+    ]
+  },
+  "process": {
+    "id": 7,
+    "status": "approved",
+    "steps": [
+      { "step": "Gestor", "stepIndex": 0, "approver": "papel: manager", "status": "approved",
+        "decidedBy": { "id": 1, "name": "Administrador", "email": "admin@acme.test" },
+        "comment": "ok", "decidedAt": "2026-10-16T00:20:40Z" }
+    ]
+  }
+}
+```
+
+Anexos aparecem como referências (`id`, `name`, `size`, `mime`); os arquivos **não** são enviados.
+
+Validação da assinatura no destino (exemplo em Python):
+
+```python
+import hmac, hashlib
+esperado = "sha256=" + hmac.new(SEGREDO.encode(), corpo_bruto, hashlib.sha256).hexdigest()
+valido = hmac.compare_digest(esperado, request.headers["X-Harmonis-Signature"])
+```
+
+### Entrega, retentativas e logs
+
+- Os eventos são tratados **depois do commit** da transação de origem (um *rollback* nunca dispara
+  webhook) e em **threads próprias**: a aprovação não espera nem falha por causa do destino.
+- **Retentativas** (até `retries` da integração, 0–5; espera conforme `HARMONIS_WEBHOOK_RETRY_DELAYS`)
+  apenas em falhas transitórias: erro de rede, tempo esgotado, HTTP 408, 429 e 5xx. Respostas 4xx,
+  redirecionamentos e erros de configuração **não** são repetidos.
+- Cada tentativa gera um registro (`success` · `error` · `skipped`) com URL (segredos mascarados),
+  conteúdo enviado, resposta (truncada), HTTP e duração. Entregas a integrações **despublicadas**
+  ou excluídas são registradas como `skipped`. Testes e reenvios manuais aparecem marcados como *manual*.
+- A integração só pode ser **excluída** quando não estiver vinculada a nenhum formulário; os logs
+  permanecem após a exclusão.
+
+### Segurança
+
+- **Segredos cifrados em repouso** (AES-256-GCM, chave `HARMONIS_SECRET_KEY`) e **nunca devolvidos
+  pela API**: a tela mostra apenas "definido"; deixar o campo em branco ao editar mantém o valor.
+- **Proteção contra SSRF**: apenas `http`/`https`, sem credenciais embutidas na URL, redirecionamentos
+  **não são seguidos** e o endereço de destino é validado após a resolução de DNS. Faixas *link-local*
+  (`169.254.0.0/16`, incluindo o endpoint de metadados de nuvem) são **sempre bloqueadas**; loopback e
+  redes privadas (10/8, 172.16/12, 192.168/16, 100.64/10, `fc00::/7`) são bloqueadas por padrão —
+  defina `HARMONIS_WEBHOOK_ALLOW_PRIVATE=true` para integrar com sistemas da rede interna.
+- Cabeçalhos customizados são validados (nomes padrão, sem quebra de linha) e os reservados
+  (`Host`, `Content-Length`, `Content-Type`, `X-Harmonis-*`…) são recusados.
+- Cadastro e logs têm permissões distintas (ver [Modelo de permissões](#modelo-de-permissões));
+  quem edita formulários enxerga apenas **nome** das integrações publicadas, para vinculá-las.
+
+### Limitações conhecidas
+
+- A fila de entrega é **em memória**: se a aplicação reiniciar com retentativas ainda pendentes, elas
+  são perdidas (o log mostra a última tentativa e o **reenvio manual** está disponível).
+- Os logs não são expurgados automaticamente; planeje uma rotina de retenção para `hm_integration_log`.
+- A ordem entre eventos de um mesmo processo não é garantida entre integrações diferentes (use o
+  `occurredAt` do corpo).
 
 ---
 
@@ -443,6 +578,28 @@ Base: `/api`. Salvo indicação, todas as rotas exigem JWT e a permissão listad
 </details>
 
 <details>
+<summary><strong>Integrações &amp; logs</strong></summary>
+
+| Método | Rota | Permissão | Descrição |
+|---|---|---|---|
+| GET | `/api/integrations` | `integrations.view` | Lista integrações (com uso e último envio) |
+| GET | `/api/integrations/options` | `integrations.view` **ou** `forms.update` | Integrações **publicadas** (id/nome), para vincular no fluxo |
+| GET | `/api/integrations/{id}` | `integrations.view` | Detalhe (segredos nunca retornam; só indicadores "definido") |
+| GET | `/api/integrations/{id}/usage` | `integrations.view` | Formulários/eventos que usam a integração |
+| POST | `/api/integrations` | `integrations.create` | Cria (sempre como rascunho) |
+| PUT | `/api/integrations/{id}` | `integrations.update` | Atualiza (segredo vazio = mantém o atual) |
+| DELETE | `/api/integrations/{id}` | `integrations.delete` | Exclui (409 se vinculada a formulários) |
+| POST | `/api/integrations/{id}/publish` · `/unpublish` | `integrations.publish` | Publica / volta a rascunho |
+| POST | `/api/integrations/{id}/test` | `integrations.update` | Envia evento de exemplo e devolve o resultado |
+| GET | `/api/integration-logs` | `integrations.logs` | Lista paginada (`status`, `event`, `integrationId`, `formId`, `from`, `to`, `q`, `page`, `size`) |
+| GET | `/api/integration-logs/stats` | `integrations.logs` | Sucessos/erros/ignorados nas últimas 24 h |
+| GET | `/api/integration-logs/{id}` | `integrations.logs` | Detalhe com conteúdo enviado e resposta |
+| POST | `/api/integration-logs/{id}/resend` | `integrations.logs` **e** `integrations.update` | Reenvia o mesmo conteúdo (entrega manual) |
+| PUT | `/api/forms/{id}/flow` | `forms.update` | Além de `nodes`, aceita `hooks`: `{submitted:[ids], approved:[ids], rejected:[ids]}` (omitido = não altera) |
+
+</details>
+
+<details>
 <summary><strong>Portal &amp; dashboard</strong></summary>
 
 | Método | Rota | Permissão | Descrição |
@@ -474,12 +631,17 @@ editados; papéis personalizados são livres.
 | Processos | `processes.view` |
 | Documentos | `documents.view` · `documents.create` · `documents.update` · `documents.delete` |
 | Portal | `pages.view` · `pages.create` · `pages.update` · `pages.delete` |
+| Integrações | `integrations.view` · `integrations.create` · `integrations.update` · `integrations.delete` · `integrations.publish` · `integrations.logs` |
 
 | Papel de sistema | Acesso |
 |---|---|
 | **Administrador** (`admin`) | Todas as permissões |
 | **Gestor** (`manager`) | Gestão de formulários, documentos, portal e processos; visão de usuários/papéis |
 | **Colaborador** (`member`) | Preenche formulários, acompanha processos, visualiza o portal e envia documentos |
+
+> As permissões de **Integrações** são concedidas apenas ao Administrador por padrão (envolvem
+> credenciais de sistemas externos); atribua-as a papéis personalizados conforme necessário — por
+> exemplo, `integrations.logs` isolado para um perfil de auditoria.
 
 > O **dono do tenant** recebe todas as permissões, independentemente dos papéis.
 
@@ -493,7 +655,8 @@ cd backend && ./mvn.sh test
 
 Os testes cobrem o catálogo de ACL, o serviço de JWT, usuários e papéis, o schema e a validação de
 formulários (incluindo anexos e segmentação por papel), o motor de workflow, o armazenamento de
-documentos e a sanitização de Markdown.
+documentos, a sanitização de Markdown e as **integrações** (cifragem de segredos, proteção SSRF, cada tipo de
+autenticação contra um servidor HTTP local, retentativas e validações do cadastro).
 
 ---
 
@@ -509,6 +672,7 @@ documentos e a sanitização de Markdown.
 - [x] Construtor de formulários avançado (validações, seleção única/múltipla, layout responsivo)
 - [x] Segmentação do formulário por papel (preenchimento durante o fluxo)
 - [x] Campos de anexo (único/múltiplo) com limites de tipo e tamanho
+- [x] Integrações (webhooks) por evento do fluxo, com autenticação, retentativas e logs
 - [ ] Provisionamento automático de tenant (criação do banco no cadastro de um cliente)
 - [ ] Renovação/expiração de token no frontend
 - [ ] Testes de integração ponta a ponta
@@ -534,5 +698,4 @@ esperado e o comportamento observado.
 
 ## Licença
 
-Defina a licença do projeto (ex.: adicione um arquivo `LICENSE`). Enquanto nenhuma licença for
-declarada, todos os direitos são reservados ao(s) autor(es).
+Tdos os direitos são reservados ao(s) autor(es).

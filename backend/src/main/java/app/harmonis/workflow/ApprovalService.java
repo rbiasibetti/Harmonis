@@ -6,9 +6,12 @@ import app.harmonis.forms.FormSubmission;
 import app.harmonis.forms.FormSubmissionRepository;
 import app.harmonis.identity.User;
 import app.harmonis.identity.UserRepository;
+import app.harmonis.integrations.WebhookEvents;
+import app.harmonis.tenancy.TenantContext;
 import app.harmonis.notifications.NotificationService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,17 +32,20 @@ public class ApprovalService {
     private final ProcessTaskRepository tasks;
     private final UserRepository users;
     private final NotificationService notifications;
+    private final ApplicationEventPublisher events;
     private final ObjectMapper mapper;
 
     public ApprovalService(FormRepository forms, FormSubmissionRepository submissions,
                            ProcessInstanceRepository instances, ProcessTaskRepository tasks,
-                           UserRepository users, NotificationService notifications, ObjectMapper mapper) {
+                           UserRepository users, NotificationService notifications,
+                           ApplicationEventPublisher events, ObjectMapper mapper) {
         this.forms = forms;
         this.submissions = submissions;
         this.instances = instances;
         this.tasks = tasks;
         this.users = users;
         this.notifications = notifications;
+        this.events = events;
         this.mapper = mapper;
     }
 
@@ -81,6 +87,7 @@ public class ApprovalService {
         instance.setStatus("approved");
         instances.save(instance);
         notifyCompleted(instance, form, true);
+        fireWebhooks(instance, WebhookEvents.APPROVED);
     }
 
     private List<ProcessTask> createTasksForStep(ProcessInstance instance, Map<String, Object> step, int index) {
@@ -160,6 +167,13 @@ public class ApprovalService {
         instances.save(instance);
         Form form = forms.findById(instance.getFormId()).orElse(null);
         notifyCompleted(instance, form, false);
+        fireWebhooks(instance, WebhookEvents.REJECTED);
+    }
+
+    /** Publica o gatilho de webhook; a entrega ocorre apos o commit, fora desta transacao. */
+    private void fireWebhooks(ProcessInstance instance, String event) {
+        events.publishEvent(new WebhookEvents.Trigger(TenantContext.require(), instance.getFormId(), event,
+                instance.getSubmissionId(), instance.getId(), Instant.now()));
     }
 
     /** Pode o usuario decidir esta tarefa? */

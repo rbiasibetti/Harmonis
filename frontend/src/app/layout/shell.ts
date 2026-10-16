@@ -46,6 +46,8 @@ export class Shell {
     { label: 'Processos', path: '/processes', icon: '⇄', permission: 'processes.view' },
     { label: 'Documentos', path: '/documents', icon: '🗀', permission: 'documents.view' },
     { label: 'Portal', path: '/portal', icon: '◈', permission: 'pages.view' },
+    { label: 'Integrações', path: '/integrations', icon: '⚡', permission: 'integrations.view' },
+    { label: 'Logs de integração', path: '/integration-logs', icon: '☰', permission: 'integrations.logs' },
   ];
 
   visibleNav(): NavItem[] {

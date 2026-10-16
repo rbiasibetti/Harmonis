@@ -16,6 +16,9 @@ import { Portal } from './pages/portal/portal';
 import { PortalPage } from './pages/portal/portal-page';
 import { PagesAdmin } from './pages/portal/pages-admin';
 import { PageEditor } from './pages/portal/page-editor';
+import { Integrations } from './pages/integrations/integrations';
+import { IntegrationEditor } from './pages/integrations/integration-editor';
+import { IntegrationLogs } from './pages/integrations/integration-logs';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -42,6 +45,10 @@ export const routes: Routes = [
       { path: 'pages', component: PagesAdmin },
       { path: 'pages/new', component: PageEditor },
       { path: 'pages/:id/edit', component: PageEditor },
+      { path: 'integrations', component: Integrations },
+      { path: 'integrations/new', component: IntegrationEditor },
+      { path: 'integrations/:id/edit', component: IntegrationEditor },
+      { path: 'integration-logs', component: IntegrationLogs },
     ],
   },
   { path: '**', redirectTo: '' },
