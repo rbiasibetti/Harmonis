@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FormsService } from '../../core/forms.service';
+import { AuthService } from '../../core/auth.service';
+import { EVENT_LABELS, HookRef, IntegrationOption, IntegrationsService } from '../../core/integrations.service';
 import { RolesService } from '../../core/roles.service';
 import { UsersService } from '../../core/users.service';
 import { FormField } from '../../core/models';
@@ -20,11 +22,15 @@ export class FlowEditor {
   private api = inject(FormsService);
   private rolesApi = inject(RolesService);
   private usersApi = inject(UsersService);
+  private integrationsApi = inject(IntegrationsService);
   private route = inject(ActivatedRoute);
+  protected auth = inject(AuthService);
 
   id!: number;
   nodes = signal<any[]>([]);
   fields = signal<FormField[]>([]);
+  hooks = signal<Record<string, HookRef[]>>(FlowEditor.emptyHooks());
+  hookOptions = signal<IntegrationOption[]>([]);
   roleOptions = signal<Opt[]>([]);
   userOptions = signal<Opt[]>([]);
 
@@ -33,6 +39,17 @@ export class FlowEditor {
   saved = signal(false);
   error = signal<string | null>(null);
   zoom = signal(1);
+
+  readonly hookEvents: { key: string; title: string; desc: string }[] = [
+    { key: 'submitted', title: 'Ao enviar', desc: 'Quando o solicitante envia o formulário.' },
+    { key: 'approved', title: 'Ao aprovar', desc: 'Quando todas as etapas são aprovadas.' },
+    { key: 'rejected', title: 'Ao reprovar', desc: 'Quando uma etapa reprova o processo.' },
+  ];
+  readonly eventLabels = EVENT_LABELS;
+
+  private static emptyHooks(): Record<string, HookRef[]> {
+    return { submitted: [], approved: [], rejected: [] };
+  }
 
   readonly operators: Opt[] = [
     { value: '==', label: 'igual a' },
@@ -50,8 +67,14 @@ export class FlowEditor {
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     this.rolesApi.list().subscribe({ next: (r) => this.roleOptions.set(r.map((x) => ({ value: x.name, label: x.label }))) });
     this.usersApi.list().subscribe({ next: (u) => this.userOptions.set(u.map((x) => ({ value: String(x.id), label: x.name }))) });
+    this.integrationsApi.options().subscribe({ next: (o) => this.hookOptions.set(o), error: () => {} });
     this.api.getFlow(this.id).subscribe({
-      next: (f) => { this.nodes.set((f.nodes || []).map((n) => this.hydrate(n))); this.fields.set(f.fields); this.loading.set(false); },
+      next: (f) => {
+        this.nodes.set((f.nodes || []).map((n) => this.hydrate(n)));
+        this.fields.set(f.fields);
+        this.hooks.set({ ...FlowEditor.emptyHooks(), ...(f.hooks ?? {}) });
+        this.loading.set(false);
+      },
       error: () => { this.error.set('Não foi possível carregar o fluxo.'); this.loading.set(false); },
     });
   }
@@ -109,6 +132,31 @@ export class FlowEditor {
 
   private touch(): void { this.nodes.set([...this.nodes()]); }
 
+  // ----- integrações (webhooks) por evento -----
+  hooksOf(event: string): HookRef[] { return this.hooks()[event] ?? []; }
+
+  availableHooks(event: string): IntegrationOption[] {
+    const used = new Set(this.hooksOf(event).map((h) => h.id));
+    return this.hookOptions().filter((o) => !used.has(o.id));
+  }
+
+  addHook(event: string, rawId: string): void {
+    const id = Number(rawId);
+    const opt = this.hookOptions().find((o) => o.id === id);
+    if (!opt) return;
+    this.hooks.set({ ...this.hooks(), [event]: [...this.hooksOf(event), { id: opt.id, name: opt.name, published: true }] });
+  }
+
+  removeHook(event: string, id: number): void {
+    this.hooks.set({ ...this.hooks(), [event]: this.hooksOf(event).filter((h) => h.id !== id) });
+  }
+
+  private hooksPayload(): Record<string, number[]> {
+    const out: Record<string, number[]> = {};
+    for (const e of this.hookEvents) out[e.key] = this.hooksOf(e.key).map((h) => h.id);
+    return out;
+  }
+
   // ----- drag-and-drop -----
   drop(event: CdkDragDrop<any[]>, list: any[]): void {
     moveItemInArray(list, event.previousIndex, event.currentIndex);
@@ -144,8 +192,13 @@ export class FlowEditor {
       else if (n.condition && !n.condition.field) { delete n.condition; }
     });
     strip(clean);
-    this.api.saveFlow(this.id, clean).subscribe({
-      next: (f) => { this.nodes.set((f.nodes || []).map((n) => this.hydrate(n))); this.saving.set(false); this.saved.set(true); },
+    this.api.saveFlow(this.id, clean, this.hooksPayload()).subscribe({
+      next: (f) => {
+        this.nodes.set((f.nodes || []).map((n) => this.hydrate(n)));
+        this.hooks.set({ ...FlowEditor.emptyHooks(), ...(f.hooks ?? {}) });
+        this.saving.set(false);
+        this.saved.set(true);
+      },
       error: (e) => { this.saving.set(false); this.error.set(e?.error?.message ?? 'Não foi possível salvar.'); },
     });
   }
