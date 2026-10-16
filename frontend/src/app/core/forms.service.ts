@@ -3,6 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE } from './api';
 import { AttachmentRef, FieldType, FormDetail, FormSummary, SaveFormRequest, SubmissionView } from './models';
+import { HookRef } from './integrations.service';
+
+export interface FlowView {
+  nodes: any[];
+  fields: import('./models').FormField[];
+  hooks: Record<string, HookRef[]>;
+}
 
 @Injectable({ providedIn: 'root' })
 export class FormsService {
@@ -59,11 +66,12 @@ export class FormsService {
     return this.http.delete<void>(`${API_BASE}/forms/attachments/${attachmentId}`);
   }
 
-  getFlow(id: number): Observable<{ nodes: any[]; fields: import('./models').FormField[] }> {
-    return this.http.get<{ nodes: any[]; fields: import('./models').FormField[] }>(`${API_BASE}/forms/${id}/flow`);
+  getFlow(id: number): Observable<FlowView> {
+    return this.http.get<FlowView>(`${API_BASE}/forms/${id}/flow`);
   }
 
-  saveFlow(id: number, nodes: any[]): Observable<{ nodes: any[]; fields: import('./models').FormField[] }> {
-    return this.http.put<{ nodes: any[]; fields: import('./models').FormField[] }>(`${API_BASE}/forms/${id}/flow`, { nodes });
+  /** hooks: evento -> ids de integrações (omitido = não altera os vínculos). */
+  saveFlow(id: number, nodes: any[], hooks?: Record<string, number[]>): Observable<FlowView> {
+    return this.http.put<FlowView>(`${API_BASE}/forms/${id}/flow`, { nodes, hooks });
   }
 }

@@ -20,6 +20,17 @@ harmonis:
   jwt:
     secret: ${HARMONIS_JWT_SECRET:troque-esta-chave-em-producao-com-no-minimo-32-bytes!!}
     ttl-minutes: ${HARMONIS_JWT_TTL:480}
+  secrets:
+    # Chave de cifragem (AES-256-GCM) dos segredos das integracoes (senhas, tokens, api keys).
+    # TROQUE em producao e nao a perca: sem ela os segredos gravados nao podem ser decifrados.
+    key: ${HARMONIS_SECRET_KEY:troque-esta-chave-de-cifragem-em-producao-32-bytes!!}
+  webhooks:
+    # false = bloqueia destinos em rede privada/loopback (protecao SSRF). Link-local
+    # (169.254.0.0/16, ex.: metadados de nuvem) e SEMPRE bloqueado. Use true p/ ERPs internos.
+    allow-private-networks: ${HARMONIS_WEBHOOK_ALLOW_PRIVATE:false}
+    pool-size: ${HARMONIS_WEBHOOK_POOL:4}
+    # Espera (s) antes de cada retentativa (tentativas = 1 + retries da integracao)
+    retry-delays-seconds: ${HARMONIS_WEBHOOK_RETRY_DELAYS:5,30,120,300,600}
   cors:
     allowed-origins: ${HARMONIS_CORS:http://localhost:4200,http://127.0.0.1:4200}
   storage:

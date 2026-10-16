@@ -12,6 +12,36 @@
 
 @if (error()) { <p class="notice error">{{ error() }}</p> }
 
+<div class="card hooks">
+  <div class="hooks-head">
+    <strong>Integrações (webhooks)</strong>
+    <span class="muted">Dispare uma integração publicada quando o processo atingir cada situação.
+      @if (auth.can('integrations.view')) { <a routerLink="/integrations">Gerenciar integrações</a> }
+    </span>
+  </div>
+  <div class="hooks-grid">
+    @for (ev of hookEvents; track ev.key) {
+      <div class="hook-col">
+        <div class="hook-title" [class.yes]="ev.key === 'approved'" [class.no]="ev.key === 'rejected'">{{ ev.title }}</div>
+        <div class="muted hook-desc">{{ ev.desc }}</div>
+        @for (h of hooksOf(ev.key); track h.id) {
+          <div class="hook-chip" [class.warn]="!h.published">
+            <span>{{ h.name }}@if (!h.published) { <em> · não publicada (será ignorada)</em> }</span>
+            <button class="icon-action danger" title="Remover" (click)="removeHook(ev.key, h.id)">✕</button>
+          </div>
+        }
+        <select class="input" (change)="addHook(ev.key, $any($event.target).value); $any($event.target).value = ''">
+          <option value="">+ Adicionar integração…</option>
+          @for (o of availableHooks(ev.key); track o.id) { <option [value]="o.id">{{ o.name }}</option> }
+        </select>
+      </div>
+    }
+  </div>
+  @if (hookOptions().length === 0) {
+    <p class="muted hook-empty">Nenhuma integração publicada disponível.</p>
+  }
+</div>
+
 <div class="toolbar-flow">
   <div class="zoom">
     <button class="icon-action" (click)="zoomOut()" title="Diminuir">−</button>
