@@ -12,6 +12,7 @@ frontend/.angular/
 # IDE
 .idea/
 .vscode/
+.claude/
 *.iml
 
 # Arquivos de documentos (ECM) gravados em runtime
