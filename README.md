@@ -697,5 +697,3 @@ esperado e o comportamento observado.
 ---
 
 ## Licença
-
-Tdos os direitos são reservados ao(s) autor(es).
