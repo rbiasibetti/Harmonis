@@ -18,7 +18,9 @@ public final class AclCatalog {
             Map.entry("Formularios", List.of("forms.view", "forms.create", "forms.update", "forms.delete", "forms.submissions")),
             Map.entry("Processos", List.of("processes.view")),
             Map.entry("Documentos", List.of("documents.view", "documents.create", "documents.update", "documents.delete")),
-            Map.entry("Portal", List.of("pages.view", "pages.create", "pages.update", "pages.delete"))
+            Map.entry("Portal", List.of("pages.view", "pages.create", "pages.update", "pages.delete")),
+            Map.entry("Integracoes", List.of("integrations.view", "integrations.create", "integrations.update",
+                    "integrations.delete", "integrations.publish", "integrations.logs"))
     );
 
     /** Lista achatada de todas as permissoes. */
