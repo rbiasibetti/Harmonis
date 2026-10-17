@@ -11,11 +11,13 @@ public final class WebhookEvents {
     public static final String SUBMITTED = "submitted";
     public static final String APPROVED = "approved";
     public static final String REJECTED = "rejected";
+    /** Fim do ciclo de aprovacoes (aprovado ou reprovado); o resultado esta em process.status. */
+    public static final String COMPLETED = "completed";
     /** Apenas para o botao "Testar" e reenvios manuais; nao e vinculavel a formularios. */
     public static final String TEST = "test";
 
     /** Eventos vinculaveis a um formulario. */
-    public static final List<String> BINDABLE = List.of(SUBMITTED, APPROVED, REJECTED);
+    public static final List<String> BINDABLE = List.of(SUBMITTED, APPROVED, REJECTED, COMPLETED);
 
     /**
      * Gatilho de negocio. Publicado dentro da transacao e tratado depois do commit

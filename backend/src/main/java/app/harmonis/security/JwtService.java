@@ -18,10 +18,17 @@ public class JwtService {
 
     private final SecretKey key;
     private final long ttlMinutes;
+    private final String issuer;
+    private final String audience;
 
     public JwtService(HarmonisProperties props) {
         byte[] secret = props.getJwt().getSecret().getBytes(StandardCharsets.UTF_8);
+        if (secret.length < 32) {
+            throw new IllegalStateException("harmonis.jwt.secret precisa ter ao menos 32 bytes (HS256).");
+        }
         this.key = Keys.hmacShaKeyFor(secret);
+        this.issuer = props.getJwt().getIssuer();
+        this.audience = props.getJwt().getAudience();
         this.ttlMinutes = props.getJwt().getTtlMinutes();
     }
 
@@ -29,6 +36,9 @@ public class JwtService {
                         List<String> roles, List<String> authorities) {
         Instant now = Instant.now();
         return Jwts.builder()
+                .id(java.util.UUID.randomUUID().toString())
+                .issuer(issuer)
+                .audience().add(audience).and()
                 .subject(String.valueOf(userId))
                 .claim("tenant", tenantSlug)
                 .claim("owner", owner)
@@ -40,9 +50,16 @@ public class JwtService {
                 .compact();
     }
 
+    public long ttlSeconds() {
+        return ttlMinutes * 60;
+    }
+
     public Claims parse(String token) {
         return Jwts.parser()
                 .verifyWith(key)
+                .requireIssuer(issuer)
+                .requireAudience(audience)
+                .clockSkewSeconds(30)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

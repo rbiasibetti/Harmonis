@@ -21,10 +21,13 @@ public class ProcessController {
 
     private final ProcessService service;
     private final UserRepository users;
+    private final app.harmonis.forms.SubmissionPdfService pdfs;
 
-    public ProcessController(ProcessService service, UserRepository users) {
+    public ProcessController(ProcessService service, UserRepository users,
+                             app.harmonis.forms.SubmissionPdfService pdfs) {
         this.service = service;
         this.users = users;
+        this.pdfs = pdfs;
     }
 
     private User currentUser(AuthPrincipal principal) {
@@ -50,6 +53,11 @@ public class ProcessController {
     @GetMapping("/{id}")
     public ProcessDetail detail(@PathVariable long id, @AuthenticationPrincipal AuthPrincipal principal) {
         return service.detail(id, currentUser(principal));
+    }
+
+    @GetMapping("/{id}/pdf")
+    public org.springframework.http.ResponseEntity<byte[]> pdf(@PathVariable long id) {
+        return app.harmonis.forms.SubmissionPdfService.response(pdfs.renderForProcess(id));
     }
 
     @PostMapping("/tasks/{taskId}/decide")

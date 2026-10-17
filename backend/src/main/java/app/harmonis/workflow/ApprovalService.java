@@ -88,6 +88,7 @@ public class ApprovalService {
         instances.save(instance);
         notifyCompleted(instance, form, true);
         fireWebhooks(instance, WebhookEvents.APPROVED);
+        fireWebhooks(instance, WebhookEvents.COMPLETED);
     }
 
     private List<ProcessTask> createTasksForStep(ProcessInstance instance, Map<String, Object> step, int index) {
@@ -168,6 +169,7 @@ public class ApprovalService {
         Form form = forms.findById(instance.getFormId()).orElse(null);
         notifyCompleted(instance, form, false);
         fireWebhooks(instance, WebhookEvents.REJECTED);
+        fireWebhooks(instance, WebhookEvents.COMPLETED);
     }
 
     /** Publica o gatilho de webhook; a entrega ocorre apos o commit, fora desta transacao. */

@@ -105,8 +105,20 @@
   <li><b>Exportar CSV</b> — baixa todas as respostas em planilha (aparece quando há respostas).</li>
   <li><b>Colunas fixas</b> — <em>#</em> (numeração, a mais recente tem o maior número), <em>Enviado por</em> e <em>Data</em>; depois, uma coluna por campo (blocos de layout não viram coluna).</li>
   <li><b>Anexos</b> — cada arquivo aparece como link 📎; clique para baixar.</li>
+  <li><b>PDF</b> — botão no fim de cada linha: baixa a <a href="#pdf">ficha do registro</a>.</li>
 </ol>
 <p>Campos de seleção múltipla mostram os valores separados por vírgula; confirmações mostram <em>Sim</em>/<em>Não</em>. Campos completados durante o fluxo também aparecem aqui assim que preenchidos.</p>
+
+<h3 id="pdf">Ficha do registro em PDF</h3>
+<p>Cada resposta pode ser impressa como um documento formatado, gerado na hora a partir do formulário:</p>
+<ul>
+  <li><b>Onde:</b> botão <b>PDF</b> na linha da resposta (exige <code class="perm">forms.submissions</code>) ou botão <b>⬇ PDF</b> no detalhe do processo (exige <code class="perm">processes.view</code>).</li>
+  <li><b>Cabeçalho:</b> nome do formulário, número do registro, data e autor do envio e situação do processo.</li>
+  <li><b>Corpo:</b> cada campo é um par <em>rótulo</em> (pequeno, em maiúsculas) e <em>valor</em>, na mesma ordem e <b>na mesma disposição</b> do formulário: campos de <em>meia largura</em> ficam lado a lado, os de <em>um terço</em> em trio e os de largura total ocupam a linha. Os <em>blocos</em> viram títulos de seção.</li>
+  <li><b>Valores:</b> datas em dd/mm/aaaa, confirmações como <em>Sim</em>/<em>Não</em>, seleção múltipla separada por vírgula, anexos pelo nome do arquivo e campos vazios como “—”. Campos ocultos por condição não aparecem.</li>
+  <li><b>Rodapé:</b> histórico de aprovação (etapa, aprovador, resultado, quem decidiu e quando, comentário) e, em todas as páginas, data de emissão e paginação.</li>
+</ul>
+<p>Como o documento é montado dinamicamente, qualquer formulário novo ou alterado já sai formatado, sem configuração adicional.</p>
 
 <h3 id="csv">Exportação em CSV</h3>
 <table class="free">

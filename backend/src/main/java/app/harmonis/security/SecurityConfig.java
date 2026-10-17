@@ -16,6 +16,18 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.time.Duration;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,8 +52,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                // CSRF (double-submit): como a sessao agora viaja em cookie, toda requisicao que altera
+                // estado precisa enviar o header X-XSRF-TOKEN igual ao cookie XSRF-TOKEN (legivel pelo JS).
+                // Login/refresh ficam de fora: nao ha sessao a proteger ou so operam com o refresh
+                // cookie SameSite e sua resposta nao e legivel por outra origem.
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(csrfRepository())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .ignoringRequestMatchers("/api/auth/login", "/api/auth/refresh"))
+                .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // Sem autenticacao -> 401 (e nao 403): e o sinal que o front usa para renovar a sessao.
+                .exceptionHandling(e -> e.authenticationEntryPoint(
+                        new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+                                org.springframework.http.HttpStatus.UNAUTHORIZED)))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // No SS6 o AuthorizationFilter roda tambem no ERROR dispatch; como o
@@ -52,6 +76,29 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    private CookieCsrfTokenRepository csrfRepository() {
+        HarmonisProperties.Cookies c = props.getCookies();
+        CookieCsrfTokenRepository repo = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repo.setCookiePath("/");
+        repo.setCookieCustomizer(b -> {
+            b.secure(c.isSecure()).sameSite(c.getSameSite())
+                    .maxAge(Duration.ofDays(props.getJwt().getRefreshTtlDays()));
+            if (c.getDomain() != null && !c.getDomain().isBlank()) b.domain(c.getDomain());
+        });
+        return repo;
+    }
+
+    /** Forca a emissao do cookie XSRF-TOKEN em toda resposta (token "deferred" do Spring Security 6). */
+    static final class CsrfCookieFilter extends OncePerRequestFilter {
+        @Override
+        protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+                throws ServletException, IOException {
+            CsrfToken token = (CsrfToken) req.getAttribute(CsrfToken.class.getName());
+            if (token != null) token.getToken();
+            chain.doFilter(req, res);
+        }
     }
 
     @Bean

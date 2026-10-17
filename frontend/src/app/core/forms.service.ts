@@ -47,6 +47,10 @@ export class FormsService {
     return this.http.get<SubmissionView[]>(`${API_BASE}/forms/${id}/submissions`);
   }
 
+  downloadSubmissionPdf(formId: number, submissionId: number): Observable<Blob> {
+    return this.http.get(`${API_BASE}/forms/${formId}/submissions/${submissionId}/pdf`, { responseType: 'blob' });
+  }
+
   downloadCsv(id: number): Observable<Blob> {
     return this.http.get(`${API_BASE}/forms/${id}/submissions.csv`, { responseType: 'blob' });
   }

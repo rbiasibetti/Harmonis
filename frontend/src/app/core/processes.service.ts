@@ -69,6 +69,10 @@ export class ProcessesService {
     return this.http.get<ProcessDetail>(`${API_BASE}/processes/${instanceId}`);
   }
 
+  downloadPdf(instanceId: number): Observable<Blob> {
+    return this.http.get(`${API_BASE}/processes/${instanceId}/pdf`, { responseType: 'blob' });
+  }
+
   decide(taskId: number, approved: boolean, comment: string, fieldValues?: Record<string, unknown>): Observable<void> {
     return this.http.post<void>(`${API_BASE}/processes/tasks/${taskId}/decide`, { approved, comment, fieldValues });
   }

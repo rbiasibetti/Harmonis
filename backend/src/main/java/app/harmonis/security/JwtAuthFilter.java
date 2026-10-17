@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Le o JWT do header Authorization, popula o {@link TenantContext} (claim "tenant") e
+ * Le o access JWT do cookie HttpOnly (hm_at), popula o {@link TenantContext} (claim "tenant") e
  * a autenticacao do Spring Security (authorities = permissoes + ROLE_x). Sempre limpa o
  * contexto de tenant ao fim da requisicao.
  */
@@ -38,10 +38,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain chain) throws ServletException, IOException {
         try {
-            String header = request.getHeader("Authorization");
-            if (header != null && header.startsWith("Bearer ")) {
+            String token = app.harmonis.auth.AuthCookies.read(request, app.harmonis.auth.AuthCookies.ACCESS);
+            if (token != null) {
                 try {
-                    Claims claims = jwt.parse(header.substring(7));
+                    Claims claims = jwt.parse(token);
                     String tenant = claims.get("tenant", String.class);
                     TenantContext.set(tenant);
 

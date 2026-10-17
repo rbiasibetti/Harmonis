@@ -142,6 +142,7 @@ export const EVENT_LABELS: Record<string, string | undefined> = {
   submitted: 'Formulário enviado',
   approved: 'Processo aprovado',
   rejected: 'Processo reprovado',
+  completed: 'Fluxo concluído',
   test: 'Teste',
 };
 

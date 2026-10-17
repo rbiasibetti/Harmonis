@@ -49,4 +49,30 @@ class JwtServiceTest {
         String token = a.issue(1L, "acme", false, List.of("member"), List.of());
         assertThrows(Exception.class, () -> b.parse(token));
     }
+
+    @Test
+    void emiteIssuerAudienceEJti() {
+        JwtService jwt = service();
+        Claims c = jwt.parse(jwt.issue(1L, "acme", false, List.of(), List.of()));
+        assertEquals("harmonis", c.getIssuer());
+        assertTrue(c.getAudience().contains("harmonis-web"));
+        assertNotNull(c.getId());
+    }
+
+    @Test
+    void tokenDeOutraAudienciaERejeitado() {
+        JwtService a = service();
+        HarmonisProperties other = new HarmonisProperties();
+        other.getJwt().setSecret("chave-de-teste-com-pelo-menos-32-bytes-aqui!!");
+        other.getJwt().setAudience("outro-sistema");
+        String token = new JwtService(other).issue(1L, "acme", false, List.of(), List.of());
+        assertThrows(Exception.class, () -> a.parse(token));
+    }
+
+    @Test
+    void segredoCurtoNaoSobe() {
+        HarmonisProperties p = new HarmonisProperties();
+        p.getJwt().setSecret("curta");
+        assertThrows(IllegalStateException.class, () -> new JwtService(p));
+    }
 }

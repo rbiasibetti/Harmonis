@@ -12,7 +12,7 @@
 
 <div class="crumbs">Integrações</div>
 <h1 id="integracoes">Integrações (webhooks)</h1>
-<p class="lead">Envie os dados de um formulário a outros sistemas automaticamente quando uma solicitação é enviada, aprovada ou reprovada.</p>
+<p class="lead">Envie os dados de um formulário a outros sistemas automaticamente quando uma solicitação é enviada, aprovada, reprovada ou quando o fluxo é concluído.</p>
 
 <div class="callout note">
   <b>Permissões necessárias</b>
@@ -259,7 +259,7 @@ const ok = crypto.timingSafeEqual(Buffer.from(esperado), Buffer.from(req.headers
 
 <h2 id="vincular">Vinculando ao fluxo de um formulário</h2>
 <p>A integração só “faz alguma coisa” depois de vinculada. No <a href="06-fluxo-aprovacao.html#integracoes">editor de fluxo</a> do formulário, escolha em cada coluna
-(<b>Ao enviar</b>, <b>Ao aprovar</b>, <b>Ao reprovar</b>) as integrações publicadas desejadas e clique em <b>Salvar</b>. Quem edita formulários (<code class="perm">forms.update</code>) pode vincular sem ter acesso ao cadastro.</p>
+(<b>Ao enviar</b>, <b>Ao aprovar</b>, <b>Ao reprovar</b>, <b>Ao concluir</b>) as integrações publicadas desejadas e clique em <b>Salvar</b>. Quem edita formulários (<code class="perm">forms.update</code>) pode vincular sem ter acesso ao cadastro.</p>
 
 <h2 id="entrega">Como a entrega funciona</h2>
 <ul>
@@ -277,7 +277,7 @@ const ok = crypto.timingSafeEqual(Buffer.from(esperado), Buffer.from(req.headers
 <table class="free">
   <thead><tr><th>Cabeçalho</th><th>Conteúdo</th></tr></thead>
   <tbody>
-    <tr><td>X-Harmonis-Event</td><td><code>submitted</code> · <code>approved</code> · <code>rejected</code> · <code>test</code></td></tr>
+    <tr><td>X-Harmonis-Event</td><td><code>submitted</code> · <code>approved</code> · <code>rejected</code> · <code>completed</code> · <code>test</code></td></tr>
     <tr><td>X-Harmonis-Delivery</td><td>Identificador único da entrega (igual nas retentativas).</td></tr>
     <tr><td>X-Harmonis-Signature</td><td>Somente se houver segredo de assinatura.</td></tr>
     <tr><td>User-Agent</td><td><code>Harmonis-Webhook/1.0</code></td></tr>

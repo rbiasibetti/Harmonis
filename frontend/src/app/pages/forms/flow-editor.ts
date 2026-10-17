@@ -44,11 +44,12 @@ export class FlowEditor {
     { key: 'submitted', title: 'Ao enviar', desc: 'Quando o solicitante envia o formulário.' },
     { key: 'approved', title: 'Ao aprovar', desc: 'Quando todas as etapas são aprovadas.' },
     { key: 'rejected', title: 'Ao reprovar', desc: 'Quando uma etapa reprova o processo.' },
+    { key: 'completed', title: 'Ao concluir', desc: 'Ao fim do fluxo, aprovado ou reprovado (veja process.status).' },
   ];
   readonly eventLabels = EVENT_LABELS;
 
   private static emptyHooks(): Record<string, HookRef[]> {
-    return { submitted: [], approved: [], rejected: [] };
+    return { submitted: [], approved: [], rejected: [], completed: [] };
   }
 
   readonly operators: Opt[] = [

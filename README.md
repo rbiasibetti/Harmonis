@@ -31,6 +31,7 @@
 - [Configuração](#configuração)
 - [Implantação em produção](#implantação-em-produção)
 - [Provisionar um novo cliente (tenant)](#provisionar-um-novo-cliente-tenant)
+- [Sessão e segurança dos tokens](#sessão-e-segurança-dos-tokens)
 - [Integrações (webhooks)](#integrações-webhooks)
 - [Referência da API](#referência-da-api)
 - [Modelo de permissões](#modelo-de-permissões)
@@ -73,7 +74,7 @@ as de outros sistemas no mesmo banco (todas as tabelas usam o prefixo `hm_`).
 ## Recursos
 
 ### Identidade e controle de acesso
-- Autenticação por **JWT**; o token carrega o tenant, os papéis e as permissões (authorities).
+- Autenticação por **JWT de curta duração** (15 min; carrega tenant, papéis e permissões) + **refresh token rotativo**, ambos em **cookies HttpOnly** (nada em `localStorage`), com proteção **CSRF** (double-submit). Veja *Sessão e segurança dos tokens*.
 - **Papéis de sistema** (Administrador, Gestor, Colaborador) e **papéis personalizados**.
 - Autorização por **permissão granular** em cada endpoint (`@PreAuthorize`).
 - O **dono do tenant** recebe todas as permissões.
@@ -89,7 +90,7 @@ as de outros sistemas no mesmo banco (todas as tabelas usam o prefixo `hm_`).
 - **Anexos** com tipos aceitos (`accept`) e tamanho máximo por arquivo configuráveis.
 - **Segmentação por papel**: parte do formulário pode ser preenchida por um papel específico
   **durante o fluxo de aprovação** (o aprovador completa os campos que lhe cabem ao decidir).
-- Exportação das respostas em **CSV**.
+- Exportação das respostas em **CSV** e **ficha em PDF** de cada registro (rótulo/valor na grade do layout do formulário, com histórico de aprovação).
 
 ### Workflow / BPM
 - Motor de aprovação que opera sobre uma árvore de etapas, com suporte a:
@@ -100,11 +101,29 @@ as de outros sistemas no mesmo banco (todas as tabelas usam o prefixo `hm_`).
 - **Caixa de aprovações**, acompanhamento das próprias solicitações e **timeline** por processo.
 - **Notificações** in-app (sino) para solicitações e conclusões.
 
-### Integrações (webhooks)
+### Sessão e segurança dos tokens
+
+| Item | Como funciona |
+|---|---|
+| **Access token** | JWT HS256 de **15 min** (`iss`, `aud`, `jti`, `sub`, tenant, papéis, permissões; emissor/audiência validados). Cookie `hm_at`: **HttpOnly**, `Path=/api`, `SameSite=Strict`, `Secure` em produção |
+| **Refresh token** | Valor **opaco** de 256 bits (`<tenant>.<segredo>`); no banco fica só o **hash SHA-256** (`hm_refresh_token`). Cookie `hm_rt`: **HttpOnly**, `Path=/api/auth` (só vai aos endpoints de sessão) |
+| **Rotação** | Cada `/refresh` invalida o token usado e entrega outro, na mesma *família* (sessão). Validade deslizante de 7 dias, limitada a 30 dias absolutos |
+| **Detecção de reuso** | Reapresentar um token já usado (fora da tolerância de 10 s, que cobre abas simultâneas) **revoga a família inteira** — quem roubou e quem perdeu a sessão são desconectados |
+| **Permissões atualizadas** | A cada renovação o usuário é relido do banco: papéis/permissões novos passam a valer em até 15 min; usuário desativado perde a sessão |
+| **XSS** | Nenhum token fica acessível ao JavaScript nem em `localStorage`/`sessionStorage` |
+| **CSRF** | *Double-submit*: mutações exigem `X-XSRF-TOKEN` = cookie `XSRF-TOKEN`; mais `SameSite=Strict`. Login e refresh são isentos (sem sessão a proteger / só operam com o cookie de refresh) |
+| **Frontend** | Em `401` o interceptor faz **uma** renovação compartilhada e repete as requisições; se falhar, volta ao login. Ao recarregar a página a sessão é restaurada por `/api/me` |
+| **Logout** | Revoga a família no servidor e apaga os cookies |
+
+> **Implantação:** com `HARMONIS_COOKIE_SECURE=true` (HTTPS) e, de preferência, front e API sob o **mesmo site**
+> (mesmo domínio ou subdomínios + `HARMONIS_COOKIE_DOMAIN`), já que cookies `SameSite` não acompanham requisições
+> entre sites diferentes. Os tokens vencidos são limpos a cada login.
+
+## Integrações (webhooks)
 - **Cadastro reutilizável** de webhooks de saída, com ciclo *rascunho → publicada*: só integrações
   publicadas podem ser usadas nos fluxos.
 - **Vínculo por formulário e situação**: cada formulário dispara integrações diferentes **ao enviar**,
-  **ao aprovar** e **ao reprovar** (a mesma integração pode ser reaproveitada em vários formulários).
+  **ao aprovar**, **ao reprovar** e **ao concluir** o fluxo (a mesma integração pode ser reaproveitada em vários formulários).
 - **Autenticação** do destino: usuário e senha (Basic), API Key (cabeçalho ou query), Bearer estático,
   **Bearer com pré-autenticação** (login com usuário e senha, token em cache e renovado) e
   **cabeçalhos customizados**; opcionalmente **assinatura HMAC-SHA256** do corpo.
@@ -150,7 +169,7 @@ mapeia cada cliente ao seu banco (`harmonis_<slug>`). No login, o tenant é reso
 **Nenhuma tabela de negócio tem `tenant_id`** — o isolamento é físico.
 
 **Fluxo de uma requisição autenticada:**
-1. O cliente envia `Authorization: Bearer <jwt>`.
+1. O navegador envia o cookie HttpOnly `hm_at` (access JWT) junto com a requisição.
 2. Um filtro valida o token, extrai o tenant e as authorities, popula o `SecurityContext` e define o
    tenant corrente (contexto por thread, limpo ao fim da requisição).
 3. O endpoint é autorizado por permissão (`@PreAuthorize("hasAuthority('...')")`).
@@ -271,8 +290,9 @@ sistema e o usuário dono do tenant de demonstração. A API sobe em `http://loc
 **Login de demonstração:** `admin@acme.test` / `password`
 
 ```bash
-curl -s -X POST localhost:8080/api/auth/login -H 'Content-Type: application/json' \
+curl -s -c cookies.txt -X POST localhost:8080/api/auth/login -H 'Content-Type: application/json' \
   -d '{"tenant":"acme","email":"admin@acme.test","password":"password"}'
+curl -s -b cookies.txt localhost:8080/api/me     # a sessão vai nos cookies (hm_at / hm_rt)
 ```
 
 ### 4. Frontend
@@ -301,7 +321,13 @@ ambiente:
 | `HARMONIS_DB_PASSWORD` | *(dev)* | Senha do banco |
 | `HARMONIS_CATALOG_DB` | `harmonis_catalog` | Nome do banco de catálogo |
 | `HARMONIS_JWT_SECRET` | *(dev)* | Segredo HMAC do JWT (**≥ 32 bytes; obrigatório em produção**) |
-| `HARMONIS_JWT_TTL` | `480` | Validade do token, em minutos |
+| `HARMONIS_JWT_TTL` | `15` | Validade do **access token**, em minutos |
+| `HARMONIS_REFRESH_TTL_DAYS` | `7` | Validade (deslizante) do refresh token, em dias |
+| `HARMONIS_REFRESH_ABSOLUTE_DAYS` | `30` | Duração máxima de uma sessão, mesmo com renovações |
+| `HARMONIS_REFRESH_GRACE` | `10` | Tolerância (s) para refresh concorrente (abas) antes de tratar como reuso |
+| `HARMONIS_COOKIE_SECURE` | `false` | `true` em produção (HTTPS): cookies só trafegam por conexão segura |
+| `HARMONIS_COOKIE_SAMESITE` | `Strict` | `Strict`, `Lax` ou `None` (`None` exige `secure=true`) |
+| `HARMONIS_COOKIE_DOMAIN` | *(vazio)* | Domínio dos cookies, se front e API estão em subdomínios (ex.: `.empresa.com`) |
 | `HARMONIS_CORS` | `http://localhost:4200,http://127.0.0.1:4200` | Origens permitidas (CSV) |
 | `HARMONIS_DOCS_DIR` | `storage/documents` | Raiz dos arquivos (documentos e anexos) |
 | `HARMONIS_SECRET_KEY` | *(dev)* | Chave de cifragem (AES-256-GCM) dos segredos das integrações (**obrigatória em produção; não a perca**) |
@@ -401,7 +427,7 @@ Cadastrar integração ─▶ Publicar ─▶ Vincular no fluxo do formulário �
 1. **Integrações** (menu): cadastre o destino (URL, método, autenticação, cabeçalhos, tempo limite e
    retentativas). Use **Testar** para enviar um evento de exemplo — funciona em rascunho — e **Publicar**.
 2. **Editor de fluxo** do formulário (`/forms/{id}/flow`): em *Integrações (webhooks)*, escolha quais
-   integrações publicadas disparam **ao enviar**, **ao aprovar** e **ao reprovar**. Uma integração pode
+   integrações publicadas disparam **ao enviar**, **ao aprovar**, **ao reprovar** e **ao concluir** (fim do ciclo, aprovado ou reprovado — o resultado vem em `process.status`). Uma integração pode
    atender vários formulários e eventos; cada situação pode usar integrações diferentes.
 3. **Logs de integração** (menu): acompanhe cada tentativa, abra o conteúdo enviado e a resposta, filtre
    por status/evento/integração/período e **reenvie** manualmente.
@@ -423,7 +449,7 @@ Em todos os tipos é possível definir um **segredo de assinatura**: cada envio 
 ### O que é enviado
 
 `POST`/`PUT`/`PATCH` com `Content-Type: application/json` e os cabeçalhos
-`X-Harmonis-Event` (`submitted` · `approved` · `rejected` · `test`),
+`X-Harmonis-Event` (`submitted` · `approved` · `rejected` · `completed` · `test`),
 `X-Harmonis-Delivery` (identificador da entrega — o mesmo nas retentativas, útil para idempotência)
 e, se configurado, `X-Harmonis-Signature`. Exemplo de corpo:
 
@@ -503,7 +529,7 @@ valido = hmac.compare_digest(esperado, request.headers["X-Harmonis-Signature"])
 
 ## Referência da API
 
-Base: `/api`. Salvo indicação, todas as rotas exigem JWT e a permissão listada.
+Base: `/api`. Salvo indicação, todas as rotas exigem sessão (cookie `hm_at`) e a permissão listada; requisições que alteram dados (POST/PUT/PATCH/DELETE) enviam também o header `X-XSRF-TOKEN` com o valor do cookie `XSRF-TOKEN`.
 
 <details>
 <summary><strong>Autenticação &amp; sessão</strong></summary>
@@ -511,7 +537,9 @@ Base: `/api`. Salvo indicação, todas as rotas exigem JWT e a permissão listad
 | Método | Rota | Permissão | Descrição |
 |---|---|---|---|
 | GET | `/api/health` | — | Saúde do serviço |
-| POST | `/api/auth/login` | — | `{tenant,email,password}` → `{token,user}` |
+| POST | `/api/auth/login` | — | `{tenant,email,password}` → `{user}`; define os cookies `hm_at` (access), `hm_rt` (refresh) e `XSRF-TOKEN` |
+| POST | `/api/auth/refresh` | cookie `hm_rt` | Rotaciona o refresh token e emite novo access token → `{user}`; 401 se inválido/expirado/reusado |
+| POST | `/api/auth/logout` | cookie + CSRF | Revoga a sessão (refresh token) e limpa os cookies |
 | GET | `/api/me` | autenticado | Usuário autenticado (resolve o tenant pelo JWT) |
 
 </details>
@@ -546,6 +574,8 @@ Base: `/api`. Salvo indicação, todas as rotas exigem JWT e a permissão listad
 | DELETE | `/api/forms/{id}` | `forms.delete` | Remove formulário (e respostas) |
 | POST | `/api/forms/{id}/submissions` | `forms.view` | Envia resposta (valida; 422 por campo) |
 | GET | `/api/forms/{id}/submissions` | `forms.submissions` | Lista respostas |
+| GET | `/api/forms/{id}/submissions/{sid}/pdf` | `forms.submissions` | Ficha do registro em PDF |
+| GET | `/api/processes/{id}/pdf` | `processes.view` | Ficha em PDF do registro do processo |
 | GET | `/api/forms/{id}/submissions.csv` | `forms.submissions` | Exporta CSV (`;` + BOM) |
 | GET/PUT | `/api/forms/{id}/flow` | `forms.update` | Lê/salva o fluxo de aprovação (árvore) |
 | POST | `/api/forms/{id}/attachments` | `forms.view` | Envia um anexo (multipart; `fieldKey`) |
@@ -603,7 +633,7 @@ Base: `/api`. Salvo indicação, todas as rotas exigem JWT e a permissão listad
 | GET | `/api/integration-logs/stats` | `integrations.logs` | Sucessos/erros/ignorados nas últimas 24 h |
 | GET | `/api/integration-logs/{id}` | `integrations.logs` | Detalhe com conteúdo enviado e resposta |
 | POST | `/api/integration-logs/{id}/resend` | `integrations.logs` **e** `integrations.update` | Reenvia o mesmo conteúdo (entrega manual) |
-| PUT | `/api/forms/{id}/flow` | `forms.update` | Além de `nodes`, aceita `hooks`: `{submitted:[ids], approved:[ids], rejected:[ids]}` (omitido = não altera) |
+| PUT | `/api/forms/{id}/flow` | `forms.update` | Além de `nodes`, aceita `hooks`: `{submitted:[ids], approved:[ids], rejected:[ids], completed:[ids]}` (omitido = não altera) |
 
 </details>
 

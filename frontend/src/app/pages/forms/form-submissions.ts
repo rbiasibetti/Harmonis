@@ -54,6 +54,13 @@ export class FormSubmissionsPage {
     this.api.downloadAttachment(ref.id).subscribe({ next: (blob) => downloadBlob(blob, ref.name) });
   }
 
+  pdf(submissionId: number): void {
+    this.api.downloadSubmissionPdf(this.formId, submissionId).subscribe({
+      next: (blob) => downloadBlob(blob, `registro-${this.form()?.slug ?? this.formId}-${submissionId}.pdf`),
+      error: () => alert('Não foi possível gerar o PDF.'),
+    });
+  }
+
   exportCsv(): void {
     this.api.downloadCsv(this.formId).subscribe({
       next: (blob) => {

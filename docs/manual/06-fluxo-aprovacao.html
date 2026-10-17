@@ -52,6 +52,7 @@
   <li><b>Ao enviar</b> — quando o solicitante envia o formulário.</li>
   <li><b>Ao aprovar</b> — quando todas as etapas são aprovadas.</li>
   <li><b>Ao reprovar</b> — quando uma etapa reprova o processo.</li>
+  <li><b>Ao concluir</b> — ao fim do fluxo, qualquer que seja o resultado.</li>
   <li><b>Zoom</b> — − / + de 50% a 150% para enxergar fluxos longos.</li>
   <li><b>Mini-mapa</b> — lista as etapas e decisões do nível principal; clique em uma para rolar até ela.</li>
   <li><b>Início</b> — ponto de partida (fixo). Abaixo dele ficam os nós, na ordem de execução.</li>
@@ -156,6 +157,7 @@ Enquanto você não salvar, nada muda para quem usa o formulário.</p>
     <tr><td>Ao enviar</td><td>Assim que o solicitante envia o formulário (com ou sem fluxo).</td><td>Avisar um canal de chat; criar um rascunho no ERP.</td></tr>
     <tr><td>Ao aprovar</td><td>Quando todas as etapas são aprovadas.</td><td>Criar o pedido de compra no ERP; atualizar o BI.</td></tr>
     <tr><td>Ao reprovar</td><td>Quando uma reprovação encerra o processo.</td><td>Notificar o financeiro; cancelar uma reserva.</td></tr>
+    <tr><td>Ao concluir</td><td>Quando o ciclo de aprovações termina, <b>aprovado ou reprovado</b> (dispara depois de “Ao aprovar”/“Ao reprovar”). O resultado vai no campo <code>process.status</code> do conteúdo enviado.</td><td>Marcar a solicitação como encerrada no sistema de destino, seja qual for o resultado; arquivar o registro.</td></tr>
   </tbody>
 </table>
 <ul>

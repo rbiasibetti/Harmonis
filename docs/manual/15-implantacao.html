@@ -25,7 +25,7 @@
   <defs><marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
   <rect x="10" y="90" width="120" height="70" rx="12" class="dg-box"/><text x="70" y="120" text-anchor="middle" class="dg-t">Navegador</text><text x="70" y="140" text-anchor="middle" class="dg-s">usuário</text>
   <rect x="170" y="90" width="150" height="70" rx="12" class="dg-brand"/><text x="245" y="118" text-anchor="middle" class="dg-t">Frontend</text><text x="245" y="138" text-anchor="middle" class="dg-s">Angular (estático)</text>
-  <rect x="360" y="70" width="170" height="110" rx="12" class="dg-brand"/><text x="445" y="105" text-anchor="middle" class="dg-t">Backend</text><text x="445" y="126" text-anchor="middle" class="dg-s">Spring Boot (Java 21)</text><text x="445" y="144" text-anchor="middle" class="dg-s">API REST + JWT</text><text x="445" y="162" text-anchor="middle" class="dg-s">entrega de webhooks</text>
+  <rect x="360" y="70" width="170" height="110" rx="12" class="dg-brand"/><text x="445" y="105" text-anchor="middle" class="dg-t">Backend</text><text x="445" y="126" text-anchor="middle" class="dg-s">Spring Boot (Java 21)</text><text x="445" y="144" text-anchor="middle" class="dg-s">API REST + sessão</text><text x="445" y="162" text-anchor="middle" class="dg-s">entrega de webhooks</text>
   <rect x="590" y="10" width="170" height="64" rx="12" class="dg-box"/><text x="675" y="38" text-anchor="middle" class="dg-t">Catálogo</text><text x="675" y="58" text-anchor="middle" class="dg-s">harmonis_catalog (tenants)</text>
   <rect x="590" y="100" width="170" height="64" rx="12" class="dg-box"/><text x="675" y="128" text-anchor="middle" class="dg-t">Banco por empresa</text><text x="675" y="148" text-anchor="middle" class="dg-s">harmonis_&lt;empresa&gt; (hm_*)</text>
   <rect x="590" y="190" width="170" height="60" rx="12" class="dg-box"/><text x="675" y="216" text-anchor="middle" class="dg-t">Armazenamento</text><text x="675" y="236" text-anchor="middle" class="dg-s">arquivos (disco privado)</text>
@@ -57,7 +57,10 @@
     <tr><td><code>HARMONIS_DB_USER</code> / <code>_PASSWORD</code></td><td>sa / (dev)</td><td>Credenciais do banco. Em produção use um usuário de privilégios mínimos.</td></tr>
     <tr><td><code>HARMONIS_CATALOG_DB</code></td><td>harmonis_catalog</td><td>Nome do banco de catálogo de empresas.</td></tr>
     <tr><td><code>HARMONIS_JWT_SECRET</code></td><td>(dev)</td><td>Segredo de assinatura das sessões (≥ 32 bytes). <b>Obrigatório trocar.</b></td></tr>
-    <tr><td><code>HARMONIS_JWT_TTL</code></td><td>480</td><td>Duração da sessão, em minutos.</td></tr>
+    <tr><td><code>HARMONIS_JWT_TTL</code></td><td>15</td><td>Validade do <em>access token</em>, em minutos (curta de propósito; a sessão é mantida pelo refresh token).</td></tr>
+    <tr><td><code>HARMONIS_REFRESH_TTL_DAYS</code> / <code>_ABSOLUTE_DAYS</code></td><td>7 / 30</td><td>Validade deslizante do refresh token e duração máxima da sessão, em dias.</td></tr>
+    <tr><td><code>HARMONIS_COOKIE_SECURE</code></td><td>false</td><td>Defina <code>true</code> em produção (HTTPS): cookies de sessão só trafegam por conexão segura.</td></tr>
+    <tr><td><code>HARMONIS_COOKIE_SAMESITE</code> / <code>_DOMAIN</code></td><td>Strict / (vazio)</td><td>Política SameSite e domínio dos cookies. Prefira front e API no mesmo site; em subdomínios informe o domínio (ex.: <code>.empresa.com</code>).</td></tr>
     <tr><td><code>HARMONIS_CORS</code></td><td>localhost:4200…</td><td>Origens permitidas (lista separada por vírgulas).</td></tr>
     <tr><td><code>HARMONIS_DOCS_DIR</code></td><td>storage/documents</td><td>Pasta dos arquivos (documentos e anexos). <b>Inclua nos backups.</b></td></tr>
     <tr><td><code>HARMONIS_SECRET_KEY</code></td><td>(dev)</td><td>Chave que cifra os segredos das integrações. <b>Obrigatório trocar; guarde com segurança</b> — perdê-la ou alterá-la torna os segredos gravados ilegíveis.</td></tr>
@@ -71,7 +74,7 @@
 <ul>
   <li>Não há ferramenta de migração automática: os scripts em <code>migrations/</code> são aplicados <b>manualmente, em ordem</b> (o utilitário <code>tools/MigrationRunner.java</code> ajuda).</li>
   <li>Todas as tabelas do Harmonis usam o prefixo <b><code>hm_</code></b>, convivendo com tabelas de outros sistemas no mesmo banco.</li>
-  <li>Catálogo: <code>migrations/catalog/*.sql</code>. Cada empresa: <code>migrations/tenant/*.sql</code> (identidade, formulários, workflow, documentos, portal, anexos, integrações).</li>
+  <li>Catálogo: <code>migrations/catalog/*.sql</code>. Cada empresa: <code>migrations/tenant/*.sql</code> (identidade, formulários, workflow, documentos, portal, anexos, integrações, sessões/refresh tokens).</li>
   <li>Ao atualizar a aplicação, aplique os novos scripts em <b>cada banco de empresa</b> antes de subir a nova versão.</li>
 </ul>
 
@@ -96,6 +99,7 @@
 <h2 id="producao">Em produção</h2>
 <ul>
   <li><b>HTTPS</b> sempre; sirva o frontend (arquivos estáticos gerados) e encaminhe <code>/api</code> ao backend.</li>
+  <li>Ative <code>HARMONIS_COOKIE_SECURE=true</code> (HTTPS). Os tokens de sessão ficam em cookies HttpOnly com proteção CSRF e refresh token rotativo (reuso revoga a sessão).</li>
   <li>Troque <code>HARMONIS_JWT_SECRET</code> e <code>HARMONIS_SECRET_KEY</code>; use usuário de banco com o mínimo de privilégios; restrinja <code>HARMONIS_CORS</code> ao seu domínio.</li>
   <li><b>Backups</b>: bancos (catálogo + um por empresa) <em>e</em> a pasta de arquivos (<code>HARMONIS_DOCS_DIR</code>) — os dois precisam ser restaurados juntos.</li>
   <li><b>Logs de integração</b> não são expurgados automaticamente: planeje uma rotina de retenção para a tabela <code>hm_integration_log</code>.</li>
@@ -107,7 +111,6 @@
 <h2 id="limitacoes">Limitações conhecidas desta versão</h2>
 <ul>
   <li>Sem tela para troca/recuperação de senha.</li>
-  <li>Sessão sem renovação automática (expira conforme <code>HARMONIS_JWT_TTL</code>).</li>
   <li>Formulários com processos de aprovação podem ser recusados na exclusão.</li>
   <li>Portal sem suporte a tabelas Markdown nem upload de imagens.</li>
   <li>Provisionamento de empresa é manual (não há cadastro automático).</li>

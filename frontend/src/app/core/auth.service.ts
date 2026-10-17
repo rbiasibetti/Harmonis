@@ -1,71 +1,85 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxjs';
 import { API_BASE } from './api';
-import { AuthUser, LoginRequest, LoginResponse } from './models';
+import { AuthUser, LoginRequest, SessionResponse } from './models';
 
-const TOKEN_KEY = 'harmonis.token';
-const USER_KEY = 'harmonis.user';
-
+/**
+ * Sessao baseada em cookies HttpOnly (access + refresh), emitidos e renovados pelo servidor.
+ * Nenhum token fica acessivel ao JavaScript nem em localStorage; aqui so existe o perfil do
+ * usuario, em memoria. Ao recarregar a pagina a sessao e restaurada por /me (com renovacao
+ * automatica via refresh token, se o access token tiver expirado).
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
 
-  private readonly _token = signal<string | null>(this.readToken());
-  private readonly _user = signal<AuthUser | null>(this.readUser());
+  private readonly _user = signal<AuthUser | null>(null);
+  private refreshing$: Observable<boolean> | null = null;
 
   readonly user = this._user.asReadonly();
-  readonly isAuthenticated = computed(() => this._token() !== null);
+  readonly isAuthenticated = computed(() => this._user() !== null);
 
-  login(req: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${API_BASE}/auth/login`, req).pipe(
-      tap((res) => this.persist(res.token, res.user))
+  constructor() {
+    // Remove restos da versao anterior, que guardava o JWT no localStorage.
+    try {
+      localStorage.removeItem('harmonis.token');
+      localStorage.removeItem('harmonis.user');
+    } catch { /* ignore */ }
+  }
+
+  login(req: LoginRequest): Observable<SessionResponse> {
+    return this.http.post<SessionResponse>(`${API_BASE}/auth/login`, req).pipe(
+      tap((res) => this._user.set(res.user))
     );
   }
 
-  /** Revalida o usuario pelo token atual (ex.: apos reload). */
-  refreshMe(): Observable<AuthUser> {
+  /** Restaura a sessao a partir dos cookies (reload/novo acesso). true = autenticado. */
+  restore(): Observable<boolean> {
     return this.http.get<AuthUser>(`${API_BASE}/me`).pipe(
-      tap((user) => {
-        this._user.set(user);
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
-      })
+      tap((user) => this._user.set(user)),
+      map(() => true),
+      catchError(() => of(false))
     );
   }
 
-  logout(): void {
-    this._token.set(null);
-    this._user.set(null);
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+  /** Atualiza o perfil/permissoes do usuario logado. */
+  refreshMe(): Observable<AuthUser> {
+    return this.http.get<AuthUser>(`${API_BASE}/me`).pipe(tap((user) => this._user.set(user)));
   }
 
-  token(): string | null {
-    return this._token();
+  /**
+   * Renova a sessao pelo refresh token (cookie). Requisicoes simultaneas compartilham uma
+   * unica chamada (evita rotacoes concorrentes). true = renovou.
+   */
+  refreshSession(): Observable<boolean> {
+    if (!this.refreshing$) {
+      this.refreshing$ = this.http.post<SessionResponse>(`${API_BASE}/auth/refresh`, null).pipe(
+        tap((res) => this._user.set(res.user)),
+        map(() => true),
+        catchError(() => of(false)),
+        finalize(() => (this.refreshing$ = null)),
+        shareReplay(1)
+      );
+    }
+    return this.refreshing$;
+  }
+
+  /** Encerra a sessao no servidor (revoga o refresh token e limpa os cookies). */
+  logout(): Observable<void> {
+    return this.http.post<void>(`${API_BASE}/auth/logout`, null).pipe(
+      catchError(() => of(void 0)),
+      tap(() => this.clearLocal())
+    );
+  }
+
+  /** Descarta o estado local (sessao expirada ou logout). */
+  clearLocal(): void {
+    this._user.set(null);
   }
 
   can(permission: string): boolean {
     const u = this._user();
     return !!u && (u.owner || u.permissions.includes(permission));
-  }
-
-  private persist(token: string, user: AuthUser): void {
-    this._token.set(token);
-    this._user.set(user);
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-  }
-
-  private readToken(): string | null {
-    try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
-  }
-
-  private readUser(): AuthUser | null {
-    try {
-      const raw = localStorage.getItem(USER_KEY);
-      return raw ? (JSON.parse(raw) as AuthUser) : null;
-    } catch {
-      return null;
-    }
   }
 }

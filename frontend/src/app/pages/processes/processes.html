@@ -60,6 +60,7 @@
       <div class="d-head">
         <h2>{{ d.formName }}</h2>
         <span class="badge" [class]="statusBadge(d.status)">{{ statusLabel(d.status) }}</span>
+        <button type="button" class="btn btn-ghost" style="margin-left:auto" (click)="pdf(d.instanceId)">⬇ PDF</button>
       </div>
       <p class="muted">Solicitado por {{ d.requestedBy || '—' }} em {{ d.createdAt | date:'short' }}</p>
 

@@ -16,10 +16,12 @@ public class FormController {
 
     private final FormService service;
     private final FormAttachmentService attachments;
+    private final SubmissionPdfService pdfs;
 
-    public FormController(FormService service, FormAttachmentService attachments) {
+    public FormController(FormService service, FormAttachmentService attachments, SubmissionPdfService pdfs) {
         this.service = service;
         this.attachments = attachments;
+        this.pdfs = pdfs;
     }
 
     @GetMapping("/field-types")
@@ -127,6 +129,12 @@ public class FormController {
     @PreAuthorize("hasAuthority('forms.update')")
     public FlowView saveFlow(@PathVariable long id, @Valid @RequestBody SaveFlowRequest req) {
         return service.saveFlow(id, req.nodes(), req.hooks());
+    }
+
+    @GetMapping("/{id}/submissions/{submissionId}/pdf")
+    @PreAuthorize("hasAuthority('forms.submissions')")
+    public org.springframework.http.ResponseEntity<byte[]> pdf(@PathVariable long id, @PathVariable long submissionId) {
+        return SubmissionPdfService.response(pdfs.render(id, submissionId));
     }
 
     @GetMapping("/{id}/submissions.csv")

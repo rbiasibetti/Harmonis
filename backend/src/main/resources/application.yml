@@ -19,7 +19,15 @@ harmonis:
     db-name: ${HARMONIS_CATALOG_DB:harmonis_catalog}
   jwt:
     secret: ${HARMONIS_JWT_SECRET:troque-esta-chave-em-producao-com-no-minimo-32-bytes!!}
-    ttl-minutes: ${HARMONIS_JWT_TTL:480}
+    # Access token curto; a sessao e mantida pelo refresh token (rotativo, em cookie HttpOnly).
+    ttl-minutes: ${HARMONIS_JWT_TTL:15}
+    refresh-ttl-days: ${HARMONIS_REFRESH_TTL_DAYS:7}
+    refresh-absolute-days: ${HARMONIS_REFRESH_ABSOLUTE_DAYS:30}
+    refresh-reuse-grace-seconds: ${HARMONIS_REFRESH_GRACE:10}
+  cookies:
+    secure: ${HARMONIS_COOKIE_SECURE:false}
+    same-site: ${HARMONIS_COOKIE_SAMESITE:Strict}
+    domain: ${HARMONIS_COOKIE_DOMAIN:}
   secrets:
     # Chave de cifragem (AES-256-GCM) dos segredos das integracoes (senhas, tokens, api keys).
     # TROQUE em producao e nao a perca: sem ela os segredos gravados nao podem ser decifrados.

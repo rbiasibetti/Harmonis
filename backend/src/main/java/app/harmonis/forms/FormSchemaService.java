@@ -292,7 +292,7 @@ public class FormSchemaService {
     }
 
     /** O campo esta visivel/habilitado para preenchimento? (visibleWhen). */
-    private boolean visible(FormField f, Map<String, Object> data) {
+    public boolean visible(FormField f, Map<String, Object> data) {
         FieldCondition c = f.visibleWhen();
         if (c == null || c.field() == null || c.field().isBlank()) return true;
         Map<String, Object> cond = new HashMap<>();

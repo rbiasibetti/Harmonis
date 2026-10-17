@@ -57,6 +57,13 @@ export class Processes {
     this.fillValues = v;
   }
 
+  pdf(instanceId: number): void {
+    this.api.downloadPdf(instanceId).subscribe({
+      next: (blob) => downloadBlob(blob, `processo-${instanceId}.pdf`),
+      error: () => this.detailError.set('Não foi possível gerar o PDF.'),
+    });
+  }
+
   close(): void { this.detail.set(null); }
 
   decide(approved: boolean): void {

@@ -60,7 +60,6 @@ export class Shell {
   }
 
   logout(): void {
-    this.auth.logout();
-    this.router.navigateByUrl('/login');
+    this.auth.logout().subscribe(() => this.router.navigateByUrl('/login'));
   }
 }
