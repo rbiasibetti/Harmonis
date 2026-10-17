@@ -53,15 +53,22 @@ public class ProcessService {
     public List<InboxItem> inbox(User user) {
         Map<Long, String> formNames = formNames();
         Map<Long, String> userNames = userNames();
+        Map<Long, List<FormField>> fieldsByForm = new HashMap<>();
         return approvals.pendingApprovalsFor(user).stream()
                 .map(t -> {
                     ProcessInstance inst = t.getInstance();
+                    boolean needsFill = false;
+                    if ("role".equals(t.getApproverType()) && t.getRole() != null) {
+                        List<FormField> fields = fieldsByForm.computeIfAbsent(inst.getFormId(),
+                                id -> forms.findById(id).map(f -> schema.readFields(f.getSchemaJson())).orElse(List.of()));
+                        needsFill = !schema.pendingFor(fields, t.getRole(), submissionData(inst.getSubmissionId())).isEmpty();
+                    }
                     return new InboxItem(
                             t.getId(), inst.getId(),
                             formNames.getOrDefault(inst.getFormId(), "Formulário"),
                             t.getStepName(),
                             inst.getCreatedBy() == null ? null : userNames.get(inst.getCreatedBy()),
-                            inst.getCreatedAt());
+                            inst.getCreatedAt(), needsFill);
                 })
                 .sorted(Comparator.comparing(InboxItem::createdAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();

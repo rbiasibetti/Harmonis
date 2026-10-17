@@ -23,7 +23,7 @@
             <td>{{ it.stepName }}</td>
             <td class="muted">{{ it.requestedBy || '—' }}</td>
             <td class="muted">{{ it.createdAt | date:'short' }}</td>
-            <td><div class="row-actions"><button class="btn btn-ghost sm" (click)="open(it.instanceId)">Revisar</button></div></td>
+            <td><div class="row-actions"><button class="btn btn-ghost sm" (click)="open(it.instanceId)">{{ it.needsFill ? 'Preencher' : 'Revisar' }}</button></div></td>
           </tr>
         } @empty {
           <tr><td colspan="5" class="muted" style="text-align:center;padding:2rem">
@@ -118,7 +118,7 @@
           <textarea class="input" rows="2" [(ngModel)]="comment"></textarea>
           <div class="decide-actions">
             <button class="btn btn-danger" (click)="decide(false)" [disabled]="deciding()">Reprovar</button>
-            <button class="btn btn-primary" (click)="decide(true)" [disabled]="deciding()">Aprovar</button>
+            <button class="btn btn-primary" (click)="decide(true)" [disabled]="deciding()">{{ d.fillFields.length > 0 ? 'Salvar e aprovar' : 'Aprovar' }}</button>
           </div>
         </div>
       } @else {

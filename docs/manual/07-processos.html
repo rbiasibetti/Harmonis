@@ -27,23 +27,34 @@
 <ol class="legend">
   <li><b>Aprovações</b> — aba com as tarefas que <em>você</em> pode decidir; o número indica quantas.</li>
   <li><b>Minhas solicitações</b> — aba com o que você mesmo enviou.</li>
-  <li><b>Revisar</b> — abre o detalhe do processo para decidir.</li>
+  <li><b>Revisar / Preencher</b> — abre o detalhe do processo. O botão vira <b>Preencher</b> quando a etapa exige que você complete campos do formulário (nesse caso o botão de decisão passa a ser <b>Salvar e aprovar</b>); nas demais, é <b>Revisar</b> e a decisão é <b>Aprovar</b>.</li>
 </ol>
 <p>Colunas: <b>Formulário</b>, <b>Etapa</b> (a etapa que aguarda você), <b>Solicitante</b> e <b>Data</b>. Uma tarefa aparece aqui quando você é o aprovador nomeado, tem o papel indicado — ou é o proprietário.
 O mesmo contador aparece no cartão <em>Aprovações pendentes</em> do dashboard.</p>
 
+<h3 id="preencher">Quando a etapa pede preenchimento</h3>
+<figure>
+  <a class="zoom" href="img/processes-inbox-fill.png"><img src="img/processes-inbox-fill.png" alt="Caixa de aprovações com o botão Preencher"></a>
+  <figcaption><b>Etapa com campos a preencher.</b> O botão da linha é <b>Preencher</b>, e não <b>Revisar</b>.</figcaption>
+</figure>
+<ol class="legend">
+  <li><b>Preencher</b> — a etapa é sua e há campos do formulário “preenchidos por” seu papel ainda vazios (por exemplo, o <em>Número do empenho</em> do Financeiro). Ao abrir, eles aparecem logo abaixo da linha do tempo.</li>
+  <li><b>Aprovações</b> — o mesmo rótulo aparece como etiqueta <em>Preencher</em> no cartão “Aprovações pendentes” do dashboard.</li>
+</ol>
+<p>Depois de preencher, use <b>Salvar e aprovar</b> (ou <b>Reprovar</b>). Os valores ficam gravados no registro e aparecem na tabela de respostas e no PDF.</p>
+
 <h2 id="decidir">Revisando e decidindo</h2>
 <figure class="narrow">
   <a class="zoom" href="img/process-detail.png"><img src="img/process-detail.png" alt="Detalhe de um processo pendente"></a>
-  <figcaption><b>Detalhe do processo</b> (janela aberta por “Revisar”).</figcaption>
+  <figcaption><b>Detalhe do processo</b> (janela aberta por “Revisar” ou “Preencher”).</figcaption>
 </figure>
 <ol class="legend">
   <li><b>Cabeçalho</b> — nome do formulário, status do processo e quem solicitou, com data.</li>
-  <li><b>PDF</b> — o botão <b>⬇ PDF</b> no topo baixa a ficha do registro (dados + histórico de aprovação; veja <a href="05-preenchimento-respostas.html#pdf">Ficha em PDF</a>).</li>
   <li><b>Dados enviados</b> — todas as respostas, na ordem do formulário. Anexos aparecem como links 📎 para baixar. Campos ainda não preenchidos (por exemplo, os do financeiro) mostram “—”.</li>
   <li><b>Fluxo de aprovação</b> — linha do tempo das etapas (veja <a href="#timeline">abaixo</a>).</li>
   <li><b>Comentário (opcional)</b> — registre a justificativa; ela fica visível na linha do tempo.</li>
-  <li><b>Reprovar / Aprovar</b> — registram a decisão. A janela é fechada e a lista é atualizada.</li>
+  <li><b>Reprovar / Aprovar</b> — registram a decisão. A janela é fechada e a lista é atualizada. Quando a etapa exige preenchimento, o botão de aprovar é <b>Salvar e aprovar</b>.</li>
+  <li><b>PDF</b> — o botão <b>⬇ PDF</b> no canto do cabeçalho baixa a ficha do registro (dados + histórico de aprovação; veja <a href="05-preenchimento-respostas.html#pdf">Ficha em PDF</a>).</li>
 </ol>
 <div class="callout warn">
   <b>A decisão não pode ser desfeita</b>

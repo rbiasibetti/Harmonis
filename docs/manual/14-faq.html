@@ -59,6 +59,9 @@
 </details>
 
 <h2 id="fluxo">Fluxo e processos</h2>
+<details><summary>O botão da minha aprovação diz “Preencher” em vez de “Revisar”.</summary>
+  <p>É esperado: a etapa tem campos do formulário atribuídos ao seu papel (por exemplo, o número do empenho) e eles ainda estão vazios. Abra, preencha e use <b>Salvar e aprovar</b>. Veja <a href="07-processos.html#preencher">Quando a etapa pede preenchimento</a>.</p>
+</details>
 <details><summary>Minha solicitação está “Pendente” há dias.</summary>
   <p>Abra <b>Minhas solicitações → Ver</b> e olhe a linha do tempo: a etapa pendente indica o papel ou a pessoa que precisa agir. Avise-os; eles veem a pendência em <b>Processos → Aprovações</b>.</p>
 </details>
@@ -79,6 +82,9 @@
 </details>
 
 <h2 id="integracoes">Integrações</h2>
+<details><summary>O que é o evento “Ao concluir” e qual a diferença para “Ao aprovar” e “Ao reprovar”?</summary>
+  <p>“Ao aprovar” dispara só quando o processo termina aprovado e “Ao reprovar” só quando termina reprovado. <b>“Ao concluir” dispara nos dois casos</b>, logo depois de um deles. O resultado vai no campo <code>process.status</code> (<code>approved</code> ou <code>rejected</code>) do conteúdo enviado. Use-o quando o sistema de destino só precisa saber que o processo acabou.</p>
+</details>
 <details><summary>A integração não aparece na lista do fluxo.</summary>
   <p>Só integrações <b>publicadas</b> aparecem. Publique-a em <em>Integrações</em> (exige <code class="perm">integrations.publish</code>).</p>
 </details>
@@ -99,6 +105,10 @@
 </details>
 <details><summary>Esqueci o segredo que configurei.</summary>
   <p>Segredos não podem ser consultados nem pela interface nem pela API. Defina um novo valor no campo e salve.</p>
+</details>
+
+<details><summary>Como imprimo um registro? O PDF saiu com campos faltando.</summary>
+  <p>Na tela <b>Respostas</b> use o botão <b>PDF</b> da linha (ou <b>⬇ PDF</b> no detalhe do processo). Campos <b>ocultos por condição</b> não aparecem, e campos em branco saem com “—”. Anexos aparecem pelo nome do arquivo, sem o conteúdo. Veja <a href="05-preenchimento-respostas.html#pdf">Ficha em PDF</a>.</p>
 </details>
 
 <h2 id="documentos-portal">Documentos e portal</h2>

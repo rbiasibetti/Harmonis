@@ -59,8 +59,8 @@
     <tr><td><code class="perm">forms.create</code></td><td>Criar formulários.</td><td>✔</td><td>✔</td><td>—</td></tr>
     <tr><td><code class="perm">forms.update</code></td><td>Editar campos, abrir e salvar o <b>fluxo de aprovação</b> e vincular integrações publicadas.</td><td>✔</td><td>✔</td><td>—</td></tr>
     <tr><td><code class="perm">forms.delete</code></td><td>Excluir formulários.</td><td>✔</td><td>—</td><td>—</td></tr>
-    <tr><td><code class="perm">forms.submissions</code></td><td>Ver a tabela de respostas e exportar CSV; “Respostas recentes” no dashboard.</td><td>✔</td><td>✔</td><td>—</td></tr>
-    <tr><td><code class="perm">processes.view</code></td><td>Acessar Processos: caixa de aprovações, minhas solicitações, detalhe e <b>decidir</b> tarefas das quais seja aprovador; notificações e cartões de processos no dashboard.</td><td>✔</td><td>✔</td><td>✔</td></tr>
+    <tr><td><code class="perm">forms.submissions</code></td><td>Ver a tabela de respostas, exportar CSV e baixar a <b>ficha em PDF</b> de cada resposta; “Respostas recentes” no dashboard.</td><td>✔</td><td>✔</td><td>—</td></tr>
+    <tr><td><code class="perm">processes.view</code></td><td>Acessar Processos: caixa de aprovações, minhas solicitações, detalhe (com <b>PDF</b> do registro) e <b>decidir</b> tarefas das quais seja aprovador; notificações e cartões de processos no dashboard.</td><td>✔</td><td>✔</td><td>✔</td></tr>
   </tbody>
 </table>
 
@@ -101,7 +101,7 @@
     <tr><td>Menu Formulários · Processos · Documentos · Portal</td><td><code class="perm">forms.view</code> · <code class="perm">processes.view</code> · <code class="perm">documents.view</code> · <code class="perm">pages.view</code></td></tr>
     <tr><td>Menu Integrações · Logs de integração</td><td><code class="perm">integrations.view</code> · <code class="perm">integrations.logs</code></td></tr>
     <tr><td>Construtor de formulário (ícone ⚙) e editor de fluxo (⇄)</td><td><code class="perm">forms.update</code> (novo formulário: <code class="perm">forms.create</code>)</td></tr>
-    <tr><td>Respostas e CSV (📊)</td><td><code class="perm">forms.submissions</code></td></tr>
+    <tr><td>Respostas, CSV e PDF do registro (📊)</td><td><code class="perm">forms.submissions</code> (PDF também no detalhe do processo, com <code class="perm">processes.view</code>)</td></tr>
     <tr><td>Decidir uma aprovação</td><td><code class="perm">processes.view</code> + ser o aprovador da etapa (ou ser o proprietário)</td></tr>
     <tr><td>Escolher integrações no fluxo</td><td><code class="perm">forms.update</code> (basta; não precisa de <code>integrations.*</code>)</td></tr>
     <tr><td>Gerenciar páginas do portal</td><td><code class="perm">pages.update</code></td></tr>

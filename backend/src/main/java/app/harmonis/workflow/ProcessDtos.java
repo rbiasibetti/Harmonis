@@ -13,7 +13,9 @@ public final class ProcessDtos {
 
     public record InboxItem(
             Long taskId, Long instanceId, String formName, String stepName,
-            String requestedBy, Instant createdAt
+            String requestedBy, Instant createdAt,
+            /** true = a etapa exige que o usuario preencha campos (e nao apenas decida). */
+            boolean needsFill
     ) {}
 
     public record MineItem(

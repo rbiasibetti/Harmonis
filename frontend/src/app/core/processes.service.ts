@@ -12,6 +12,8 @@ export interface InboxItem {
   stepName: string;
   requestedBy: string | null;
   createdAt: string;
+  /** A etapa exige preenchimento de campos pelo usuario (nao so decisao). */
+  needsFill: boolean;
 }
 
 export interface MineItem {

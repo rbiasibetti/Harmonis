@@ -27,6 +27,7 @@
         <div class="list-head"><h2>Aprovações pendentes</h2><a routerLink="/processes" class="muted more">ver tudo →</a></div>
         @for (it of d.pendingApprovals; track it.taskId) {
           <div class="li"><div><strong>{{ it.formName }}</strong><div class="muted sub">{{ it.stepName }} · {{ it.requestedBy || '—' }}</div></div>
+            @if (it.needsFill) { <span class="badge">Preencher</span> }
             <span class="muted">{{ it.createdAt | date:'short' }}</span></div>
         } @empty { <p class="muted empty">Nada pendente.</p> }
       </div>

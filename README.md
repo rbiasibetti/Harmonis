@@ -115,6 +115,9 @@ as de outros sistemas no mesmo banco (todas as tabelas usam o prefixo `hm_`).
 | **Frontend** | Em `401` o interceptor faz **uma** renovação compartilhada e repete as requisições; se falhar, volta ao login. Ao recarregar a página a sessão é restaurada por `/api/me` |
 | **Logout** | Revoga a família no servidor e apaga os cookies |
 
+> **Desenvolvimento:** acesse o front por `http://localhost:4200` (e não `127.0.0.1`) enquanto a API estiver em `localhost:8080`:
+> hosts diferentes são *sites* diferentes e os cookies `SameSite=Strict` não acompanham as requisições.
+
 > **Implantação:** com `HARMONIS_COOKIE_SECURE=true` (HTTPS) e, de preferência, front e API sob o **mesmo site**
 > (mesmo domínio ou subdomínios + `HARMONIS_COOKIE_DOMAIN`), já que cookies `SameSite` não acompanham requisições
 > entre sites diferentes. Os tokens vencidos são limpos a cada login.

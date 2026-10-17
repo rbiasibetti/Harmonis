@@ -59,6 +59,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfRepository())
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        // Sem sessao HTTP: a estrategia padrao regeneraria/limparia o cookie XSRF a cada
+                        // requisicao autenticada por JWT (cookie voltava vazio e as mutacoes davam 403).
+                        .sessionAuthenticationStrategy(
+                                new org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy())
                         .ignoringRequestMatchers("/api/auth/login", "/api/auth/refresh"))
                 .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
