@@ -2,10 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PortalService } from '../../core/portal.service';
+import { TPipe } from '../../core/i18n/i18n';
+import { tr } from '../../core/i18n/i18n';
 
 @Component({
   selector: 'app-page-editor',
-  imports: [FormsModule, RouterLink],
+  imports: [TPipe, FormsModule, RouterLink],
   templateUrl: './page-editor.html',
   styleUrl: './portal.scss',
 })
@@ -40,7 +42,7 @@ export class PageEditor {
           this.status.set(p.status);
           this.loading.set(false);
         },
-        error: () => { this.error.set('Não foi possível carregar a página.'); this.loading.set(false); },
+        error: () => { this.error.set(tr('Não foi possível carregar a página.')); this.loading.set(false); },
       });
     }
   }
@@ -76,6 +78,6 @@ export class PageEditor {
 
   private fail(e: any): void {
     this.saving.set(false);
-    this.error.set(e?.error?.message ?? 'Não foi possível salvar.');
+    this.error.set(e?.error?.message ?? tr('Não foi possível salvar.'));
   }
 }

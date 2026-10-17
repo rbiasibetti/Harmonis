@@ -9,12 +9,14 @@ import { EVENT_LABELS, HookRef, IntegrationOption, IntegrationsService } from '.
 import { RolesService } from '../../core/roles.service';
 import { UsersService } from '../../core/users.service';
 import { FormField } from '../../core/models';
+import { TPipe } from '../../core/i18n/i18n';
+import { tr } from '../../core/i18n/i18n';
 
 interface Opt { value: string; label: string; }
 
 @Component({
   selector: 'app-flow-editor',
-  imports: [FormsModule, RouterLink, NgTemplateOutlet, DragDropModule],
+  imports: [TPipe, FormsModule, RouterLink, NgTemplateOutlet, DragDropModule],
   templateUrl: './flow-editor.html',
   styleUrl: './flow-editor.scss',
 })
@@ -41,10 +43,10 @@ export class FlowEditor {
   zoom = signal(1);
 
   readonly hookEvents: { key: string; title: string; desc: string }[] = [
-    { key: 'submitted', title: 'Ao enviar', desc: 'Quando o solicitante envia o formulário.' },
-    { key: 'approved', title: 'Ao aprovar', desc: 'Quando todas as etapas são aprovadas.' },
-    { key: 'rejected', title: 'Ao reprovar', desc: 'Quando uma etapa reprova o processo.' },
-    { key: 'completed', title: 'Ao concluir', desc: 'Ao fim do fluxo, aprovado ou reprovado (veja process.status).' },
+    { key: 'submitted', title: tr('Ao enviar'), desc: tr('Quando o solicitante envia o formulário.') },
+    { key: 'approved', title: tr('Ao aprovar'), desc: tr('Quando todas as etapas são aprovadas.') },
+    { key: 'rejected', title: tr('Ao reprovar'), desc: 'Quando uma etapa reprova o processo.' },
+    { key: 'completed', title: tr('Ao concluir'), desc: tr('Ao fim do fluxo, aprovado ou reprovado (veja process.status).') },
   ];
   readonly eventLabels = EVENT_LABELS;
 
@@ -53,15 +55,15 @@ export class FlowEditor {
   }
 
   readonly operators: Opt[] = [
-    { value: '==', label: 'igual a' },
-    { value: '!=', label: 'diferente de' },
-    { value: '>', label: 'maior que' },
-    { value: '>=', label: 'maior ou igual' },
-    { value: '<', label: 'menor que' },
-    { value: '<=', label: 'menor ou igual' },
-    { value: 'contains', label: 'contém' },
-    { value: 'empty', label: 'vazio' },
-    { value: 'not_empty', label: 'preenchido' },
+    { value: '==', label: tr('igual a') },
+    { value: '!=', label: tr('diferente de') },
+    { value: '>', label: tr('maior que') },
+    { value: '>=', label: tr('maior ou igual') },
+    { value: '<', label: tr('menor que') },
+    { value: '<=', label: tr('menor ou igual') },
+    { value: 'contains', label: tr('contém') },
+    { value: 'empty', label: tr('vazio') },
+    { value: 'not_empty', label: tr('preenchido') },
   ];
 
   constructor() {
@@ -76,7 +78,7 @@ export class FlowEditor {
         this.hooks.set({ ...FlowEditor.emptyHooks(), ...(f.hooks ?? {}) });
         this.loading.set(false);
       },
-      error: () => { this.error.set('Não foi possível carregar o fluxo.'); this.loading.set(false); },
+      error: () => { this.error.set(tr('Não foi possível carregar o fluxo.')); this.loading.set(false); },
     });
   }
 
@@ -173,7 +175,7 @@ export class FlowEditor {
   outline(): { i: number; label: string; gateway: boolean }[] {
     return this.nodes().map((n, i) => ({
       i,
-      label: n.name || (this.isGateway(n) ? 'Decisão' : 'Etapa'),
+      label: n.name || (this.isGateway(n) ? tr('Decisão') : tr('Etapa')),
       gateway: this.isGateway(n),
     }));
   }
@@ -200,7 +202,7 @@ export class FlowEditor {
         this.saving.set(false);
         this.saved.set(true);
       },
-      error: (e) => { this.saving.set(false); this.error.set(e?.error?.message ?? 'Não foi possível salvar.'); },
+      error: (e) => { this.saving.set(false); this.error.set(e?.error?.message ?? tr('Não foi possível salvar.')); },
     });
   }
 }

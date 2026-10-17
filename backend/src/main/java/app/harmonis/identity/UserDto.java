@@ -11,7 +11,8 @@ public record UserDto(
         boolean owner,
         boolean active,
         List<String> roles,
-        List<String> permissions
+        List<String> permissions,
+        String language
 ) {
     public static UserDto from(User u) {
         List<String> perms = u.isOwner()
@@ -21,6 +22,7 @@ public record UserDto(
                 u.getId(), u.getName(), u.getEmail(), u.getJobTitle(),
                 u.isOwner(), u.isActive(),
                 u.roleNames().stream().toList(),
-                perms);
+                perms,
+                u.getLanguage());
     }
 }

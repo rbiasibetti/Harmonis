@@ -1,19 +1,19 @@
 <div class="page-head">
   <div>
-    <h1>Logs de integração</h1>
-    <p class="muted">Cada tentativa de envio de webhook, com o conteúdo enviado e a resposta do destino.</p>
+    <h1>{{ 'Logs de integração' | t }}</h1>
+    <p class="muted">{{ 'Cada tentativa de envio de webhook, com o conteúdo enviado e a resposta do destino.' | t }}</p>
   </div>
   <div class="head-actions">
-    @if (auth.can('integrations.view')) { <a class="btn btn-ghost" routerLink="/integrations">Integrações</a> }
-    <button class="btn btn-ghost" (click)="reload()">↻ Atualizar</button>
+    @if (auth.can('integrations.view')) { <a class="btn btn-ghost" routerLink="/integrations">{{ 'Integrações' | t }}</a> }
+    <button class="btn btn-ghost" (click)="reload()">{{ '↻ Atualizar' | t }}</button>
   </div>
 </div>
 
 @if (stats(); as s) {
   <div class="stats">
-    <div class="card stat ok"><div class="n">{{ s.success24h }}</div><div class="l">Sucessos nas últimas 24 h</div></div>
-    <div class="card stat err"><div class="n">{{ s.error24h }}</div><div class="l">Erros nas últimas 24 h</div></div>
-    <div class="card stat"><div class="n">{{ s.skipped24h }}</div><div class="l">Ignorados nas últimas 24 h</div></div>
+    <div class="card stat ok"><div class="n">{{ s.success24h }}</div><div class="l">{{ 'Sucessos nas últimas 24 h' | t }}</div></div>
+    <div class="card stat err"><div class="n">{{ s.error24h }}</div><div class="l">{{ 'Erros nas últimas 24 h' | t }}</div></div>
+    <div class="card stat"><div class="n">{{ s.skipped24h }}</div><div class="l">{{ 'Ignorados nas últimas 24 h' | t }}</div></div>
   </div>
 }
 
@@ -21,34 +21,34 @@
 
 <div class="filters">
   <select class="input" [(ngModel)]="status" (ngModelChange)="apply()">
-    <option value="">Todos os status</option>
-    <option value="success">Sucesso</option>
-    <option value="error">Erro</option>
-    <option value="skipped">Ignorado</option>
+    <option value="">{{ 'Todos os status' | t }}</option>
+    <option value="success">{{ 'Sucesso' | t }}</option>
+    <option value="error">{{ 'Erro' | t }}</option>
+    <option value="skipped">{{ 'Ignorado' | t }}</option>
   </select>
   <select class="input" [(ngModel)]="event" (ngModelChange)="apply()">
-    <option value="">Todos os eventos</option>
+    <option value="">{{ 'Todos os eventos' | t }}</option>
     @for (k of eventKeys; track k) { <option [value]="k">{{ eventLabels[k] }}</option> }
   </select>
   @if (integrations().length) {
     <select class="input" [(ngModel)]="integrationId" (ngModelChange)="apply()">
-      <option [ngValue]="null">Todas as integrações</option>
+      <option [ngValue]="null">{{ 'Todas as integrações' | t }}</option>
       @for (i of integrations(); track i.id) { <option [ngValue]="i.id">{{ i.name }}</option> }
     </select>
   }
   <select class="input" [(ngModel)]="period" (ngModelChange)="apply()">
-    <option value="24h">Últimas 24 horas</option>
-    <option value="7d">Últimos 7 dias</option>
-    <option value="30d">Últimos 30 dias</option>
-    <option value="">Todo o período</option>
+    <option value="24h">{{ 'Últimas 24 horas' | t }}</option>
+    <option value="7d">{{ 'Últimos 7 dias' | t }}</option>
+    <option value="30d">{{ 'Últimos 30 dias' | t }}</option>
+    <option value="">{{ 'Todo o período' | t }}</option>
   </select>
-  <input class="input grow" [(ngModel)]="q" (keyup.enter)="apply()" placeholder="Buscar por integração, formulário ou erro…" />
+  <input class="input grow" [(ngModel)]="q" (keyup.enter)="apply()" [placeholder]="'Buscar por integração, formulário ou erro…' | t" />
 </div>
 
 <div class="card">
   <table class="table">
     <thead>
-      <tr><th>Quando</th><th>Integração</th><th>Evento</th><th>Status</th><th>HTTP</th><th>Duração</th></tr>
+      <tr><th>{{ 'Quando' | t }}</th><th>{{ 'Integração' | t }}</th><th>{{ 'Evento' | t }}</th><th>{{ 'Status' | t }}</th><th>{{ 'HTTP' | t }}</th><th>{{ 'Duração' | t }}</th></tr>
     </thead>
     <tbody>
       @for (r of rows(); track r.id) {
@@ -56,8 +56,8 @@
           <td class="muted">{{ r.createdAt | date:'short' }}</td>
           <td>
             <strong>{{ r.integrationName }}</strong>
-            @if (r.manual) { <span class="tag">manual</span> }
-            @if (r.attempt > 1) { <span class="tag">tentativa {{ r.attempt }}</span> }
+            @if (r.manual) { <span class="tag">{{ 'manual' | t }}</span> }
+            @if (r.attempt > 1) { <span class="tag">{{ 'tentativa {n}' | t:{n: r.attempt} }}</span> }
             @if (r.formName) { <div class="muted desc">{{ r.formName }}</div> }
           </td>
           <td>{{ eventLabels[r.event] ?? r.event }}</td>
@@ -71,23 +71,24 @@
         </tr>
       } @empty {
         <tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">
-          {{ loading() ? 'Carregando…' : 'Nenhum registro para os filtros selecionados.' }}
+          {{ loading() ? ('Carregando…' | t) : ('Nenhum registro para os filtros selecionados.' | t) }}
         </td></tr>
       }
     </tbody>
   </table>
   <div class="pager">
-    <span class="muted">{{ total() }} registro(s) · página {{ page + 1 }} de {{ pages() }}</span>
+    <span class="muted">{{ '{total} registro(s) · página {page} de {pages}' | t:{total: total(), page: page + 1, pages: pages()} }}</span>
     <div style="display:flex;gap:.4rem">
-      <button class="btn btn-ghost sm" (click)="prev()" [disabled]="page === 0">← Anterior</button>
-      <button class="btn btn-ghost sm" (click)="next()" [disabled]="page + 1 >= pages()">Próxima →</button>
+      <button class="btn btn-ghost sm" (click)="prev()" [disabled]="page === 0">{{ '← Anterior' | t }}</button>
+      <button class="btn btn-ghost sm" (click)="next()" [disabled]="page + 1 >= pages()">{{ 'Próxima →' | t }}</button>
     </div>
   </div>
 </div>
 
 @if (detail(); as d) {
-  <div class="modal-scrim" (click)="close()">
-    <div class="card modal wide" (click)="$event.stopPropagation()">
+  <div class="modal-scrim">
+    <div class="card modal wide">
+      <button type="button" class="modal-x" [attr.aria-label]="'Fechar' | t" [attr.title]="'Fechar' | t" (click)="close()">✕</button>
       <div class="fc-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
         <h2 style="margin:0">{{ d.integrationName }}</h2>
         <span class="badge" [class.ok]="d.status === 'success'" [class.off]="d.status === 'error'"
@@ -97,33 +98,33 @@
       @if (detailError()) { <p class="notice error">{{ detailError() }}</p> }
 
       <dl class="detail-grid">
-        <dt>Quando</dt><dd>{{ d.createdAt | date:'medium' }}</dd>
-        <dt>Evento</dt><dd>{{ eventLabels[d.event] ?? d.event }}</dd>
-        @if (d.formName) { <dt>Formulário</dt><dd>{{ d.formName }} @if (d.submissionId) { <span class="muted">· resposta #{{ d.submissionId }}</span> }</dd> }
-        <dt>Requisição</dt><dd class="mono">{{ d.method ?? '—' }} {{ d.requestUrl ?? '' }}</dd>
-        <dt>Resposta HTTP</dt><dd>{{ d.httpStatus ?? '—' }} @if (d.durationMs !== null) { <span class="muted">· {{ d.durationMs }} ms</span> }</dd>
-        <dt>Tentativa</dt><dd>{{ d.attempt }} @if (d.manual) { <span class="muted">(manual)</span> } @if (d.willRetry) { <span class="muted">· nova tentativa agendada</span> }</dd>
-        <dt>Entrega</dt><dd class="mono muted">{{ d.deliveryId }}</dd>
+        <dt>{{ 'Quando' | t }}</dt><dd>{{ d.createdAt | date:'medium' }}</dd>
+        <dt>{{ 'Evento' | t }}</dt><dd>{{ eventLabels[d.event] ?? d.event }}</dd>
+        @if (d.formName) { <dt>{{ 'Formulário' | t }}</dt><dd>{{ d.formName }} @if (d.submissionId) { <span class="muted">{{ '· resposta #{id}' | t:{id: d.submissionId} }}</span> }</dd> }
+        <dt>{{ 'Requisição' | t }}</dt><dd class="mono">{{ d.method ?? '—' }} {{ d.requestUrl ?? '' }}</dd>
+        <dt>{{ 'Resposta HTTP' | t }}</dt><dd>{{ d.httpStatus ?? '—' }} @if (d.durationMs !== null) { <span class="muted">· {{ d.durationMs }} ms</span> }</dd>
+        <dt>{{ 'Tentativa' | t }}</dt><dd>{{ d.attempt }} @if (d.manual) { <span class="muted">{{ '(manual)' | t }}</span> } @if (d.willRetry) { <span class="muted">{{ '· nova tentativa agendada' | t }}</span> }</dd>
+        <dt>{{ 'Entrega' | t }}</dt><dd class="mono muted">{{ d.deliveryId }}</dd>
       </dl>
 
       @if (d.errorMessage) { <p class="notice error">{{ d.errorMessage }}</p> }
 
       @if (d.requestBody) {
-        <div class="label">Conteúdo enviado</div>
+        <div class="label">{{ 'Conteúdo enviado' | t }}</div>
         <pre class="code">{{ pretty(d.requestBody) }}</pre>
       }
       @if (d.responseBody) {
-        <div class="label" style="margin-top:.75rem">Resposta do destino</div>
+        <div class="label" style="margin-top:.75rem">{{ 'Resposta do destino' | t }}</div>
         <pre class="code">{{ pretty(d.responseBody) }}</pre>
       }
 
       <div class="modal-foot">
         @if (canResend(d)) {
           <button class="btn btn-ghost" (click)="resend(d)" [disabled]="resending()">
-            {{ resending() ? 'Reenviando…' : '↻ Reenviar' }}
+            {{ resending() ? ('Reenviando…' | t) : ('↻ Reenviar' | t) }}
           </button>
         }
-        <button class="btn btn-primary" (click)="close()">Fechar</button>
+        <button class="btn btn-primary" (click)="close()">{{ 'Fechar' | t }}</button>
       </div>
     </div>
   </div>

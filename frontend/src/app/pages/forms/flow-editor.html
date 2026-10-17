@@ -1,12 +1,12 @@
 <div class="page-head">
   <div>
-    <a class="muted back" routerLink="/forms">← Formulários</a>
-    <h1>Fluxo de aprovação</h1>
-    <p class="muted">Início → etapas → Concluído. Qualquer reprovação encerra o processo.</p>
+    <a class="muted back" routerLink="/forms">{{ '← Formulários' | t }}</a>
+    <h1>{{ 'Fluxo de aprovação' | t }}</h1>
+    <p class="muted">{{ 'Início → etapas → Concluído. Qualquer reprovação encerra o processo.' | t }}</p>
   </div>
   <div style="display:flex;gap:.5rem;align-items:center">
-    @if (saved()) { <span class="badge ok">Salvo</span> }
-    <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Salvando…' : 'Salvar' }}</button>
+    @if (saved()) { <span class="badge ok">{{ 'Salvo' | t }}</span> }
+    <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? ('Salvando…' | t) : ('Salvar' | t) }}</button>
   </div>
 </div>
 
@@ -14,9 +14,9 @@
 
 <div class="card hooks">
   <div class="hooks-head">
-    <strong>Integrações (webhooks)</strong>
-    <span class="muted">Dispare uma integração publicada quando o processo atingir cada situação.
-      @if (auth.can('integrations.view')) { <a routerLink="/integrations">Gerenciar integrações</a> }
+    <strong>{{ 'Integrações (webhooks)' | t }}</strong>
+    <span class="muted">{{ 'Dispare uma integração publicada quando o processo atingir cada situação.' | t }}
+      @if (auth.can('integrations.view')) { <a routerLink="/integrations">{{ 'Gerenciar integrações' | t }}</a> }
     </span>
   </div>
   <div class="hooks-grid">
@@ -26,54 +26,54 @@
         <div class="muted hook-desc">{{ ev.desc }}</div>
         @for (h of hooksOf(ev.key); track h.id) {
           <div class="hook-chip" [class.warn]="!h.published">
-            <span>{{ h.name }}@if (!h.published) { <em> · não publicada (será ignorada)</em> }</span>
-            <button class="icon-action danger" title="Remover" (click)="removeHook(ev.key, h.id)">✕</button>
+            <span>{{ h.name }}@if (!h.published) { <em> {{ '· não publicada (será ignorada)' | t }}</em> }</span>
+            <button class="icon-action danger" [attr.title]="'Remover' | t" (click)="removeHook(ev.key, h.id)">✕</button>
           </div>
         }
         <select class="input" (change)="addHook(ev.key, $any($event.target).value); $any($event.target).value = ''">
-          <option value="">+ Adicionar integração…</option>
+          <option value="">{{ '+ Adicionar integração…' | t }}</option>
           @for (o of availableHooks(ev.key); track o.id) { <option [value]="o.id">{{ o.name }}</option> }
         </select>
       </div>
     }
   </div>
   @if (hookOptions().length === 0) {
-    <p class="muted hook-empty">Nenhuma integração publicada disponível.</p>
+    <p class="muted hook-empty">{{ 'Nenhuma integração publicada disponível.' | t }}</p>
   }
 </div>
 
 <div class="toolbar-flow">
   <div class="zoom">
-    <button class="icon-action" (click)="zoomOut()" title="Diminuir">−</button>
+    <button class="icon-action" (click)="zoomOut()" [attr.title]="'Diminuir' | t">−</button>
     <span class="zoom-pct">{{ zoomPct() }}%</span>
-    <button class="icon-action" (click)="zoomIn()" title="Aumentar">+</button>
+    <button class="icon-action" (click)="zoomIn()" [attr.title]="'Aumentar' | t">+</button>
   </div>
-  <span class="muted hint">Arraste pela alça ⠿ para reordenar</span>
+  <span class="muted hint">{{ 'Arraste pela alça ⠿ para reordenar' | t }}</span>
 </div>
 
 <div class="modeler-body">
   <aside class="minimap card">
-    <div class="mm-title">Mini-mapa</div>
+    <div class="mm-title">{{ 'Mini-mapa' | t }}</div>
     @for (o of outline(); track o.i) {
       <button class="mm-item" [class.gw]="o.gateway" (click)="scrollTo(o.i)">
         <span class="mm-ic">{{ o.gateway ? '◇' : '▢' }}</span> {{ o.label }}
       </button>
-    } @empty { <p class="muted mm-empty">Sem etapas ainda.</p> }
+    } @empty { <p class="muted mm-empty">{{ 'Sem etapas ainda.' | t }}</p> }
   </aside>
 
   <div class="flow-viewport">
     <div class="flow" [style.zoom]="zoom()">
-      <div class="node start">Início</div>
+      <div class="node start">{{ 'Início' | t }}</div>
       <div class="connector"></div>
 
       <div cdkDropList class="drop-list" (cdkDropListDropped)="drop($event, nodes())">
         @for (n of nodes(); track $index; let i = $index) {
           <div class="node-wrap" cdkDrag [id]="'flow-node-' + i">
-            <button class="drag-handle" cdkDragHandle title="Arraste para reordenar">⠿</button>
+            <button class="drag-handle" cdkDragHandle [attr.title]="'Arraste para reordenar' | t">⠿</button>
             @if (isGateway(n)) {
               <div class="card gateway">
                 <div class="fc-head">
-                  <span class="badge" style="background:rgba(245,158,11,.15);color:#b45309">◇ Decisão</span>
+                  <span class="badge" style="background:rgba(245,158,11,.15);color:#b45309">{{ '◇ Decisão' | t }}</span>
                   <div class="fc-actions">
                     <button class="icon-action" (click)="move(nodes(), i, -1)">↑</button>
                     <button class="icon-action" (click)="move(nodes(), i, 1)">↓</button>
@@ -81,15 +81,15 @@
                   </div>
                 </div>
                 <div class="field">
-                  <label class="label">Nome da decisão</label>
-                  <input class="input" [(ngModel)]="n.name" placeholder="ex.: Valor alto?" />
+                  <label class="label">{{ 'Nome da decisão' | t }}</label>
+                  <input class="input" [(ngModel)]="n.name" [placeholder]="'ex.: Valor alto?' | t" />
                 </div>
-                <label class="label">Condição</label>
+                <label class="label">{{ 'Condição' | t }}</label>
                 <ng-container *ngTemplateOutlet="condTpl; context: { cond: n.condition, required: true }"></ng-container>
 
                 <div class="branches">
                   <div class="branch">
-                    <div class="branch-head yes">Se verdadeiro</div>
+                    <div class="branch-head yes">{{ 'Se verdadeiro' | t }}</div>
                     <div cdkDropList class="drop-list" (cdkDropListDropped)="drop($event, n.then)">
                       @for (s of n.then; track $index; let bi = $index) {
                         <div class="node-wrap" cdkDrag>
@@ -98,10 +98,10 @@
                         </div>
                       }
                     </div>
-                    <button class="btn btn-ghost sm" (click)="addBranchStep(n.then)">+ Etapa</button>
+                    <button class="btn btn-ghost sm" (click)="addBranchStep(n.then)">{{ '+ Etapa' | t }}</button>
                   </div>
                   <div class="branch">
-                    <div class="branch-head no">Se falso</div>
+                    <div class="branch-head no">{{ 'Se falso' | t }}</div>
                     <div cdkDropList class="drop-list" (cdkDropListDropped)="drop($event, n.else)">
                       @for (s of n.else; track $index; let bi = $index) {
                         <div class="node-wrap" cdkDrag>
@@ -110,7 +110,7 @@
                         </div>
                       }
                     </div>
-                    <button class="btn btn-ghost sm" (click)="addBranchStep(n.else)">+ Etapa</button>
+                    <button class="btn btn-ghost sm" (click)="addBranchStep(n.else)">{{ '+ Etapa' | t }}</button>
                   </div>
                 </div>
               </div>
@@ -123,12 +123,12 @@
       </div>
 
       <div class="add-row">
-        <button class="btn btn-ghost" (click)="addStepTop()">+ Etapa</button>
-        <button class="btn btn-ghost" (click)="addGatewayTop()">+ Decisão (gateway)</button>
+        <button class="btn btn-ghost" (click)="addStepTop()">{{ '+ Etapa' | t }}</button>
+        <button class="btn btn-ghost" (click)="addGatewayTop()">{{ '+ Decisão (gateway)' | t }}</button>
       </div>
 
       <div class="connector"></div>
-      <div class="node end">Concluído</div>
+      <div class="node end">{{ 'Concluído' | t }}</div>
     </div>
   </div>
 </div>
@@ -137,7 +137,7 @@
 <ng-template #stepTpl let-step="step" let-list="list" let-i="i">
   <div class="card step">
     <div class="fc-head">
-      <strong class="step-title">Etapa</strong>
+      <strong class="step-title">{{ 'Etapa' | t }}</strong>
       <div class="fc-actions">
         <button class="icon-action" (click)="move(list, i, -1)">↑</button>
         <button class="icon-action" (click)="move(list, i, 1)">↓</button>
@@ -145,25 +145,25 @@
       </div>
     </div>
     <div class="field">
-      <label class="label">Nome da etapa</label>
-      <input class="input" [(ngModel)]="step.name" placeholder="ex.: Aprovação do gestor" />
+      <label class="label">{{ 'Nome da etapa' | t }}</label>
+      <input class="input" [(ngModel)]="step.name" [placeholder]="'ex.: Aprovação do gestor' | t" />
     </div>
 
-    <label class="label">Aprovadores</label>
+    <label class="label">{{ 'Aprovadores' | t }}</label>
     @for (a of step.approvers; track $index; let ai = $index) {
       <div class="approver">
         <select class="input" [(ngModel)]="a.approver_type">
-          <option value="role">Por papel</option>
-          <option value="user">Usuário específico</option>
+          <option value="role">{{ 'Por papel' | t }}</option>
+          <option value="user">{{ 'Usuário específico' | t }}</option>
         </select>
         @if (a.approver_type === 'user') {
           <select class="input" [(ngModel)]="a.user_id">
-            <option [ngValue]="null">Selecione…</option>
+            <option [ngValue]="null">{{ 'Selecione…' | t }}</option>
             @for (u of userOptions(); track u.value) { <option [ngValue]="u.value">{{ u.label }}</option> }
           </select>
         } @else {
           <select class="input" [(ngModel)]="a.role">
-            @for (r of roleOptions(); track r.value) { <option [value]="r.value">{{ r.label }}</option> }
+            @for (r of roleOptions(); track r.value) { <option [value]="r.value">{{ r.label | t }}</option> }
           </select>
         }
         @if (step.approvers.length > 1) {
@@ -171,20 +171,20 @@
         }
       </div>
     }
-    <button class="btn btn-ghost sm" (click)="addApprover(step)">+ Aprovador</button>
+    <button class="btn btn-ghost sm" (click)="addApprover(step)">{{ '+ Aprovador' | t }}</button>
 
     @if (step.approvers.length > 1) {
       <div class="field" style="margin-top:.6rem">
-        <label class="label">Quando houver vários aprovadores</label>
+        <label class="label">{{ 'Quando houver vários aprovadores' | t }}</label>
         <select class="input" [(ngModel)]="step.mode">
-          <option value="all">Exige aprovação de todos</option>
-          <option value="any">Basta um aprovar</option>
+          <option value="all">{{ 'Exige aprovação de todos' | t }}</option>
+          <option value="any">{{ 'Basta um aprovar' | t }}</option>
         </select>
       </div>
     }
 
     <div class="cond-box">
-      <label class="label">Condição (opcional)</label>
+      <label class="label">{{ 'Condição (opcional)' | t }}</label>
       <ng-container *ngTemplateOutlet="condTpl; context: { cond: step.condition, required: false }"></ng-container>
     </div>
   </div>
@@ -193,12 +193,12 @@
 <!-- ===== template de condicao ===== -->
 <ng-template #condTpl let-cond="cond" let-required="required">
   @if (fields().length === 0) {
-    <p class="muted" style="font-size:.8rem">Adicione campos ao formulário para criar condições.</p>
+    <p class="muted" style="font-size:.8rem">{{ 'Adicione campos ao formulário para criar condições.' | t }}</p>
   } @else {
     <div class="cond-row">
       <select class="input" [(ngModel)]="cond.field">
-        @if (!required) { <option value="">Sempre executar</option> }
-        @else { <option value="">Selecione o campo…</option> }
+        @if (!required) { <option value="">{{ 'Sempre executar' | t }}</option> }
+        @else { <option value="">{{ 'Selecione o campo…' | t }}</option> }
         @for (f of fields(); track f.key) { <option [value]="f.key">{{ f.label }}</option> }
       </select>
       @if (cond.field) {
@@ -206,7 +206,7 @@
           @for (op of operators; track op.value) { <option [value]="op.value">{{ op.label }}</option> }
         </select>
         @if (needsValue(cond)) {
-          <input class="input" [(ngModel)]="cond.value" placeholder="valor" />
+          <input class="input" [(ngModel)]="cond.value" [placeholder]="'valor' | t" />
         }
       }
     </div>

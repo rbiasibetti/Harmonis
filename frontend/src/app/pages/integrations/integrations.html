@@ -1,14 +1,14 @@
 <div class="page-head">
   <div>
-    <h1>Integrações</h1>
-    <p class="muted">Webhooks de saída. Cadastre, publique e vincule aos fluxos de aprovação de cada formulário.</p>
+    <h1>{{ 'Integrações' | t }}</h1>
+    <p class="muted">{{ 'Webhooks de saída. Cadastre, publique e vincule aos fluxos de aprovação de cada formulário.' | t }}</p>
   </div>
   <div class="head-actions">
     @if (auth.can('integrations.logs')) {
-      <a class="btn btn-ghost" routerLink="/integration-logs">Ver logs</a>
+      <a class="btn btn-ghost" routerLink="/integration-logs">{{ 'Ver logs' | t }}</a>
     }
     @if (auth.can('integrations.create')) {
-      <a class="btn btn-primary" routerLink="/integrations/new">+ Nova integração</a>
+      <a class="btn btn-primary" routerLink="/integrations/new">{{ '+ Nova integração' | t }}</a>
     }
   </div>
 </div>
@@ -18,7 +18,7 @@
 <div class="card">
   <table class="table">
     <thead>
-      <tr><th>Integração</th><th>Autenticação</th><th>Status</th><th>Usos</th><th>Último envio</th><th></th></tr>
+      <tr><th>{{ 'Integração' | t }}</th><th>{{ 'Autenticação' | t }}</th><th>{{ 'Status' | t }}</th><th>{{ 'Usos' | t }}</th><th>{{ 'Último envio' | t }}</th><th></th></tr>
     </thead>
     <tbody>
       @for (i of items(); track i.id) {
@@ -30,15 +30,15 @@
           </td>
           <td>{{ authLabel(i.authType) }}</td>
           <td>
-            @if (i.status === 'published') { <span class="badge ok">Publicada</span> }
-            @else { <span class="badge gray">Rascunho</span> }
+            @if (i.status === 'published') { <span class="badge ok">{{ 'Publicada' | t }}</span> }
+            @else { <span class="badge gray">{{ 'Rascunho' | t }}</span> }
           </td>
           <td class="muted">{{ i.usageCount }}</td>
           <td>
             @if (i.lastAt) {
               <span class="badge" [class.ok]="i.lastStatus === 'success'" [class.off]="i.lastStatus === 'error'"
                     [class.gray]="i.lastStatus === 'skipped'">
-                {{ i.lastStatus === 'success' ? 'Sucesso' : i.lastStatus === 'error' ? 'Erro' : 'Ignorado' }}
+                {{ i.lastStatus === 'success' ? ('Sucesso' | t) : i.lastStatus === 'error' ? ('Erro' | t) : ('Ignorado' | t) }}
               </span>
               <div class="muted desc">{{ i.lastAt | date:'short' }}</div>
             } @else { <span class="muted">—</span> }
@@ -47,24 +47,24 @@
             <div class="row-actions">
               @if (auth.can('integrations.publish')) {
                 <button class="btn btn-ghost sm" [disabled]="busy() === i.id" (click)="togglePublish(i)">
-                  {{ i.status === 'published' ? 'Despublicar' : 'Publicar' }}
+                  {{ i.status === 'published' ? ('Despublicar' | t) : ('Publicar' | t) }}
                 </button>
               }
               @if (auth.can('integrations.logs')) {
-                <a class="icon-action" title="Ver logs" [routerLink]="['/integration-logs']" [queryParams]="{ integrationId: i.id }">☰</a>
+                <a class="icon-action" [attr.title]="'Ver logs' | t" [routerLink]="['/integration-logs']" [queryParams]="{ integrationId: i.id }">☰</a>
               }
               @if (auth.can('integrations.update')) {
-                <a class="icon-action" title="Editar" [routerLink]="['/integrations', i.id, 'edit']">✎</a>
+                <a class="icon-action" [attr.title]="'Editar' | t" [routerLink]="['/integrations', i.id, 'edit']">✎</a>
               }
               @if (auth.can('integrations.delete')) {
-                <button class="icon-action danger" title="Excluir" (click)="remove(i)">🗑</button>
+                <button class="icon-action danger" [attr.title]="'Excluir' | t" (click)="remove(i)">🗑</button>
               }
             </div>
           </td>
         </tr>
       } @empty {
         <tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">
-          {{ loading() ? 'Carregando…' : 'Nenhuma integração cadastrada ainda.' }}
+          {{ loading() ? ('Carregando…' | t) : ('Nenhuma integração cadastrada ainda.' | t) }}
         </td></tr>
       }
     </tbody>

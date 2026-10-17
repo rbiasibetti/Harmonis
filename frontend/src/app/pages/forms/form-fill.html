@@ -1,7 +1,7 @@
 @if (form(); as f) {
   <div class="page-head">
     <div>
-      <a class="muted back" routerLink="/forms">← Formulários</a>
+      <a class="muted back" routerLink="/forms">{{ '← Formulários' | t }}</a>
       <h1>{{ f.name }}</h1>
       @if (f.description) { <p class="muted">{{ f.description }}</p> }
     </div>
@@ -9,8 +9,8 @@
 
   <div class="card fill-card">
     @if (done()) {
-      <p class="notice success">Resposta enviada com sucesso!</p>
-      <button class="btn btn-ghost" (click)="again()">Enviar outra</button>
+      <p class="notice success">{{ 'Resposta enviada com sucesso!' | t }}</p>
+      <button class="btn btn-ghost" (click)="again()">{{ 'Enviar outra' | t }}</button>
     } @else {
       @if (error()) { <p class="notice error">{{ error() }}</p> }
 
@@ -18,11 +18,11 @@
 
       <div class="modal-foot">
         <button class="btn btn-primary" (click)="submit()" [disabled]="saving()">
-          {{ saving() ? 'Enviando…' : 'Enviar' }}
+          {{ saving() ? ('Enviando…' | t) : ('Enviar' | t) }}
         </button>
       </div>
     }
   </div>
 } @else {
-  <p class="muted">{{ loading() ? 'Carregando…' : (error() || 'Formulário indisponível.') }}</p>
+  <p class="muted">{{ loading() ? ('Carregando…' | t) : (error() || ('Formulário indisponível.' | t)) }}</p>
 }

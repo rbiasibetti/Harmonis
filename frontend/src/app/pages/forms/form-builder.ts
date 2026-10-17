@@ -5,12 +5,14 @@ import { FormsService } from '../../core/forms.service';
 import { RolesService } from '../../core/roles.service';
 import { FieldType, FormField } from '../../core/models';
 import { FormRenderer } from './form-renderer';
+import { TPipe } from '../../core/i18n/i18n';
+import { LANGS, tr } from '../../core/i18n/i18n';
 
 interface Opt { value: string; label: string; }
 
 @Component({
   selector: 'app-form-builder',
-  imports: [FormsModule, RouterLink, FormRenderer],
+  imports: [TPipe, FormsModule, RouterLink, FormRenderer],
   templateUrl: './form-builder.html',
   styleUrl: './forms.scss',
 })
@@ -25,6 +27,8 @@ export class FormBuilder {
   name = signal('');
   description = signal('');
   status = signal('draft');
+  readonly langs = LANGS;
+  languages = signal<string[]>(['pt-BR', 'en', 'es']);
   fields = signal<FormField[]>([]);
   types = signal<FieldType[]>([]);
 
@@ -37,21 +41,21 @@ export class FormBuilder {
   saved = signal(false);
 
   readonly widths: Opt[] = [
-    { value: 'full', label: 'Linha inteira' },
-    { value: 'half', label: 'Metade' },
-    { value: 'third', label: 'Um terço' },
+    { value: 'full', label: tr('Linha inteira') },
+    { value: 'half', label: tr('Metade') },
+    { value: 'third', label: tr('Um terço') },
   ];
 
   readonly operators: Opt[] = [
-    { value: 'not_empty', label: 'estiver preenchido' },
-    { value: 'empty', label: 'estiver vazio' },
-    { value: '==', label: 'for igual a' },
-    { value: '!=', label: 'for diferente de' },
-    { value: '>', label: 'for maior que' },
-    { value: '>=', label: 'for maior ou igual a' },
-    { value: '<', label: 'for menor que' },
-    { value: '<=', label: 'for menor ou igual a' },
-    { value: 'contains', label: 'contiver' },
+    { value: 'not_empty', label: tr('estiver preenchido') },
+    { value: 'empty', label: tr('estiver vazio') },
+    { value: '==', label: tr('for igual a') },
+    { value: '!=', label: tr('for diferente de') },
+    { value: '>', label: tr('for maior que') },
+    { value: '>=', label: tr('for maior ou igual a') },
+    { value: '<', label: tr('for menor que') },
+    { value: '<=', label: tr('for menor ou igual a') },
+    { value: 'contains', label: tr('contiver') },
   ];
 
   constructor() {
@@ -66,10 +70,11 @@ export class FormBuilder {
           this.name.set(f.name);
           this.description.set(f.description ?? '');
           this.status.set(f.status);
+          this.languages.set(f.languages?.length ? f.languages : ['pt-BR', 'en', 'es']);
           this.fields.set(f.fields.map((x) => this.hydrate(x)));
           this.loading.set(false);
         },
-        error: () => { this.error.set('Não foi possível carregar o formulário.'); this.loading.set(false); },
+        error: () => { this.error.set(tr('Não foi possível carregar o formulário.')); this.loading.set(false); },
       });
     }
   }
@@ -84,7 +89,7 @@ export class FormBuilder {
   }
 
   // ----- helpers de tipo -----
-  typeLabel(type: string): string { return this.types().find((t) => t.code === type)?.label ?? type; }
+  typeLabel(type: string): string { return tr(this.types().find((t) => t.code === type)?.label ?? type); }
   hasOptions(type: string): boolean { return this.types().find((t) => t.code === type)?.hasOptions ?? false; }
   isSection(f: FormField): boolean { return f.type === 'section'; }
   isSingle(f: FormField): boolean { return f.type === 'select'; }
@@ -116,12 +121,12 @@ export class FormBuilder {
   addField(type: string): void {
     let f: FormField;
     if (type === 'section') {
-      f = { id: null, key: null, type, label: 'Novo bloco', placeholder: null, help: null, required: false, options: null, width: 'full' };
+      f = { id: null, key: null, type, label: tr('Novo bloco'), placeholder: null, help: null, required: false, options: null, width: 'full' };
     } else {
       f = {
         id: null, key: null, type,
-        label: 'Novo campo', placeholder: null, help: null, required: false,
-        options: this.hasOptions(type) ? ['Opção 1'] : null,
+        label: tr('Novo campo'), placeholder: null, help: null, required: false,
+        options: this.hasOptions(type) ? [tr('Opção 1')] : null,
         display: this.hasOptions(type) ? 'combo' : null,
         width: 'full',
         validation: {},
@@ -138,7 +143,7 @@ export class FormBuilder {
     if (j < 0 || j >= a.length) return;
     [a[i], a[j]] = [a[j], a[i]]; this.fields.set(a);
   }
-  addOption(f: FormField): void { f.options = [...(f.options ?? []), `Opção ${(f.options?.length ?? 0) + 1}`]; this.touch(); }
+  addOption(f: FormField): void { f.options = [...(f.options ?? []), tr('Opção {n}', { n: (f.options?.length ?? 0) + 1 })]; this.touch(); }
   removeOption(f: FormField, i: number): void { f.options = (f.options ?? []).filter((_, k) => k !== i); this.touch(); }
   private touch(): void { this.fields.set([...this.fields()]); }
 
@@ -155,7 +160,15 @@ export class FormBuilder {
     this.tab.set('layout');
   }
 
+  hasLang(code: string): boolean { return this.languages().includes(code); }
+
+  toggleLang(code: string): void {
+    const cur = this.languages();
+    this.languages.set(cur.includes(code) ? cur.filter((c) => c !== code) : [...cur, code]);
+  }
+
   save(): void {
+    if (this.languages().length === 0) { this.error.set(tr('Selecione ao menos um idioma para o formulário.')); return; }
     this.error.set(null);
     this.saved.set(false);
     this.saving.set(true);
@@ -163,6 +176,7 @@ export class FormBuilder {
       name: this.name(),
       description: this.description() || null,
       status: this.status(),
+      languages: this.languages(),
       fields: this.fields(),
     };
     const id = this.id();
@@ -181,6 +195,6 @@ export class FormBuilder {
 
   private fail(e: any): void {
     this.saving.set(false);
-    this.error.set(e?.error?.message ?? 'Não foi possível salvar.');
+    this.error.set(e?.error?.message ?? tr('Não foi possível salvar.'));
   }
 }

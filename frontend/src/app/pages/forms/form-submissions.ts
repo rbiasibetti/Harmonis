@@ -5,10 +5,12 @@ import { forkJoin } from 'rxjs';
 import { FormsService } from '../../core/forms.service';
 import { AttachmentRef, FormDetail, FormField, SubmissionView } from '../../core/models';
 import { downloadBlob } from '../../core/download';
+import { TPipe } from '../../core/i18n/i18n';
+import { tr } from '../../core/i18n/i18n';
 
 @Component({
   selector: 'app-form-submissions',
-  imports: [RouterLink, DatePipe],
+  imports: [TPipe, RouterLink, DatePipe],
   templateUrl: './form-submissions.html',
   styleUrl: './forms.scss',
 })
@@ -26,7 +28,7 @@ export class FormSubmissionsPage {
     this.formId = Number(this.route.snapshot.paramMap.get('id'));
     forkJoin({ form: this.api.get(this.formId), subs: this.api.submissions(this.formId) }).subscribe({
       next: ({ form, subs }) => { this.form.set(form); this.rows.set(subs); this.loading.set(false); },
-      error: () => { this.error.set('Não foi possível carregar as respostas.'); this.loading.set(false); },
+      error: () => { this.error.set(tr('Não foi possível carregar as respostas.')); this.loading.set(false); },
     });
   }
 
@@ -37,7 +39,7 @@ export class FormSubmissionsPage {
   cell(field: FormField, data: Record<string, unknown>): string {
     const v = data[field.key!];
     if (v === null || v === undefined || v === '' || (Array.isArray(v) && v.length === 0)) return '—';
-    if (field.type === 'checkbox') return v === true || v === 'true' ? 'Sim' : 'Não';
+    if (field.type === 'checkbox') return v === true || v === 'true' ? tr('Sim') : tr('Não');
     if (Array.isArray(v)) return v.join(', ');
     return String(v);
   }
@@ -57,7 +59,7 @@ export class FormSubmissionsPage {
   pdf(submissionId: number): void {
     this.api.downloadSubmissionPdf(this.formId, submissionId).subscribe({
       next: (blob) => downloadBlob(blob, `registro-${this.form()?.slug ?? this.formId}-${submissionId}.pdf`),
-      error: () => alert('Não foi possível gerar o PDF.'),
+      error: () => alert(tr('Não foi possível gerar o PDF.')),
     });
   }
 
@@ -71,7 +73,7 @@ export class FormSubmissionsPage {
         a.click();
         URL.revokeObjectURL(url);
       },
-      error: () => alert('Não foi possível exportar o CSV.'),
+      error: () => alert(tr('Não foi possível exportar o CSV.')),
     });
   }
 }

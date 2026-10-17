@@ -1,12 +1,12 @@
 @if (form(); as f) {
   <div class="page-head">
     <div>
-      <a class="muted back" routerLink="/forms">← Formulários</a>
-      <h1>Respostas — {{ f.name }}</h1>
-      <p class="muted">{{ rows().length }} resposta(s)</p>
+      <a class="muted back" routerLink="/forms">{{ '← Formulários' | t }}</a>
+      <h1>{{ 'Respostas — {name}' | t:{name: f.name} }}</h1>
+      <p class="muted">{{ '{n} resposta(s)' | t:{n: rows().length} }}</p>
     </div>
     @if (rows().length > 0) {
-      <button class="btn btn-ghost" (click)="exportCsv()">⬇ Exportar CSV</button>
+      <button class="btn btn-ghost" (click)="exportCsv()">{{ '⬇ Exportar CSV' | t }}</button>
     }
   </div>
 
@@ -17,8 +17,8 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Enviado por</th>
-          <th>Data</th>
+          <th>{{ 'Enviado por' | t }}</th>
+          <th>{{ 'Data' | t }}</th>
           <th></th>
           @for (fld of columns(); track fld.key) { <th>{{ fld.label }}</th> }
         </tr>
@@ -29,7 +29,7 @@
             <td class="muted">{{ rows().length - i }}</td>
             <td>{{ s.submittedBy || '—' }}</td>
             <td class="muted">{{ s.createdAt | date:'short' }}</td>
-            <td><button type="button" class="btn btn-ghost" style="padding:.2rem .6rem;font-size:.8rem" title="Gerar ficha em PDF" (click)="pdf(s.id)">PDF</button></td>
+            <td><button type="button" class="btn btn-ghost" style="padding:.2rem .6rem;font-size:.8rem" [attr.title]="'Gerar ficha em PDF' | t" (click)="pdf(s.id)">{{ 'PDF' | t }}</button></td>
             @for (fld of columns(); track fld.key) {
               @if (isFileField(fld)) {
                 <td>
@@ -44,12 +44,12 @@
           </tr>
         } @empty {
           <tr><td [attr.colspan]="4 + columns().length" class="muted" style="text-align:center;padding:2rem">
-            {{ loading() ? 'Carregando…' : 'Nenhuma resposta ainda.' }}
+            {{ loading() ? ('Carregando…' | t) : ('Nenhuma resposta ainda.' | t) }}
           </td></tr>
         }
       </tbody>
     </table>
   </div>
 } @else {
-  <p class="muted">{{ loading() ? 'Carregando…' : (error() || 'Formulário indisponível.') }}</p>
+  <p class="muted">{{ loading() ? ('Carregando…' | t) : (error() || ('Formulário indisponível.' | t)) }}</p>
 }

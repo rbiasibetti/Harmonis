@@ -1,0 +1,42 @@
+<div class="page-head">
+  <div>
+    <h1>{{ 'Meu perfil' | t }}</h1>
+    <p class="muted">{{ 'Seus dados e preferências.' | t }}</p>
+  </div>
+</div>
+
+@if (auth.user(); as u) {
+  <div class="card" style="padding:1.5rem;max-width:560px">
+    <div class="field">
+      <label class="label">{{ 'Nome' | t }}</label>
+      <input class="input" [value]="u.name" disabled />
+    </div>
+    <div class="field">
+      <label class="label">{{ 'E-mail' | t }}</label>
+      <input class="input" [value]="u.email" disabled />
+    </div>
+    <div class="field">
+      <label class="label">{{ 'Papéis' | t }}</label>
+      <div>@for (r of u.roles; track r) { <span class="chip">{{ r }}</span> }</div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="lang">{{ 'Idioma preferido' | t }}</label>
+      <select id="lang" class="input" [(ngModel)]="language" name="language">
+        @for (l of langs; track l.code) { <option [value]="l.code">{{ l.label }}</option> }
+      </select>
+      <p class="muted" style="font-size:.8rem;margin:.3rem 0 0">
+        {{ 'Define o idioma da interface e quais formulários você vê para preencher.' | t }}
+      </p>
+    </div>
+
+    @if (error()) { <p class="notice error">{{ error() }}</p> }
+    @if (saved()) { <p class="notice success">{{ 'Preferências salvas.' | t }}</p> }
+
+    <div class="modal-foot">
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving()">
+        {{ saving() ? ('Salvando…' | t) : ('Salvar' | t) }}
+      </button>
+    </div>
+  </div>
+}

@@ -4,21 +4,21 @@
       <div class="logo">H</div>
       <div>
         <h1>Harmonis</h1>
-        <p class="muted">Entre para acessar o workspace</p>
+        <p class="muted">{{ 'Entre para acessar o workspace' | t }}</p>
       </div>
     </div>
 
     <form (ngSubmit)="submit()">
       <div class="field">
-        <label class="label" for="tenant">Empresa (tenant)</label>
+        <label class="label" for="tenant">{{ 'Empresa (tenant)' | t }}</label>
         <input id="tenant" class="input" name="tenant" [(ngModel)]="tenant" required autocomplete="organization" />
       </div>
       <div class="field">
-        <label class="label" for="email">E-mail</label>
+        <label class="label" for="email">{{ 'E-mail' | t }}</label>
         <input id="email" class="input" name="email" type="email" [(ngModel)]="email" required autocomplete="username" />
       </div>
       <div class="field">
-        <label class="label" for="password">Senha</label>
+        <label class="label" for="password">{{ 'Senha' | t }}</label>
         <input id="password" class="input" name="password" type="password" [(ngModel)]="password" required autocomplete="current-password" />
       </div>
 
@@ -27,12 +27,19 @@
       }
 
       <button class="btn btn-primary full" type="submit" [disabled]="loading()">
-        {{ loading() ? 'Entrando…' : 'Entrar' }}
+        {{ loading() ? ('Entrando…' | t) : ('Entrar' | t) }}
       </button>
     </form>
 
+    <div class="field" style="margin-top:1rem">
+      <label class="label" for="loginlang">{{ 'Idioma' | t }}</label>
+      <select id="loginlang" class="input" [ngModel]="lang" (ngModelChange)="changeLang($event)" name="loginlang">
+        @for (l of langs; track l.code) { <option [value]="l.code">{{ l.label }}</option> }
+      </select>
+    </div>
+
     <button class="theme-toggle" type="button" (click)="theme.toggle()">
-      {{ theme.dark() ? '☀︎ Tema claro' : '☾ Tema escuro' }}
+      {{ theme.dark() ? ('☀︎ Tema claro' | t) : ('☾ Tema escuro' | t) }}
     </button>
   </div>
 </div>

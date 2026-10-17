@@ -20,6 +20,21 @@ public class MeController {
         this.users = users;
     }
 
+    public record LanguageRequest(@jakarta.validation.constraints.NotBlank String language) {}
+
+    /** O proprio usuario define o idioma preferido da interface. */
+    @org.springframework.web.bind.annotation.PutMapping("/me/language")
+    public UserDto setLanguage(@AuthenticationPrincipal AuthPrincipal principal,
+                               @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody LanguageRequest req) {
+        String lang = app.harmonis.identity.Languages.requireSupported(req.language());
+        if (lang == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Idioma inválido.");
+        var user = users.findById(principal.userId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario nao encontrado."));
+        user.setLanguage(lang);
+        users.save(user);
+        return UserDto.from(user);
+    }
+
     /** Dados do usuario autenticado (resolve o tenant pelo JWT via filtro). */
     @GetMapping("/me")
     public UserDto me(@AuthenticationPrincipal AuthPrincipal principal) {

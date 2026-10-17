@@ -4,6 +4,8 @@ import { conditionPasses } from '../../core/condition';
 import { AttachmentRef, FormField } from '../../core/models';
 import { FormsService } from '../../core/forms.service';
 import { downloadBlob } from '../../core/download';
+import { TPipe } from '../../core/i18n/i18n';
+import { tr } from '../../core/i18n/i18n';
 
 /**
  * Renderiza um formulario (layout responsivo em grid, blocos/secoes, todos os tipos
@@ -11,7 +13,7 @@ import { downloadBlob } from '../../core/download';
  */
 @Component({
   selector: 'app-form-renderer',
-  imports: [FormsModule],
+  imports: [TPipe, FormsModule],
   templateUrl: './form-renderer.html',
   styleUrl: './form-renderer.scss',
 })
@@ -49,7 +51,7 @@ export class FormRenderer {
     const files = input.files;
     if (!files || files.length === 0) return;
     if (!this.formId) {
-      this.setUploadError(f.key!, 'Salve o formulário antes de anexar.');
+      this.setUploadError(f.key!, tr('Salve o formulário antes de anexar.'));
       return;
     }
     const picked = Array.from(files);
@@ -71,7 +73,7 @@ export class FormRenderer {
         },
         error: (e) => {
           this.setUploading(f.key!, false);
-          this.setUploadError(f.key!, e?.error?.message ?? 'Falha ao enviar o anexo.');
+          this.setUploadError(f.key!, e?.error?.message ?? tr('Falha ao enviar o anexo.'));
         },
       });
       if (!this.isMultiFile(f)) break; // campo único: só o primeiro
@@ -92,7 +94,7 @@ export class FormRenderer {
   download(ref: AttachmentRef): void {
     this.api.downloadAttachment(ref.id).subscribe({
       next: (blob) => downloadBlob(blob, ref.name),
-      error: () => this.setUploadError('', 'Não foi possível baixar o anexo.'),
+      error: () => this.setUploadError('', tr('Não foi possível baixar o anexo.')),
     });
   }
 

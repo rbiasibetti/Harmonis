@@ -65,6 +65,7 @@
   <tbody>
     <tr><td>Nome</td><td><span class="badge off">Sim</span></td><td>Título exibido nas listas, no preenchimento e nos processos. O sistema deriva dele um endereço único (<em>slug</em>) automaticamente.</td></tr>
     <tr><td>Descrição (opcional)</td><td>Não</td><td>Frase curta exibida abaixo do nome na lista e no topo do preenchimento.</td></tr>
+    <tr><td>Idiomas do formulário</td><td><span class="badge off">Sim</span></td><td>Um ou mais entre Português, English e Español. Só quem tem esse idioma no perfil enxerga o formulário para preencher (veja <a href="#idiomas">abaixo</a>). Novos formulários vêm com os três marcados.</td></tr>
     <tr><td>Status</td><td>—</td><td><b>Rascunho</b>: em construção; não aceita respostas. <b>Publicado</b>: aparece com o ícone ✎ e aceita respostas.</td></tr>
   </tbody>
 </table>
@@ -72,6 +73,16 @@
   <b>Fluxo de trabalho recomendado</b>
   <p>Monte os campos em <em>Rascunho</em>, confira em <em>Layout (prévia)</em>, desenhe o <a href="06-fluxo-aprovacao.html">fluxo</a> e só então <em>Publique</em>.</p>
 </div>
+
+<h2 id="idiomas">Idiomas do formulário</h2>
+<p>Cada formulário é vinculado a <b>um ou mais idiomas</b>. É uma regra de <em>visibilidade</em>: o conteúdo (nome, campos, ajudas) é o que você escreveu, e o vínculo controla <b>quem pode preencher</b>.</p>
+<ul>
+  <li>Uma pessoa com idioma <b>English</b> não vê, na lista, formulários vinculados apenas a Português, e vice-versa. Abrir o endereço diretamente também é bloqueado (“Formulário não encontrado”).</li>
+  <li>Quem <b>gerencia formulários</b> (<code class="perm">forms.create</code> ou <code class="perm">forms.update</code>) enxerga todos, com a coluna <b>Idiomas</b> na lista, para poder editá-los.</li>
+  <li>É obrigatório marcar ao menos um idioma. Formulários que já existiam ficam disponíveis nos três.</li>
+  <li>Quem aprova continua recebendo as tarefas de qualquer formulário, mesmo de outro idioma.</li>
+</ul>
+<p>Para atender equipes em idiomas diferentes com textos próprios, crie um formulário por idioma e vincule cada um ao seu idioma.</p>
 
 <h2 id="tipos">Tipos de campo</h2>
 <p>São onze tipos. Todos (exceto <em>Bloco/seção</em>) compartilham as <a href="#propriedades">propriedades comuns</a>; alguns têm configurações próprias.</p>

@@ -1,12 +1,12 @@
 <div class="page-head">
   <div>
-    <a class="muted back" routerLink="/pages">← Páginas</a>
-    <h1>{{ id() ? 'Editar página' : 'Nova página' }}</h1>
+    <a class="muted back" routerLink="/pages">{{ '← Páginas' | t }}</a>
+    <h1>{{ id() ? ('Editar página' | t) : ('Nova página' | t) }}</h1>
   </div>
   <div style="display:flex;gap:.5rem;align-items:center">
-    @if (saved()) { <span class="badge ok">Salvo</span> }
+    @if (saved()) { <span class="badge ok">{{ 'Salvo' | t }}</span> }
     <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !title()">
-      {{ saving() ? 'Salvando…' : 'Salvar' }}
+      {{ saving() ? ('Salvando…' | t) : ('Salvar' | t) }}
     </button>
   </div>
 </div>
@@ -16,27 +16,27 @@
 <div class="editor-grid">
   <div class="card meta">
     <div class="field">
-      <label class="label">Título</label>
+      <label class="label">{{ 'Título' | t }}</label>
       <input class="input" [ngModel]="title()" (ngModelChange)="title.set($event)" />
     </div>
     <div class="field">
-      <label class="label">Resumo (opcional)</label>
+      <label class="label">{{ 'Resumo (opcional)' | t }}</label>
       <input class="input" [ngModel]="excerpt()" (ngModelChange)="excerpt.set($event)" />
     </div>
     <div class="field">
-      <label class="label">Status</label>
+      <label class="label">{{ 'Status' | t }}</label>
       <select class="input" [ngModel]="status()" (ngModelChange)="status.set($event)">
-        <option value="draft">Rascunho</option>
-        <option value="published">Publicada</option>
+        <option value="draft">{{ 'Rascunho' | t }}</option>
+        <option value="published">{{ 'Publicada' | t }}</option>
       </select>
-      <p class="muted" style="font-size:.78rem;margin:.35rem 0 0">Rascunhos não aparecem no portal.</p>
+      <p class="muted" style="font-size:.78rem;margin:.35rem 0 0">{{ 'Rascunhos não aparecem no portal.' | t }}</p>
     </div>
   </div>
 
   <div class="card content-card">
     <div class="tabs">
-      <button class="tab" [class.active]="tab() === 'edit'" (click)="tab.set('edit')">Markdown</button>
-      <button class="tab" [class.active]="tab() === 'preview'" (click)="showPreview()">Pré-visualizar</button>
+      <button class="tab" [class.active]="tab() === 'edit'" (click)="tab.set('edit')">{{ 'Markdown' | t }}</button>
+      <button class="tab" [class.active]="tab() === 'preview'" (click)="showPreview()">{{ 'Pré-visualizar' | t }}</button>
     </div>
     @if (tab() === 'edit') {
       <textarea class="input editor-area" [ngModel]="content()" (ngModelChange)="content.set($event)"

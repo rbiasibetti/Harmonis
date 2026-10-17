@@ -33,7 +33,7 @@
               </div>
             } @else {
               <select class="input" [(ngModel)]="values[f.key!]" [disabled]="disabled">
-                <option value="">Selecione…</option>
+                <option value="">{{ 'Selecione…' | t }}</option>
                 @for (o of f.options; track o) { <option [value]="o">{{ o }}</option> }
               </select>
             }
@@ -76,7 +76,7 @@
               @if (!disabled && fileList(f).length === 0) {
                 <input type="file" [accept]="acceptAttr(f)" [disabled]="isUploading(f.key!)" (change)="onFilePick(f, $any($event.target))" />
               }
-              @if (isUploading(f.key!)) { <p class="muted help">Enviando…</p> }
+              @if (isUploading(f.key!)) { <p class="muted help">{{ 'Enviando…' | t }}</p> }
               @if (fileError(f.key!)) { <p class="field-err">{{ fileError(f.key!) }}</p> }
             </div>
           }
@@ -92,7 +92,7 @@
               @if (!disabled) {
                 <input type="file" multiple [accept]="acceptAttr(f)" [disabled]="isUploading(f.key!)" (change)="onFilePick(f, $any($event.target))" />
               }
-              @if (isUploading(f.key!)) { <p class="muted help">Enviando…</p> }
+              @if (isUploading(f.key!)) { <p class="muted help">{{ 'Enviando…' | t }}</p> }
               @if (fileError(f.key!)) { <p class="field-err">{{ fileError(f.key!) }}</p> }
             </div>
           }

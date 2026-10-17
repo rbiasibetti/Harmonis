@@ -3,10 +3,11 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { PortalItem, PortalService } from '../../core/portal.service';
+import { TPipe } from '../../core/i18n/i18n';
 
 @Component({
   selector: 'app-portal',
-  imports: [RouterLink, DatePipe],
+  imports: [TPipe, RouterLink, DatePipe],
   templateUrl: './portal.html',
   styleUrl: './portal.scss',
 })

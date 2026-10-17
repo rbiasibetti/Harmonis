@@ -19,21 +19,26 @@ public final class UserDtos {
             String jobTitle,
             boolean owner,
             boolean active,
-            List<String> roles
+            List<String> roles,
+            String language
     ) {}
 
     public record CreateUserRequest(
             @NotBlank String name,
             @NotBlank @Email String email,
             String jobTitle,
-            @NotNull List<String> roles
+            @NotNull List<String> roles,
+            /** pt-BR | en | es; nulo = padrao. */
+            String language
     ) {}
 
     public record UpdateUserRequest(
             @NotBlank String name,
             String jobTitle,
             @NotNull List<String> roles,
-            boolean active
+            boolean active,
+            /** nulo = mantem o idioma atual. */
+            String language
     ) {}
 
     /** Retorno da criacao: inclui a senha inicial gerada (exibida uma unica vez). */

@@ -31,6 +31,7 @@
 - [Configuração](#configuração)
 - [Implantação em produção](#implantação-em-produção)
 - [Provisionar um novo cliente (tenant)](#provisionar-um-novo-cliente-tenant)
+- [Internacionalização (i18n)](#internacionalização-i18n)
 - [Sessão e segurança dos tokens](#sessão-e-segurança-dos-tokens)
 - [Integrações (webhooks)](#integrações-webhooks)
 - [Referência da API](#referência-da-api)
@@ -90,6 +91,7 @@ as de outros sistemas no mesmo banco (todas as tabelas usam o prefixo `hm_`).
 - **Anexos** com tipos aceitos (`accept`) e tamanho máximo por arquivo configuráveis.
 - **Segmentação por papel**: parte do formulário pode ser preenchida por um papel específico
   **durante o fluxo de aprovação** (o aprovador completa os campos que lhe cabem ao decidir).
+- **Internacionalização**: interface em **português (Brasil), inglês e espanhol**, com idioma preferido por usuário (*Meu perfil*) e formulários vinculados a um ou mais idiomas (só quem tem o idioma os vê para preencher).
 - Exportação das respostas em **CSV** e **ficha em PDF** de cada registro (rótulo/valor na grade do layout do formulário, com histórico de aprovação).
 
 ### Workflow / BPM
@@ -101,7 +103,21 @@ as de outros sistemas no mesmo banco (todas as tabelas usam o prefixo `hm_`).
 - **Caixa de aprovações**, acompanhamento das próprias solicitações e **timeline** por processo.
 - **Notificações** in-app (sino) para solicitações e conclusões.
 
-### Sessão e segurança dos tokens
+### Internacionalização (i18n)
+
+| Item | Como funciona |
+|---|---|
+| **Idiomas** | `pt-BR` (padrão), `en` e `es`. Coluna `hm_users.language` (migration `0009`); o administrador define no cadastro e o próprio usuário em **Meu perfil** (`PUT /api/me/language`) |
+| **Textos da interface** | Chave = texto-fonte em português; dicionários `frontend/src/app/core/i18n/{en,es}.ts`. Sem tradução, cai no português. Em templates use `{{ 'Texto' | t }}` (com parâmetros: `t:{n: x}`); em TypeScript, `tr('Texto', {n: x})` |
+| **Troca de idioma** | Grava a preferência (`localStorage: harmonis.lang`) e recarrega a página, o que também aplica o *locale* de datas |
+| **Formulários por idioma** | `hm_forms.languages` (CSV, ao menos um). A lista, o `GET /api/forms/{id}` e o envio só aceitam o idioma do usuário — exceto quem tem `forms.create`/`forms.update`, que vê todos (404 para os demais) |
+| **PDF** | A ficha em PDF sai no idioma do usuário que a baixa (rótulos, situação, formato de data) |
+| **Mensagens da API** | O backend responde em português; o interceptor do front traduz as mensagens conhecidas (`tr()`), e as demais permanecem em português |
+| **Não traduzido** | Conteúdo escrito por pessoas (nomes de formulários/campos/etapas, portal) e mensagens técnicas com trechos dinâmicos |
+
+Para adicionar um idioma: incluí-lo em `Languages.SUPPORTED` (backend), em `LANGS`/`normalize` e criar o dicionário no front.
+
+## Sessão e segurança dos tokens
 
 | Item | Como funciona |
 |---|---|
@@ -541,6 +557,7 @@ Base: `/api`. Salvo indicação, todas as rotas exigem sessão (cookie `hm_at`) 
 |---|---|---|---|
 | GET | `/api/health` | — | Saúde do serviço |
 | POST | `/api/auth/login` | — | `{tenant,email,password}` → `{user}`; define os cookies `hm_at` (access), `hm_rt` (refresh) e `XSRF-TOKEN` |
+| PUT | `/api/me/language` | autenticado | `{language}` (`pt-BR`\|`en`\|`es`) → usuário; define o idioma preferido |
 | POST | `/api/auth/refresh` | cookie `hm_rt` | Rotaciona o refresh token e emite novo access token → `{user}`; 401 se inválido/expirado/reusado |
 | POST | `/api/auth/logout` | cookie + CSRF | Revoga a sessão (refresh token) e limpa os cookies |
 | GET | `/api/me` | autenticado | Usuário autenticado (resolve o tenant pelo JWT) |

@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE } from './api';
+import { tr } from '../core/i18n/i18n';
 
 export interface NameValue { name: string; value: string; }
 
@@ -139,20 +140,20 @@ export interface LogFilter {
 }
 
 export const EVENT_LABELS: Record<string, string | undefined> = {
-  submitted: 'Formulário enviado',
-  approved: 'Processo aprovado',
-  rejected: 'Processo reprovado',
-  completed: 'Fluxo concluído',
-  test: 'Teste',
+  submitted: tr('Formulário enviado'),
+  approved: tr('Processo aprovado'),
+  rejected: tr('Processo reprovado'),
+  completed: tr('Fluxo concluído'),
+  test: tr('Teste'),
 };
 
 export const AUTH_LABELS: Record<string, string> = {
-  none: 'Sem autenticação',
-  basic: 'Usuário e senha (Basic)',
+  none: tr('Sem autenticação'),
+  basic: tr('Usuário e senha (Basic)'),
   apikey: 'API Key',
   bearer: 'Bearer token',
-  bearer_preauth: 'Bearer com pré-autenticação',
-  headers: 'Cabeçalhos customizados',
+  bearer_preauth: tr('Bearer com pré-autenticação'),
+  headers: tr('Cabeçalhos customizados'),
 };
 
 @Injectable({ providedIn: 'root' })

@@ -61,6 +61,7 @@ public class UserService {
         user.setName(req.name().trim());
         user.setEmail(email);
         user.setJobTitle(blankToNull(req.jobTitle()));
+        user.setLanguage(languageOrDefault(req.language()));
         user.setActive(true);
         user.setOwner(false);
         user.setPassword(passwordEncoder.encode(initial));
@@ -83,6 +84,7 @@ public class UserService {
 
         user.setName(req.name().trim());
         user.setJobTitle(blankToNull(req.jobTitle()));
+        if (req.language() != null) user.setLanguage(languageOrDefault(req.language()));
         user.setActive(req.active());
         // O proprietário mantém o papel admin independentemente do que vier.
         if (!user.isOwner()) {
@@ -122,7 +124,14 @@ public class UserService {
     private static UserView toView(User u) {
         return new UserView(
                 u.getId(), u.getName(), u.getEmail(), u.getJobTitle(),
-                u.isOwner(), u.isActive(), u.roleNames().stream().toList());
+                u.isOwner(), u.isActive(), u.roleNames().stream().toList(), u.getLanguage());
+    }
+
+    private static String languageOrDefault(String code) {
+        if (code == null || code.isBlank()) return app.harmonis.identity.Languages.DEFAULT;
+        String ok = app.harmonis.identity.Languages.requireSupported(code);
+        if (ok == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Idioma inválido.");
+        return ok;
     }
 
     private static String blankToNull(String s) {

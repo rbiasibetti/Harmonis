@@ -7,10 +7,12 @@ import { FormsService } from '../../core/forms.service';
 import { AttachmentRef, FormField } from '../../core/models';
 import { FormRenderer } from '../forms/form-renderer';
 import { downloadBlob } from '../../core/download';
+import { TPipe } from '../../core/i18n/i18n';
+import { tr } from '../../core/i18n/i18n';
 
 @Component({
   selector: 'app-processes',
-  imports: [FormsModule, DatePipe, FormRenderer],
+  imports: [TPipe, FormsModule, DatePipe, FormRenderer],
   templateUrl: './processes.html',
   styleUrl: './processes.scss',
 })
@@ -60,7 +62,7 @@ export class Processes {
   pdf(instanceId: number): void {
     this.api.downloadPdf(instanceId).subscribe({
       next: (blob) => downloadBlob(blob, `processo-${instanceId}.pdf`),
-      error: () => this.detailError.set('Não foi possível gerar o PDF.'),
+      error: () => this.detailError.set(tr('Não foi possível gerar o PDF.')),
     });
   }
 
@@ -84,7 +86,7 @@ export class Processes {
       error: (e) => {
         this.deciding.set(false);
         if (e?.status === 422 && e.error?.errors) this.fillErrors.set(e.error.errors);
-        else this.detailError.set(e?.error?.message ?? 'Não foi possível decidir.');
+        else this.detailError.set(e?.error?.message ?? tr('Não foi possível decidir.'));
       },
     });
   }
@@ -98,7 +100,7 @@ export class Processes {
   value(f: FormField, data: Record<string, unknown>): string {
     const v = data[f.key!];
     if (v === null || v === undefined || v === '' || (Array.isArray(v) && v.length === 0)) return '—';
-    if (f.type === 'checkbox') return v === true || v === 'true' ? 'Sim' : 'Não';
+    if (f.type === 'checkbox') return v === true || v === 'true' ? tr('Sim') : tr('Não');
     if (Array.isArray(v)) return v.join(', ');
     return String(v);
   }
@@ -120,7 +122,7 @@ export class Processes {
   }
 
   statusLabel(s: string): string {
-    return s === 'approved' ? 'Aprovado' : s === 'rejected' ? 'Reprovado'
-      : s === 'skipped' ? 'Dispensado' : s === 'pending' ? 'Pendente' : s;
+    return tr(s === 'approved' ? 'Aprovado' : s === 'rejected' ? 'Reprovado'
+      : s === 'skipped' ? 'Dispensado' : s === 'pending' ? 'Pendente' : s);
   }
 }

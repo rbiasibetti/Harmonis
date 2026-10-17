@@ -6,10 +6,12 @@ import { AuthService } from '../../core/auth.service';
 import {
   EVENT_LABELS, IntegrationSummary, IntegrationsService, LogDetail, LogRow, LogStats,
 } from '../../core/integrations.service';
+import { TPipe } from '../../core/i18n/i18n';
+import { tr } from '../../core/i18n/i18n';
 
 @Component({
   selector: 'app-integration-logs',
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [TPipe, FormsModule, RouterLink, DatePipe],
   templateUrl: './integration-logs.html',
   styleUrl: './integrations.scss',
 })
@@ -70,7 +72,7 @@ export class IntegrationLogs {
       from: this.fromIso(), q: this.q.trim(), page: this.page, size: this.size,
     }).subscribe({
       next: (p) => { this.rows.set(p.items); this.total.set(p.total); this.loading.set(false); },
-      error: (e) => { this.error.set(e?.error?.message ?? 'Não foi possível carregar os logs.'); this.loading.set(false); },
+      error: (e) => { this.error.set(e?.error?.message ?? tr('Não foi possível carregar os logs.')); this.loading.set(false); },
     });
   }
 
@@ -79,16 +81,16 @@ export class IntegrationLogs {
   next(): void { if (this.page + 1 < this.pages()) { this.page++; this.load(); } }
 
   statusLabel(r: { status: string; willRetry: boolean }): string {
-    if (r.status === 'success') return 'Sucesso';
-    if (r.status === 'skipped') return 'Ignorado';
-    return r.willRetry ? 'Erro · repetirá' : 'Erro';
+    if (r.status === 'success') return tr('Sucesso');
+    if (r.status === 'skipped') return tr('Ignorado');
+    return r.willRetry ? tr('Erro · repetirá') : tr('Erro');
   }
 
   open(r: LogRow): void {
     this.detailError.set(null);
     this.api.logDetail(r.id).subscribe({
       next: (d) => this.detail.set(d),
-      error: (e) => this.error.set(e?.error?.message ?? 'Não foi possível abrir o registro.'),
+      error: (e) => this.error.set(e?.error?.message ?? tr('Não foi possível abrir o registro.')),
     });
   }
 
@@ -103,7 +105,7 @@ export class IntegrationLogs {
     this.detailError.set(null);
     this.api.resend(d.id).subscribe({
       next: (nd) => { this.resending.set(false); this.detail.set(nd); this.reload(); },
-      error: (e) => { this.resending.set(false); this.detailError.set(e?.error?.message ?? 'Não foi possível reenviar.'); },
+      error: (e) => { this.resending.set(false); this.detailError.set(e?.error?.message ?? tr('Não foi possível reenviar.')); },
     });
   }
 

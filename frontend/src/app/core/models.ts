@@ -5,6 +5,7 @@ export interface AuthUser {
   jobTitle: string | null;
   owner: boolean;
   active: boolean;
+  language: string;
   roles: string[];
   permissions: string[];
 }
@@ -28,6 +29,7 @@ export interface UserView {
   owner: boolean;
   active: boolean;
   roles: string[];
+  language: string;
 }
 
 export interface CreateUserRequest {
@@ -35,6 +37,7 @@ export interface CreateUserRequest {
   email: string;
   jobTitle: string | null;
   roles: string[];
+  language?: string;
 }
 
 export interface UpdateUserRequest {
@@ -42,6 +45,7 @@ export interface UpdateUserRequest {
   jobTitle: string | null;
   roles: string[];
   active: boolean;
+  language?: string;
 }
 
 export interface CreatedUser {
@@ -136,6 +140,7 @@ export interface FormSummary {
   status: string;
   fields: number;
   submissions: number;
+  languages: string[];
 }
 
 export interface FormDetail {
@@ -145,6 +150,7 @@ export interface FormDetail {
   description: string | null;
   status: string;
   fields: FormField[];
+  languages: string[];
 }
 
 export interface SaveFormRequest {
@@ -152,6 +158,7 @@ export interface SaveFormRequest {
   description: string | null;
   status: string;
   fields: FormField[];
+  languages?: string[];
 }
 
 export interface SubmissionView {

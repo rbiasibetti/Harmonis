@@ -45,7 +45,8 @@ class UserServiceTest {
         when(roles.findByName("member")).thenReturn(Optional.of(role("member")));
 
         CreatedUser result = service.create(new CreateUserRequest(
-                "João", "joao@acme.test", "Analista", List.of("member")));
+                "João", "joao@acme.test", "Analista", List.of("member"), "en"));
+        assertEquals("en", result.user().language());
 
         assertNotNull(result.initialPassword());
         assertEquals(10, result.initialPassword().length());
@@ -61,7 +62,7 @@ class UserServiceTest {
     void email_duplicado_gera_conflito() {
         when(users.findByEmailIgnoreCase("dup@acme.test")).thenReturn(Optional.of(new User()));
         var ex = assertThrows(ResponseStatusException.class, () -> service.create(
-                new CreateUserRequest("Dup", "dup@acme.test", null, List.of())));
+                new CreateUserRequest("Dup", "dup@acme.test", null, List.of(), null)));
         assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
         verify(users, never()).save(any());
     }
@@ -71,7 +72,7 @@ class UserServiceTest {
         when(users.findByEmailIgnoreCase(any())).thenReturn(Optional.empty());
         when(roles.findByName("fantasma")).thenReturn(Optional.empty());
         var ex = assertThrows(ResponseStatusException.class, () -> service.create(
-                new CreateUserRequest("X", "x@acme.test", null, List.of("fantasma"))));
+                new CreateUserRequest("X", "x@acme.test", null, List.of("fantasma"), null)));
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
@@ -82,7 +83,7 @@ class UserServiceTest {
         when(users.findById(1L)).thenReturn(Optional.of(owner));
 
         var ex = assertThrows(ResponseStatusException.class, () -> service.update(
-                1L, new UpdateUserRequest("Dono", null, List.of(), false), 99L));
+                1L, new UpdateUserRequest("Dono", null, List.of(), false, null), 99L));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     }
 
@@ -94,7 +95,7 @@ class UserServiceTest {
         when(users.findById(5L)).thenReturn(Optional.of(self));
 
         var ex = assertThrows(ResponseStatusException.class, () -> service.update(
-                5L, new UpdateUserRequest("Eu", null, List.of(), false), 5L));
+                5L, new UpdateUserRequest("Eu", null, List.of(), false, null), 5L));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     }
 

@@ -19,6 +19,7 @@ import { PageEditor } from './pages/portal/page-editor';
 import { Integrations } from './pages/integrations/integrations';
 import { IntegrationEditor } from './pages/integrations/integration-editor';
 import { IntegrationLogs } from './pages/integrations/integration-logs';
+import { Profile } from './pages/profile/profile';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -29,6 +30,7 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', component: Dashboard },
+      { path: 'profile', component: Profile },
       { path: 'users', component: Users },
       { path: 'roles', component: Roles },
       { path: 'forms', component: FormsList },

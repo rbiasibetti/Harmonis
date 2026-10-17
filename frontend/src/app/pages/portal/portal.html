@@ -1,10 +1,10 @@
 <div class="page-head">
   <div>
-    <h1>Portal</h1>
-    <p class="muted">Páginas e comunicados publicados.</p>
+    <h1>{{ 'Portal' | t }}</h1>
+    <p class="muted">{{ 'Páginas e comunicados publicados.' | t }}</p>
   </div>
   @if (auth.can('pages.update')) {
-    <a class="btn btn-ghost" routerLink="/pages">Gerenciar páginas</a>
+    <a class="btn btn-ghost" routerLink="/pages">{{ 'Gerenciar páginas' | t }}</a>
   }
 </div>
 
@@ -16,6 +16,6 @@
       @if (p.publishedAt) { <span class="when muted">{{ p.publishedAt | date:'longDate' }}</span> }
     </a>
   } @empty {
-    <p class="muted">{{ loading() ? 'Carregando…' : 'Nenhuma página publicada ainda.' }}</p>
+    <p class="muted">{{ loading() ? ('Carregando…' | t) : ('Nenhuma página publicada ainda.' | t) }}</p>
   }
 </div>

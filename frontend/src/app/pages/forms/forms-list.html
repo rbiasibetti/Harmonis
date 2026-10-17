@@ -1,10 +1,10 @@
 <div class="page-head">
   <div>
-    <h1>Formulários</h1>
-    <p class="muted">Crie formulários, publique e colete respostas.</p>
+    <h1>{{ 'Formulários' | t }}</h1>
+    <p class="muted">{{ 'Crie formulários, publique e colete respostas.' | t }}</p>
   </div>
   @if (auth.can('forms.create')) {
-    <a class="btn btn-primary" routerLink="/forms/new">+ Novo formulário</a>
+    <a class="btn btn-primary" routerLink="/forms/new">{{ '+ Novo formulário' | t }}</a>
   }
 </div>
 
@@ -14,10 +14,11 @@
   <table class="table">
     <thead>
       <tr>
-        <th>Nome</th>
-        <th>Status</th>
-        <th>Campos</th>
-        <th>Respostas</th>
+        <th>{{ 'Nome' | t }}</th>
+        <th>{{ 'Status' | t }}</th>
+        <th>{{ 'Idiomas' | t }}</th>
+        <th>{{ 'Campos' | t }}</th>
+        <th>{{ 'Respostas' | t }}</th>
         <th></th>
       </tr>
     </thead>
@@ -29,32 +30,33 @@
             @if (f.description) { <div class="muted desc">{{ f.description }}</div> }
           </td>
           <td>
-            @if (f.status === 'published') { <span class="badge ok">Publicado</span> }
-            @else { <span class="badge gray">Rascunho</span> }
+            @if (f.status === 'published') { <span class="badge ok">{{ 'Publicado' | t }}</span> }
+            @else { <span class="badge gray">{{ 'Rascunho' | t }}</span> }
           </td>
+          <td>@for (l of f.languages; track l) { <span class="chip">{{ l }}</span> }</td>
           <td class="muted">{{ f.fields }}</td>
           <td class="muted">{{ f.submissions }}</td>
           <td>
             <div class="row-actions">
               @if (f.status === 'published') {
-                <a class="icon-action" title="Preencher" [routerLink]="['/forms', f.id, 'fill']">✎</a>
+                <a class="icon-action" [attr.title]="'Preencher' | t" [routerLink]="['/forms', f.id, 'fill']">✎</a>
               }
               @if (auth.can('forms.submissions')) {
-                <a class="icon-action" title="Respostas" [routerLink]="['/forms', f.id, 'submissions']">📊</a>
+                <a class="icon-action" [attr.title]="'Respostas' | t" [routerLink]="['/forms', f.id, 'submissions']">📊</a>
               }
               @if (auth.can('forms.update')) {
-                <a class="icon-action" title="Fluxo de aprovação" [routerLink]="['/forms', f.id, 'flow']">⇄</a>
-                <a class="icon-action" title="Editar" [routerLink]="['/forms', f.id, 'edit']">⚙</a>
+                <a class="icon-action" [attr.title]="'Fluxo de aprovação' | t" [routerLink]="['/forms', f.id, 'flow']">⇄</a>
+                <a class="icon-action" [attr.title]="'Editar' | t" [routerLink]="['/forms', f.id, 'edit']">⚙</a>
               }
               @if (auth.can('forms.delete')) {
-                <button class="icon-action danger" title="Remover" (click)="remove(f)">🗑</button>
+                <button class="icon-action danger" [attr.title]="'Remover' | t" (click)="remove(f)">🗑</button>
               }
             </div>
           </td>
         </tr>
       } @empty {
-        <tr><td colspan="5" class="muted" style="text-align:center;padding:2rem">
-          {{ loading() ? 'Carregando…' : 'Nenhum formulário ainda.' }}
+        <tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">
+          {{ loading() ? ('Carregando…' | t) : ('Nenhum formulário ainda.' | t) }}
         </td></tr>
       }
     </tbody>

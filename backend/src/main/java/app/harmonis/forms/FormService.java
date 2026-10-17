@@ -61,6 +61,38 @@ public class FormService {
         return forms.findAllByOrderByNameAsc().stream().map(this::toSummary).toList();
     }
 
+    /** Lista para um usuario: quem nao gerencia formularios so ve os vinculados ao seu idioma. */
+    @Transactional(readOnly = true)
+    public List<FormSummary> list(String language, boolean seeAll) {
+        return forms.findAllByOrderByNameAsc().stream()
+                .filter(f -> seeAll || availableIn(f, language))
+                .map(this::toSummary).toList();
+    }
+
+    /** 404 se o formulario nao esta vinculado ao idioma do usuario (exceto quem gerencia formularios). */
+    @Transactional(readOnly = true)
+    public void assertAccessible(long id, String language, boolean seeAll) {
+        Form f = require(id);
+        if (!seeAll && !availableIn(f, language)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Formulário não encontrado.");
+        }
+    }
+
+    private static boolean availableIn(Form f, String language) {
+        return app.harmonis.identity.Languages.parse(f.getLanguages())
+                .contains(app.harmonis.identity.Languages.normalize(language));
+    }
+
+    private static String languagesOrDefault(List<String> requested, String current) {
+        if (requested == null) return current;
+        String joined = app.harmonis.identity.Languages.join(requested);
+        if (joined == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Selecione ao menos um idioma válido para o formulário.");
+        }
+        return joined;
+    }
+
     @Transactional(readOnly = true)
     public FormDetail get(long id) {
         return toDetail(require(id));
@@ -73,6 +105,7 @@ public class FormService {
         form.setSlug(uniqueSlug(slugify(req.name())));
         form.setDescription(blankToNull(req.description()));
         form.setStatus(normalizeStatus(req.status()));
+        form.setLanguages(languagesOrDefault(req.languages(), "pt-BR,en,es"));
         form.setSchemaJson(schema.writeFields(req.fields()));
         form.setCreatedBy(userId);
         forms.save(form);
@@ -91,6 +124,7 @@ public class FormService {
         form.setName(req.name().trim());
         form.setDescription(blankToNull(req.description()));
         form.setStatus(normalizeStatus(req.status()));
+        form.setLanguages(languagesOrDefault(req.languages(), form.getLanguages()));
         form.setSchemaJson(schema.writeFields(req.fields()));
         forms.save(form);
         return toDetail(form);
@@ -354,12 +388,14 @@ public class FormService {
     private FormSummary toSummary(Form f) {
         return new FormSummary(f.getId(), f.getName(), f.getSlug(), f.getDescription(),
                 f.getStatus(), schema.readFields(f.getSchemaJson()).size(),
-                submissions.countByFormId(f.getId()));
+                submissions.countByFormId(f.getId()),
+                app.harmonis.identity.Languages.parse(f.getLanguages()));
     }
 
     private FormDetail toDetail(Form f) {
         return new FormDetail(f.getId(), f.getName(), f.getSlug(), f.getDescription(),
-                f.getStatus(), schema.readFields(f.getSchemaJson()));
+                f.getStatus(), schema.readFields(f.getSchemaJson()),
+                app.harmonis.identity.Languages.parse(f.getLanguages()));
     }
 
     private Map<Long, String> userNames() {

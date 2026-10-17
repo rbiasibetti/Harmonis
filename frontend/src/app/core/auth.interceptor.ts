@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { API_BASE } from './api';
 import { AuthService } from './auth.service';
+import { tr } from './i18n/i18n';
 
 const SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS'];
 const NO_REFRESH = [`${API_BASE}/auth/login`, `${API_BASE}/auth/refresh`, `${API_BASE}/auth/logout`];
@@ -22,6 +23,20 @@ function withSession(req: HttpRequest<unknown>): HttpRequest<unknown> {
     if (xsrf) headers = headers.set('X-XSRF-TOKEN', xsrf);
   }
   return req.clone({ withCredentials: true, headers });
+}
+
+/** Traduz as mensagens de erro da API (texto-fonte em portugues) para o idioma ativo. */
+function translateError(err: unknown): unknown {
+  if (!(err instanceof HttpErrorResponse) || !err.error || typeof err.error !== 'object') return err;
+  const body = err.error as { message?: unknown; errors?: unknown };
+  const out: Record<string, unknown> = { ...body };
+  if (typeof body.message === 'string') out['message'] = tr(body.message);
+  if (body.errors && typeof body.errors === 'object') {
+    out['errors'] = Object.fromEntries(
+      Object.entries(body.errors as Record<string, unknown>).map(([k, v]) => [k, typeof v === 'string' ? tr(v) : v])
+    );
+  }
+  return new HttpErrorResponse({ error: out, headers: err.headers, status: err.status, statusText: err.statusText, url: err.url ?? undefined });
 }
 
 /**
@@ -47,6 +62,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           return throwError(() => err);
         })
       );
-    })
+    }),
+    catchError((err: unknown) => throwError(() => translateError(err)))
   );
 };

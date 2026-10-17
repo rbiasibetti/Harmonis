@@ -1,17 +1,17 @@
 <div class="page-head">
   <div>
-    <a class="muted back" routerLink="/portal">← Portal</a>
-    <h1>Páginas</h1>
-    <p class="muted">Crie e edite as páginas do portal (Markdown).</p>
+    <a class="muted back" routerLink="/portal">{{ '← Portal' | t }}</a>
+    <h1>{{ 'Páginas' | t }}</h1>
+    <p class="muted">{{ 'Crie e edite as páginas do portal (Markdown).' | t }}</p>
   </div>
   @if (auth.can('pages.create')) {
-    <a class="btn btn-primary" routerLink="/pages/new">+ Nova página</a>
+    <a class="btn btn-primary" routerLink="/pages/new">{{ '+ Nova página' | t }}</a>
   }
 </div>
 
 <div class="card">
   <table class="table">
-    <thead><tr><th>Título</th><th>Status</th><th>Atualizada</th><th></th></tr></thead>
+    <thead><tr><th>{{ 'Título' | t }}</th><th>{{ 'Status' | t }}</th><th>{{ 'Atualizada' | t }}</th><th></th></tr></thead>
     <tbody>
       @for (p of pages(); track p.id) {
         <tr>
@@ -20,21 +20,21 @@
             <div class="muted" style="font-size:.75rem;font-family:ui-monospace,monospace">/{{ p.slug }}</div>
           </td>
           <td>
-            @if (p.status === 'published') { <span class="badge ok">Publicada</span> }
-            @else { <span class="badge gray">Rascunho</span> }
+            @if (p.status === 'published') { <span class="badge ok">{{ 'Publicada' | t }}</span> }
+            @else { <span class="badge gray">{{ 'Rascunho' | t }}</span> }
           </td>
           <td class="muted">{{ p.updatedAt | date:'short' }}</td>
           <td>
             <div class="row-actions">
-              @if (p.status === 'published') { <a class="icon-action" title="Ver no portal" [routerLink]="['/portal', p.slug]">👁</a> }
-              <a class="icon-action" title="Editar" [routerLink]="['/pages', p.id, 'edit']">✎</a>
-              @if (auth.can('pages.delete')) { <button class="icon-action danger" title="Excluir" (click)="remove(p)">🗑</button> }
+              @if (p.status === 'published') { <a class="icon-action" [attr.title]="'Ver no portal' | t" [routerLink]="['/portal', p.slug]">👁</a> }
+              <a class="icon-action" [attr.title]="'Editar' | t" [routerLink]="['/pages', p.id, 'edit']">✎</a>
+              @if (auth.can('pages.delete')) { <button class="icon-action danger" [attr.title]="'Excluir' | t" (click)="remove(p)">🗑</button> }
             </div>
           </td>
         </tr>
       } @empty {
         <tr><td colspan="4" class="muted" style="text-align:center;padding:2rem">
-          {{ loading() ? 'Carregando…' : 'Nenhuma página ainda.' }}
+          {{ loading() ? ('Carregando…' | t) : ('Nenhuma página ainda.' | t) }}
         </td></tr>
       }
     </tbody>

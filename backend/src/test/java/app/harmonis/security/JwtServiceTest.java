@@ -35,7 +35,10 @@ class JwtServiceTest {
     void token_adulterado_e_rejeitado() {
         JwtService jwt = service();
         String token = jwt.issue(1L, "acme", false, List.of("member"), List.of("forms.view"));
-        String tampered = token.substring(0, token.length() - 3) + "abc";
+        // Troca um caractere no MEIO da assinatura (os ultimos bits do base64 podem nao alterar os bytes).
+        int i = token.lastIndexOf('.') + 5;
+        char flipped = token.charAt(i) == 'A' ? 'B' : 'A';
+        String tampered = token.substring(0, i) + flipped + token.substring(i + 1);
         assertThrows(Exception.class, () -> jwt.parse(tampered));
     }
 

@@ -1,76 +1,76 @@
 <div class="page-head">
   <div>
-    <a class="muted back" routerLink="/integrations">← Integrações</a>
-    <h1>{{ id() ? 'Editar integração' : 'Nova integração' }}</h1>
+    <a class="muted back" routerLink="/integrations">{{ '← Integrações' | t }}</a>
+    <h1>{{ id() ? ('Editar integração' | t) : ('Nova integração' | t) }}</h1>
     @if (view(); as v) {
       <p class="muted">
-        @if (v.status === 'published') { <span class="badge ok">Publicada</span> }
-        @else { <span class="badge gray">Rascunho</span> }
-        &nbsp;Somente integrações publicadas podem ser vinculadas aos fluxos.
+        @if (v.status === 'published') { <span class="badge ok">{{ 'Publicada' | t }}</span> }
+        @else { <span class="badge gray">{{ 'Rascunho' | t }}</span> }
+        {{ 'Somente integrações publicadas podem ser vinculadas aos fluxos.' | t }}
       </p>
     }
   </div>
   <div class="head-actions">
-    @if (saved()) { <span class="badge ok">Salvo</span> }
+    @if (saved()) { <span class="badge ok">{{ 'Salvo' | t }}</span> }
     @if (view() && auth.can('integrations.publish')) {
       <button class="btn btn-ghost" (click)="togglePublish()">
-        {{ view()!.status === 'published' ? 'Despublicar' : 'Publicar' }}
+        {{ view()!.status === 'published' ? ('Despublicar' | t) : ('Publicar' | t) }}
       </button>
     }
     <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !m.name || !m.url">
-      {{ saving() ? 'Salvando…' : 'Salvar' }}
+      {{ saving() ? ('Salvando…' | t) : ('Salvar' | t) }}
     </button>
   </div>
 </div>
 
 @if (error()) { <p class="notice error">{{ error() }}</p> }
-@if (loading()) { <p class="muted">Carregando…</p> }
+@if (loading()) { <p class="muted">{{ 'Carregando…' | t }}</p> }
 
 <div class="editor">
 
   <!-- ===== destino ===== -->
   <div class="card section">
-    <h2>Destino</h2>
-    <p class="muted hint">Endpoint que receberá o JSON do evento.</p>
+    <h2>{{ 'Destino' | t }}</h2>
+    <p class="muted hint">{{ 'Endpoint que receberá o JSON do evento.' | t }}</p>
     <div class="field">
-      <label class="label">Nome</label>
-      <input class="input" [(ngModel)]="m.name" placeholder="ex.: ERP — nova solicitação" maxlength="150" />
+      <label class="label">{{ 'Nome' | t }}</label>
+      <input class="input" [(ngModel)]="m.name" [placeholder]="'ex.: ERP — nova solicitação' | t" maxlength="150" />
     </div>
     <div class="field">
-      <label class="label">Descrição (opcional)</label>
+      <label class="label">{{ 'Descrição (opcional)' | t }}</label>
       <input class="input" [(ngModel)]="m.description" maxlength="500" />
     </div>
     <div class="grid3">
       <div class="field">
-        <label class="label">URL</label>
-        <input class="input mono" [(ngModel)]="m.url" placeholder="https://api.exemplo.com/webhooks/harmonis" />
+        <label class="label">{{ 'URL' | t }}</label>
+        <input class="input mono" [(ngModel)]="m.url" [placeholder]="'https://api.exemplo.com/webhooks/harmonis' | t" />
       </div>
       <div class="field">
-        <label class="label">Método</label>
+        <label class="label">{{ 'Método' | t }}</label>
         <select class="input" [(ngModel)]="m.method">
-          <option value="POST">POST</option>
-          <option value="PUT">PUT</option>
-          <option value="PATCH">PATCH</option>
+          <option value="POST">{{ 'POST' | t }}</option>
+          <option value="PUT">{{ 'PUT' | t }}</option>
+          <option value="PATCH">{{ 'PATCH' | t }}</option>
         </select>
       </div>
       <div class="field">
-        <label class="label">Tempo limite (s)</label>
+        <label class="label">{{ 'Tempo limite (s)' | t }}</label>
         <input class="input" type="number" min="1" max="60" [(ngModel)]="m.timeoutSeconds" />
       </div>
     </div>
     <div class="field" style="max-width:260px">
-      <label class="label">Retentativas em falha transitória</label>
+      <label class="label">{{ 'Retentativas em falha transitória' | t }}</label>
       <input class="input" type="number" min="0" max="5" [(ngModel)]="m.retries" />
-      <span class="muted" style="font-size:.75rem">Falha de rede, timeout, 408, 429 e 5xx. 0 = não repetir.</span>
+      <span class="muted" style="font-size:.75rem">{{ 'Falha de rede, timeout, 408, 429 e 5xx. 0 = não repetir.' | t }}</span>
     </div>
   </div>
 
   <!-- ===== autenticação ===== -->
   <div class="card section">
-    <h2>Autenticação</h2>
-    <p class="muted hint">Segredos são cifrados no servidor e nunca voltam para a tela; deixe em branco para manter o atual.</p>
+    <h2>{{ 'Autenticação' | t }}</h2>
+    <p class="muted hint">{{ 'Segredos são cifrados no servidor e nunca voltam para a tela; deixe em branco para manter o atual.' | t }}</p>
     <div class="field">
-      <label class="label">Tipo</label>
+      <label class="label">{{ 'Tipo' | t }}</label>
       <select class="input" [(ngModel)]="m.type">
         @for (t of authTypes; track t.value) { <option [value]="t.value">{{ t.label }}</option> }
       </select>
@@ -80,34 +80,34 @@
       @case ('basic') {
         <div class="grid2">
           <div class="field">
-            <label class="label">Usuário</label>
+            <label class="label">{{ 'Usuário' | t }}</label>
             <input class="input" [(ngModel)]="m.username" autocomplete="off" />
           </div>
           <div class="field">
-            <label class="label">Senha</label>
+            <label class="label">{{ 'Senha' | t }}</label>
             <input class="input" type="password" [(ngModel)]="m.password" autocomplete="new-password"
-                   [placeholder]="m.passwordSet ? '•••••••• (mantida)' : ''" />
-            @if (m.passwordSet) { <div class="set-flag">✓ senha definida</div> }
+                   [placeholder]="m.passwordSet ? ('•••••••• (mantida)' | t) : ''" />
+            @if (m.passwordSet) { <div class="set-flag">{{ '✓ senha definida' | t }}</div> }
           </div>
         </div>
       }
       @case ('apikey') {
         <div class="grid3">
           <div class="field">
-            <label class="label">Nome da chave</label>
-            <input class="input mono" [(ngModel)]="m.keyName" placeholder="X-Api-Key" />
+            <label class="label">{{ 'Nome da chave' | t }}</label>
+            <input class="input mono" [(ngModel)]="m.keyName" [placeholder]="'X-Api-Key' | t" />
           </div>
           <div class="field">
-            <label class="label">Valor</label>
+            <label class="label">{{ 'Valor' | t }}</label>
             <input class="input" type="password" [(ngModel)]="m.keyValue" autocomplete="new-password"
-                   [placeholder]="m.keyValueSet ? '•••••••• (mantido)' : ''" />
-            @if (m.keyValueSet) { <div class="set-flag">✓ valor definido</div> }
+                   [placeholder]="m.keyValueSet ? ('•••••••• (mantido)' | t) : ''" />
+            @if (m.keyValueSet) { <div class="set-flag">{{ '✓ valor definido' | t }}</div> }
           </div>
           <div class="field">
-            <label class="label">Enviar em</label>
+            <label class="label">{{ 'Enviar em' | t }}</label>
             <select class="input" [(ngModel)]="m.keyIn">
-              <option value="header">Cabeçalho</option>
-              <option value="query">Query string</option>
+              <option value="header">{{ 'Cabeçalho' | t }}</option>
+              <option value="query">{{ 'Query string' | t }}</option>
             </select>
           </div>
         </div>
@@ -115,95 +115,93 @@
       @case ('bearer') {
         <div class="grid2">
           <div class="field">
-            <label class="label">Token</label>
+            <label class="label">{{ 'Token' | t }}</label>
             <input class="input" type="password" [(ngModel)]="m.token" autocomplete="new-password"
-                   [placeholder]="m.tokenSet ? '•••••••• (mantido)' : ''" />
-            @if (m.tokenSet) { <div class="set-flag">✓ token definido</div> }
+                   [placeholder]="m.tokenSet ? ('•••••••• (mantido)' | t) : ''" />
+            @if (m.tokenSet) { <div class="set-flag">{{ '✓ token definido' | t }}</div> }
           </div>
           <div class="field">
-            <label class="label">Prefixo</label>
-            <input class="input" [(ngModel)]="m.tokenPrefix" placeholder="Bearer" />
+            <label class="label">{{ 'Prefixo' | t }}</label>
+            <input class="input" [(ngModel)]="m.tokenPrefix" [placeholder]="'Bearer' | t" />
           </div>
         </div>
       }
       @case ('bearer_preauth') {
         <p class="muted hint">
-          Antes de cada envio (e enquanto o token não expirar) o Harmonis faz login na URL abaixo com usuário e
-          senha, extrai o token da resposta e o envia como <code>Authorization: Bearer …</code>. Se o destino
-          responder 401, o token é renovado e o envio refeito uma vez.
+          {{ 'Antes de cada envio (e enquanto o token não expirar) o Harmonis faz login na URL abaixo com usuário e senha, extrai o token da resposta e o envia como "Authorization: Bearer …". Se o destino responder 401, o token é renovado e o envio refeito uma vez.' | t }}
         </p>
         <div class="field">
-          <label class="label">URL de pré-autenticação (login)</label>
-          <input class="input mono" [(ngModel)]="m.tokenUrl" placeholder="https://api.exemplo.com/auth/login" />
+          <label class="label">{{ 'URL de pré-autenticação (login)' | t }}</label>
+          <input class="input mono" [(ngModel)]="m.tokenUrl" [placeholder]="'https://api.exemplo.com/auth/login' | t" />
         </div>
         <div class="grid2">
           <div class="field">
-            <label class="label">Usuário</label>
+            <label class="label">{{ 'Usuário' | t }}</label>
             <input class="input" [(ngModel)]="m.username" autocomplete="off" />
           </div>
           <div class="field">
-            <label class="label">Senha</label>
+            <label class="label">{{ 'Senha' | t }}</label>
             <input class="input" type="password" [(ngModel)]="m.password" autocomplete="new-password"
-                   [placeholder]="m.passwordSet ? '•••••••• (mantida)' : ''" />
-            @if (m.passwordSet) { <div class="set-flag">✓ senha definida</div> }
+                   [placeholder]="m.passwordSet ? ('•••••••• (mantida)' | t) : ''" />
+            @if (m.passwordSet) { <div class="set-flag">{{ '✓ senha definida' | t }}</div> }
           </div>
         </div>
 
         <div class="sub">
-          <p class="sub-title">Formato do login</p>
+          <p class="sub-title">{{ 'Formato do login' | t }}</p>
           <div class="grid3">
             <div class="field">
-              <label class="label">Corpo</label>
+              <label class="label">{{ 'Corpo' | t }}</label>
               <select class="input" [(ngModel)]="m.tokenBodyFormat">
-                <option value="json">JSON</option>
-                <option value="form">Formulário (urlencoded)</option>
+                <option value="json">{{ 'JSON' | t }}</option>
+                <option value="form">{{ 'Formulário (urlencoded)' | t }}</option>
               </select>
             </div>
             <div class="field">
-              <label class="label">Campo do usuário</label>
+              <label class="label">{{ 'Campo do usuário' | t }}</label>
               <input class="input mono" [(ngModel)]="m.usernameField" />
             </div>
             <div class="field">
-              <label class="label">Campo da senha</label>
+              <label class="label">{{ 'Campo da senha' | t }}</label>
               <input class="input mono" [(ngModel)]="m.passwordField" />
             </div>
           </div>
-          <label class="label">Campos extras (ex.: grant_type)</label>
+          <label class="label">{{ 'Campos extras (ex.: grant_type)' | t }}</label>
           @for (x of m.tokenExtra; track $index; let i = $index) {
             <div class="row">
-              <input class="input mono" [(ngModel)]="x.name" placeholder="nome" />
-              <input class="input" [(ngModel)]="x.value" placeholder="valor" />
-              <button class="icon-action danger" (click)="removeExtra(i)" title="Remover">✕</button>
+              <input class="input mono" [(ngModel)]="x.name" [placeholder]="'nome' | t" />
+              <input class="input" [(ngModel)]="x.value" [placeholder]="'valor' | t" />
+              <button class="icon-action danger" (click)="removeExtra(i)" [attr.title]="'Remover' | t">✕</button>
             </div>
           }
-          <button class="btn btn-ghost sm" (click)="addExtra()">+ Campo extra</button>
+          <button class="btn btn-ghost sm" (click)="addExtra()">{{ '+ Campo extra' | t }}</button>
         </div>
 
         <div class="sub">
-          <p class="sub-title">Resposta do login</p>
+          <p class="sub-title">{{ 'Resposta do login' | t }}</p>
           <div class="grid3">
             <div class="field">
-              <label class="label">Caminho do token</label>
-              <input class="input mono" [(ngModel)]="m.tokenPath" placeholder="access_token ou data.token" />
+              <label class="label">{{ 'Caminho do token' | t }}</label>
+              <input class="input mono" [(ngModel)]="m.tokenPath" [placeholder]="'access_token ou data.token' | t" />
             </div>
             <div class="field">
-              <label class="label">Caminho da validade (s)</label>
-              <input class="input mono" [(ngModel)]="m.expiresInPath" placeholder="expires_in" />
+              <label class="label">{{ 'Caminho da validade (s)' | t }}</label>
+              <input class="input mono" [(ngModel)]="m.expiresInPath" [placeholder]="'expires_in' | t" />
             </div>
             <div class="field">
-              <label class="label">Validade padrão (s)</label>
+              <label class="label">{{ 'Validade padrão (s)' | t }}</label>
               <input class="input" type="number" min="30" max="86400" [(ngModel)]="m.tokenTtlSeconds" />
             </div>
           </div>
           <div class="field" style="max-width:220px;margin-bottom:0">
-            <label class="label">Prefixo no envio</label>
-            <input class="input" [(ngModel)]="m.tokenPrefix" placeholder="Bearer" />
+            <label class="label">{{ 'Prefixo no envio' | t }}</label>
+            <input class="input" [(ngModel)]="m.tokenPrefix" [placeholder]="'Bearer' | t" />
           </div>
         </div>
       }
       @case ('headers') {
         <p class="muted hint" style="margin:0">
-          A autenticação é feita apenas pelos cabeçalhos customizados abaixo (ex.: <code>Authorization</code> próprio).
+          {{ 'A autenticação é feita apenas pelos cabeçalhos customizados abaixo (ex.: um cabeçalho Authorization próprio).' | t }}
         </p>
       }
     }
@@ -211,34 +209,33 @@
 
   <!-- ===== cabeçalhos ===== -->
   <div class="card section">
-    <h2>Cabeçalhos customizados</h2>
-    <p class="muted hint">Enviados em toda requisição. Marque como secreto para cifrar o valor.</p>
+    <h2>{{ 'Cabeçalhos customizados' | t }}</h2>
+    <p class="muted hint">{{ 'Enviados em toda requisição. Marque como secreto para cifrar o valor.' | t }}</p>
     @for (h of m.headers; track $index; let i = $index) {
       <div class="row">
-        <input class="input mono" [(ngModel)]="h.name" placeholder="Nome (ex.: X-Tenant)" />
+        <input class="input mono" [(ngModel)]="h.name" [placeholder]="'Nome (ex.: X-Tenant)' | t" />
         <input class="input" [type]="h.secret ? 'password' : 'text'" [(ngModel)]="h.value"
-               [placeholder]="h.secret && h.valueSet ? '•••••••• (mantido)' : 'Valor'" autocomplete="off" />
-        <label class="check"><input type="checkbox" [(ngModel)]="h.secret" /> secreto</label>
-        <button class="icon-action danger" (click)="removeHeader(i)" title="Remover">✕</button>
+               [placeholder]="h.secret && h.valueSet ? ('•••••••• (mantido)' | t) : 'Valor'" autocomplete="off" />
+        <label class="check"><input type="checkbox" [(ngModel)]="h.secret" /> {{ 'secreto' | t }}</label>
+        <button class="icon-action danger" (click)="removeHeader(i)" [attr.title]="'Remover' | t">✕</button>
       </div>
     }
-    <button class="btn btn-ghost sm" (click)="addHeader()">+ Cabeçalho</button>
+    <button class="btn btn-ghost sm" (click)="addHeader()">{{ '+ Cabeçalho' | t }}</button>
   </div>
 
   <!-- ===== assinatura ===== -->
   <div class="card section">
-    <h2>Assinatura da requisição (HMAC)</h2>
+    <h2>{{ 'Assinatura da requisição (HMAC)' | t }}</h2>
     <p class="muted hint">
-      Opcional. Com um segredo compartilhado, cada envio leva <code>X-Harmonis-Signature: sha256=…</code>
-      (HMAC-SHA256 do corpo) para o destino validar a origem.
+      {{ 'Opcional. Com um segredo compartilhado, cada envio leva o cabeçalho X-Harmonis-Signature: sha256=… (HMAC-SHA256 do corpo) para o destino validar a origem.' | t }}
     </p>
     <div class="field" style="max-width:420px">
-      <label class="label">Segredo de assinatura</label>
+      <label class="label">{{ 'Segredo de assinatura' | t }}</label>
       <input class="input" type="password" [(ngModel)]="m.signingSecret" autocomplete="new-password"
-             [placeholder]="m.signed ? '•••••••• (mantido)' : 'Sem assinatura'" />
+             [placeholder]="m.signed ? ('•••••••• (mantido)' | t) : ('Sem assinatura' | t)" />
       @if (m.signed) {
         <label class="check" style="margin-top:.35rem;display:flex;gap:.35rem;font-size:.8rem">
-          <input type="checkbox" [(ngModel)]="m.clearSigningSecret" /> remover o segredo atual
+          <input type="checkbox" [(ngModel)]="m.clearSigningSecret" /> {{ 'remover o segredo atual' | t }}
         </label>
       }
     </div>
@@ -248,18 +245,17 @@
   @if (id()) {
     @if (auth.can('integrations.update')) {
       <div class="card section">
-        <h2>Testar</h2>
+        <h2>{{ 'Testar' | t }}</h2>
         <p class="muted hint">
-          Envia um evento de exemplo (<code>event: "test"</code>) usando a configuração <strong>salva</strong>
-          — salve antes de testar. Funciona também em rascunho e fica registrado nos logs.
+          {{ 'Envia um evento de exemplo (event: "test") usando a configuração salva — salve antes de testar. Funciona também em rascunho e fica registrado nos logs.' | t }}
         </p>
         <button class="btn btn-ghost" (click)="runTest()" [disabled]="testing()">
-          {{ testing() ? 'Enviando…' : 'Enviar teste' }}
+          {{ testing() ? ('Enviando…' | t) : ('Enviar teste' | t) }}
         </button>
         @if (testResult(); as r) {
           <div class="test-result">
-            @if (r.status === 'success') { <span class="badge ok">Sucesso</span> }
-            @else { <span class="badge off">Erro</span> }
+            @if (r.status === 'success') { <span class="badge ok">{{ 'Sucesso' | t }}</span> }
+            @else { <span class="badge off">{{ 'Erro' | t }}</span> }
             @if (r.httpStatus) { <span class="muted"> HTTP {{ r.httpStatus }}</span> }
             <span class="muted"> · {{ r.durationMs }} ms</span>
             @if (r.errorMessage) { <p class="notice error" style="margin:.5rem 0 0">{{ r.errorMessage }}</p> }
@@ -270,9 +266,9 @@
     }
 
     <div class="card section">
-      <h2>Onde é usada</h2>
+      <h2>{{ 'Onde é usada' | t }}</h2>
       @if (usage().length === 0) {
-        <p class="muted hint" style="margin:0">Ainda não vinculada a nenhum formulário. Vincule no editor de fluxo de cada formulário.</p>
+        <p class="muted hint" style="margin:0">{{ 'Ainda não vinculada a nenhum formulário. Vincule no editor de fluxo de cada formulário.' | t }}</p>
       } @else {
         <ul class="usage-list">
           @for (u of usage(); track $index) {

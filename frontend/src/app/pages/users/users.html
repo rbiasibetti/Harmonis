@@ -1,16 +1,16 @@
 <div class="page-head">
   <div>
-    <h1>Usuários</h1>
-    <p class="muted">Gerencie quem acessa o workspace e seus papéis.</p>
+    <h1>{{ 'Usuários' | t }}</h1>
+    <p class="muted">{{ 'Gerencie quem acessa o workspace e seus papéis.' | t }}</p>
   </div>
   @if (auth.can('users.create')) {
-    <button class="btn btn-primary" (click)="openCreate()">+ Novo usuário</button>
+    <button class="btn btn-primary" (click)="openCreate()">{{ '+ Novo usuário' | t }}</button>
   }
 </div>
 
 <div class="card toolbar">
-  <input class="input" placeholder="Buscar por nome ou e-mail…" [(ngModel)]="search" (keyup.enter)="load()" />
-  <button class="btn btn-ghost" (click)="load()">Buscar</button>
+  <input class="input" [placeholder]="'Buscar por nome ou e-mail…' | t" [(ngModel)]="search" (keyup.enter)="load()" />
+  <button class="btn btn-ghost" (click)="load()">{{ 'Buscar' | t }}</button>
 </div>
 
 @if (error()) { <p class="notice error">{{ error() }}</p> }
@@ -19,11 +19,11 @@
   <table class="table">
     <thead>
       <tr>
-        <th>Nome</th>
-        <th>E-mail</th>
-        <th>Cargo</th>
-        <th>Papéis</th>
-        <th>Status</th>
+        <th>{{ 'Nome' | t }}</th>
+        <th>{{ 'E-mail' | t }}</th>
+        <th>{{ 'Cargo' | t }}</th>
+        <th>{{ 'Papéis' | t }}</th>
+        <th>{{ 'Status' | t }}</th>
         <th></th>
       </tr>
     </thead>
@@ -32,29 +32,29 @@
         <tr>
           <td>
             <strong>{{ u.name }}</strong>
-            @if (u.owner) { <span class="badge" style="margin-left:.4rem">Proprietário</span> }
+            @if (u.owner) { <span class="badge" style="margin-left:.4rem">{{ 'Proprietário' | t }}</span> }
           </td>
           <td class="muted">{{ u.email }}</td>
           <td class="muted">{{ u.jobTitle || '—' }}</td>
           <td><div class="chips">@for (r of u.roles; track r) { <span class="chip">{{ r }}</span> }</div></td>
           <td>
-            @if (u.active) { <span class="badge ok">Ativo</span> }
-            @else { <span class="badge off">Inativo</span> }
+            @if (u.active) { <span class="badge ok">{{ 'Ativo' | t }}</span> }
+            @else { <span class="badge off">{{ 'Inativo' | t }}</span> }
           </td>
           <td>
             <div class="row-actions">
               @if (auth.can('users.update')) {
-                <button class="icon-action" title="Editar" (click)="openEdit(u)">✎</button>
+                <button class="icon-action" [attr.title]="'Editar' | t" (click)="openEdit(u)">✎</button>
               }
               @if (auth.can('users.delete') && !u.owner) {
-                <button class="icon-action danger" title="Remover" (click)="remove(u)">🗑</button>
+                <button class="icon-action danger" [attr.title]="'Remover' | t" (click)="remove(u)">🗑</button>
               }
             </div>
           </td>
         </tr>
       } @empty {
         <tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">
-          {{ loading() ? 'Carregando…' : 'Nenhum usuário encontrado.' }}
+          {{ loading() ? ('Carregando…' | t) : ('Nenhum usuário encontrado.' | t) }}
         </td></tr>
       }
     </tbody>
@@ -62,41 +62,49 @@
 </div>
 
 @if (showModal()) {
-  <div class="modal-scrim" (click)="closeModal()">
-    <div class="card modal" (click)="$event.stopPropagation()">
-      <h2>{{ editing() ? 'Editar usuário' : 'Novo usuário' }}</h2>
+  <div class="modal-scrim">
+    <div class="card modal">
+      <button type="button" class="modal-x" [attr.aria-label]="'Fechar' | t" [attr.title]="'Fechar' | t" (click)="closeModal()">✕</button>
+      <h2>{{ editing() ? ('Editar usuário' | t) : ('Novo usuário' | t) }}</h2>
 
       @if (createdPassword()) {
         <p class="notice success">
-          Usuário criado! Senha inicial: <strong>{{ createdPassword() }}</strong><br />
-          Anote e compartilhe com segurança — ela não será exibida novamente.
+          {{ 'Usuário criado! Senha inicial:' | t }} <strong>{{ createdPassword() }}</strong><br />
+          {{ 'Anote e compartilhe com segurança — ela não será exibida novamente.' | t }}
         </p>
         <div class="modal-foot">
-          <button class="btn btn-primary" (click)="closeModal()">Concluir</button>
+          <button class="btn btn-primary" (click)="closeModal()">{{ 'Concluir' | t }}</button>
         </div>
       } @else {
         <div class="field">
-          <label class="label">Nome</label>
+          <label class="label">{{ 'Nome' | t }}</label>
           <input class="input" [(ngModel)]="f.name" />
         </div>
         <div class="field">
-          <label class="label">E-mail</label>
+          <label class="label">{{ 'E-mail' | t }}</label>
           <input class="input" type="email" [(ngModel)]="f.email" [disabled]="!!editing()" />
         </div>
         <div class="field">
-          <label class="label">Cargo (opcional)</label>
+          <label class="label">{{ 'Cargo (opcional)' | t }}</label>
           <input class="input" [(ngModel)]="f.jobTitle" />
         </div>
 
         <div class="field">
-          <label class="label">Papéis</label>
+          <label class="label">{{ 'Idioma' | t }}</label>
+          <select class="input" [(ngModel)]="f.language">
+            @for (l of langs; track l.code) { <option [value]="l.code">{{ l.label }}</option> }
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="label">{{ 'Papéis' | t }}</label>
           @if (editing()?.owner) {
-            <p class="muted" style="font-size:.82rem">O proprietário mantém o papel de administrador.</p>
+            <p class="muted" style="font-size:.82rem">{{ 'O proprietário mantém o papel de administrador.' | t }}</p>
           } @else {
             @for (r of availableRoles(); track r.id) {
               <label class="check-row">
                 <input type="checkbox" [checked]="f.roles.has(r.name)" (change)="toggleRole(r.name)" />
-                {{ r.label }} <span class="chip">{{ r.name }}</span>
+                {{ r.label | t }} <span class="chip">{{ r.name }}</span>
               </label>
             }
           }
@@ -107,7 +115,7 @@
             <label class="switch">
               <input type="checkbox" [(ngModel)]="f.active" />
               <span class="track"></span>
-              {{ f.active ? 'Ativo' : 'Inativo' }}
+              {{ f.active ? ('Ativo' | t) : ('Inativo' | t) }}
             </label>
           </div>
         }
@@ -115,9 +123,9 @@
         @if (formError()) { <p class="notice error">{{ formError() }}</p> }
 
         <div class="modal-foot">
-          <button class="btn btn-ghost" (click)="closeModal()">Cancelar</button>
+          <button class="btn btn-ghost" (click)="closeModal()">{{ 'Cancelar' | t }}</button>
           <button class="btn btn-primary" (click)="save()" [disabled]="saving()">
-            {{ saving() ? 'Salvando…' : 'Salvar' }}
+            {{ saving() ? ('Salvando…' | t) : ('Salvar' | t) }}
           </button>
         </div>
       }

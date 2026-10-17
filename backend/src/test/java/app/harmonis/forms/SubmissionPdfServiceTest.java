@@ -72,7 +72,7 @@ class SubmissionPdfServiceTest {
 
     @Test
     void geraPdfComRotulosEValoresFormatados() throws Exception {
-        SubmissionPdfService.Pdf pdf = service.render(7L, 42L);
+        SubmissionPdfService.Pdf pdf = service.render(7L, 42L, "pt-BR");
         assertEquals("registro-compra-42.pdf", pdf.filename());
         assertTrue(new String(pdf.bytes(), 0, 5).startsWith("%PDF"));
 
@@ -90,7 +90,18 @@ class SubmissionPdfServiceTest {
 
     @Test
     void registroDeOutroFormularioNaoEncontrado() {
-        assertThrows(ResponseStatusException.class, () -> service.render(99L, 42L));
-        assertThrows(ResponseStatusException.class, () -> service.render(7L, 1000L));
+        assertThrows(ResponseStatusException.class, () -> service.render(99L, 42L, "pt-BR"));
+        assertThrows(ResponseStatusException.class, () -> service.render(7L, 1000L, "pt-BR"));
+    }
+
+    @Test
+    void pdfSegueOIdiomaDoUsuario() throws Exception {
+        String en = text(service.render(7L, 42L, "en"));
+        assertTrue(en.contains("Record no. 42"), en);
+        assertTrue(en.contains("05/17/1990"), en);
+        assertTrue(en.contains("No"), en);
+        String es = text(service.render(7L, 42L, "es"));
+        assertTrue(es.contains("Registro n.º 42"), es);
+        assertTrue(es.contains("17/05/1990"), es);
     }
 }

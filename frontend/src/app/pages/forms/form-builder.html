@@ -1,12 +1,12 @@
 <div class="page-head">
   <div>
-    <a class="muted back" routerLink="/forms">← Formulários</a>
-    <h1>{{ id() ? 'Editar formulário' : 'Novo formulário' }}</h1>
+    <a class="muted back" routerLink="/forms">{{ '← Formulários' | t }}</a>
+    <h1>{{ id() ? ('Editar formulário' | t) : ('Novo formulário' | t) }}</h1>
   </div>
   <div style="display:flex;gap:.5rem;align-items:center">
-    @if (saved()) { <span class="badge ok">Salvo</span> }
+    @if (saved()) { <span class="badge ok">{{ 'Salvo' | t }}</span> }
     <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !name()">
-      {{ saving() ? 'Salvando…' : 'Salvar' }}
+      {{ saving() ? ('Salvando…' | t) : ('Salvar' | t) }}
     </button>
   </div>
 </div>
@@ -14,13 +14,13 @@
 @if (error()) { <p class="notice error">{{ error() }}</p> }
 
 <div class="bld-tabs">
-  <button class="tab" [class.active]="tab() === 'fields'" (click)="tab.set('fields')">Campos</button>
-  <button class="tab" [class.active]="tab() === 'layout'" (click)="openPreview()">Layout (prévia)</button>
+  <button class="tab" [class.active]="tab() === 'fields'" (click)="tab.set('fields')">{{ 'Campos' | t }}</button>
+  <button class="tab" [class.active]="tab() === 'layout'" (click)="openPreview()">{{ 'Layout (prévia)' | t }}</button>
 </div>
 
 @if (tab() === 'layout') {
   <div class="card" style="padding:1.5rem">
-    @if (fields().length === 0) { <p class="muted">Adicione campos para ver o layout.</p> }
+    @if (fields().length === 0) { <p class="muted">{{ 'Adicione campos para ver o layout.' | t }}</p> }
     <app-form-renderer [fields]="fields()" [values]="previewValues" [disabled]="true"></app-form-renderer>
   </div>
 } @else {
@@ -28,25 +28,34 @@
 <div class="builder">
   <div class="card meta">
     <div class="field">
-      <label class="label">Nome</label>
-      <input class="input" [ngModel]="name()" (ngModelChange)="name.set($event)" placeholder="ex.: Solicitação de compra" />
+      <label class="label">{{ 'Nome' | t }}</label>
+      <input class="input" [ngModel]="name()" (ngModelChange)="name.set($event)" [placeholder]="'ex.: Solicitação de compra' | t" />
     </div>
     <div class="field">
-      <label class="label">Descrição (opcional)</label>
+      <label class="label">{{ 'Descrição (opcional)' | t }}</label>
       <input class="input" [ngModel]="description()" (ngModelChange)="description.set($event)" />
     </div>
     <div class="field">
-      <label class="label">Status</label>
+      <label class="label">{{ 'Idiomas do formulário' | t }}</label>
+      <div class="lang-checks">
+        @for (l of langs; track l.code) {
+          <label class="check-row"><input type="checkbox" [checked]="hasLang(l.code)" (change)="toggleLang(l.code)" /> {{ l.label }}</label>
+        }
+      </div>
+      <p class="muted" style="font-size:.78rem;margin:.25rem 0 0">{{ 'Só usuários com esses idiomas veem este formulário para preencher.' | t }}</p>
+    </div>
+    <div class="field">
+      <label class="label">{{ 'Status' | t }}</label>
       <select class="input" [ngModel]="status()" (ngModelChange)="status.set($event)">
-        <option value="draft">Rascunho</option>
-        <option value="published">Publicado</option>
+        <option value="draft">{{ 'Rascunho' | t }}</option>
+        <option value="published">{{ 'Publicado' | t }}</option>
       </select>
     </div>
 
-    <label class="label" style="margin-top:.5rem">Adicionar</label>
+    <label class="label" style="margin-top:.5rem">{{ 'Adicionar' | t }}</label>
     <div class="type-grid">
       @for (t of types(); track t.code) {
-        <button class="btn btn-ghost type-btn" (click)="addField(t.code)">+ {{ t.label }}</button>
+        <button class="btn btn-ghost type-btn" (click)="addField(t.code)">+ {{ t.label | t }}</button>
       }
     </div>
   </div>
@@ -64,44 +73,44 @@
         </div>
 
         @if (isSection(f)) {
-          <div class="field"><label class="label">Título do bloco</label><input class="input" [(ngModel)]="f.label" /></div>
-          <div class="field"><label class="label">Descrição (opcional)</label><input class="input" [(ngModel)]="f.help" /></div>
-          <div class="field" style="max-width:220px"><label class="label">Largura</label>
+          <div class="field"><label class="label">{{ 'Título do bloco' | t }}</label><input class="input" [(ngModel)]="f.label" /></div>
+          <div class="field"><label class="label">{{ 'Descrição (opcional)' | t }}</label><input class="input" [(ngModel)]="f.help" /></div>
+          <div class="field" style="max-width:220px"><label class="label">{{ 'Largura' | t }}</label>
             <select class="input" [(ngModel)]="f.width">@for (w of widths; track w.value) { <option [value]="w.value">{{ w.label }}</option> }</select>
           </div>
         } @else {
           <div class="fc-grid">
-            <div class="field"><label class="label">Rótulo</label><input class="input" [(ngModel)]="f.label" /></div>
-            <div class="field"><label class="label">Largura</label>
+            <div class="field"><label class="label">{{ 'Rótulo' | t }}</label><input class="input" [(ngModel)]="f.label" /></div>
+            <div class="field"><label class="label">{{ 'Largura' | t }}</label>
               <select class="input" [(ngModel)]="f.width">@for (w of widths; track w.value) { <option [value]="w.value">{{ w.label }}</option> }</select>
             </div>
           </div>
           <div class="fc-grid">
-            @if (f.type !== 'checkbox') { <div class="field"><label class="label">Placeholder</label><input class="input" [(ngModel)]="f.placeholder" /></div> }
-            <div class="field"><label class="label">Ajuda (opcional)</label><input class="input" [(ngModel)]="f.help" /></div>
+            @if (f.type !== 'checkbox') { <div class="field"><label class="label">{{ 'Placeholder' | t }}</label><input class="input" [(ngModel)]="f.placeholder" /></div> }
+            <div class="field"><label class="label">{{ 'Ajuda (opcional)' | t }}</label><input class="input" [(ngModel)]="f.help" /></div>
           </div>
 
           @if (hasOptions(f.type)) {
-            <label class="label">Opções</label>
+            <label class="label">{{ 'Opções' | t }}</label>
             @for (opt of f.options; track $index; let oi = $index) {
               <div class="opt-row">
                 <input class="input" [(ngModel)]="f.options![oi]" />
                 <button class="icon-action danger" (click)="removeOption(f, oi)">✕</button>
               </div>
             }
-            <button class="btn btn-ghost sm" (click)="addOption(f)">+ Opção</button>
+            <button class="btn btn-ghost sm" (click)="addOption(f)">{{ '+ Opção' | t }}</button>
 
             <div class="field" style="margin-top:.6rem;max-width:280px">
-              <label class="label">Apresentação</label>
+              <label class="label">{{ 'Apresentação' | t }}</label>
               @if (isSingle(f)) {
                 <select class="input" [(ngModel)]="f.display">
-                  <option value="combo">Lista suspensa (combo)</option>
-                  <option value="radio">Múltipla escolha (radio)</option>
+                  <option value="combo">{{ 'Lista suspensa (combo)' | t }}</option>
+                  <option value="radio">{{ 'Múltipla escolha (radio)' | t }}</option>
                 </select>
               } @else if (isMulti(f)) {
                 <select class="input" [(ngModel)]="f.display">
-                  <option value="combo">Lista de seleção múltipla</option>
-                  <option value="checkbox">Caixas de seleção (checkbox)</option>
+                  <option value="combo">{{ 'Lista de seleção múltipla' | t }}</option>
+                  <option value="checkbox">{{ 'Caixas de seleção (checkbox)' | t }}</option>
                 </select>
               }
             </div>
@@ -109,68 +118,68 @@
 
           <div class="fc-grid" style="margin-top:.6rem">
             <label class="switch" style="align-self:end;padding-bottom:.6rem">
-              <input type="checkbox" [(ngModel)]="f.required" /><span class="track"></span> Obrigatório
+              <input type="checkbox" [(ngModel)]="f.required" /><span class="track"></span> {{ 'Obrigatório' | t }}
             </label>
             <div class="field">
-              <label class="label">Preenchido por</label>
+              <label class="label">{{ 'Preenchido por' | t }}</label>
               <select class="input" [(ngModel)]="f.fillRole">
-                <option [ngValue]="null">Solicitante (no envio)</option>
-                @for (r of roleOptions(); track r.value) { <option [ngValue]="r.value">No fluxo: {{ r.label }}</option> }
+                <option [ngValue]="null">{{ 'Solicitante (no envio)' | t }}</option>
+                @for (r of roleOptions(); track r.value) { <option [ngValue]="r.value">{{ 'No fluxo: {label}' | t:{label: (r.label | t)} }}</option> }
               </select>
             </div>
           </div>
 
           @if (supportsValidation(f) && f.validation) {
             <div class="val-box">
-              <p class="val-title">Validações</p>
+              <p class="val-title">{{ 'Validações' | t }}</p>
               @if (isNumber(f)) {
-                <label class="check"><input type="checkbox" [(ngModel)]="f.validation.positive" /> Somente valores positivos</label>
-                <label class="check"><input type="checkbox" [(ngModel)]="f.validation.integer" /> Somente números inteiros</label>
+                <label class="check"><input type="checkbox" [(ngModel)]="f.validation.positive" /> {{ 'Somente valores positivos' | t }}</label>
+                <label class="check"><input type="checkbox" [(ngModel)]="f.validation.integer" /> {{ 'Somente números inteiros' | t }}</label>
                 <div class="fc-grid">
-                  <div class="field"><label class="label">Valor mínimo</label><input class="input" type="number" [(ngModel)]="f.validation.min" /></div>
-                  <div class="field"><label class="label">Valor máximo</label><input class="input" type="number" [(ngModel)]="f.validation.max" /></div>
+                  <div class="field"><label class="label">{{ 'Valor mínimo' | t }}</label><input class="input" type="number" [(ngModel)]="f.validation.min" /></div>
+                  <div class="field"><label class="label">{{ 'Valor máximo' | t }}</label><input class="input" type="number" [(ngModel)]="f.validation.max" /></div>
                 </div>
                 <div class="fc-grid">
-                  <div class="field"><label class="label">Maior que o campo</label>
+                  <div class="field"><label class="label">{{ 'Maior que o campo' | t }}</label>
                     <select class="input" [(ngModel)]="f.validation.afterField"><option [ngValue]="null">—</option>@for (o of compareFields(f); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }</select></div>
-                  <div class="field"><label class="label">Menor que o campo</label>
+                  <div class="field"><label class="label">{{ 'Menor que o campo' | t }}</label>
                     <select class="input" [(ngModel)]="f.validation.beforeField"><option [ngValue]="null">—</option>@for (o of compareFields(f); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }</select></div>
                 </div>
               }
               @if (isDate(f)) {
                 <div class="fc-grid">
-                  <div class="field"><label class="label">Data mínima</label><input class="input" type="date" [(ngModel)]="f.validation.minDate" /></div>
-                  <div class="field"><label class="label">Data máxima</label><input class="input" type="date" [(ngModel)]="f.validation.maxDate" /></div>
+                  <div class="field"><label class="label">{{ 'Data mínima' | t }}</label><input class="input" type="date" [(ngModel)]="f.validation.minDate" /></div>
+                  <div class="field"><label class="label">{{ 'Data máxima' | t }}</label><input class="input" type="date" [(ngModel)]="f.validation.maxDate" /></div>
                 </div>
                 <div class="fc-grid">
-                  <div class="field"><label class="label">Posterior ao campo</label>
+                  <div class="field"><label class="label">{{ 'Posterior ao campo' | t }}</label>
                     <select class="input" [(ngModel)]="f.validation.afterField"><option [ngValue]="null">—</option>@for (o of compareFields(f); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }</select></div>
-                  <div class="field"><label class="label">Anterior ao campo</label>
+                  <div class="field"><label class="label">{{ 'Anterior ao campo' | t }}</label>
                     <select class="input" [(ngModel)]="f.validation.beforeField"><option [ngValue]="null">—</option>@for (o of compareFields(f); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }</select></div>
                 </div>
               }
               @if (isText(f)) {
                 <div class="fc-grid">
-                  <div class="field"><label class="label">Tamanho mínimo</label><input class="input" type="number" [(ngModel)]="f.validation.minLength" /></div>
-                  <div class="field"><label class="label">Tamanho máximo</label><input class="input" type="number" [(ngModel)]="f.validation.maxLength" /></div>
+                  <div class="field"><label class="label">{{ 'Tamanho mínimo' | t }}</label><input class="input" type="number" [(ngModel)]="f.validation.minLength" /></div>
+                  <div class="field"><label class="label">{{ 'Tamanho máximo' | t }}</label><input class="input" type="number" [(ngModel)]="f.validation.maxLength" /></div>
                 </div>
-                <div class="field"><label class="label">Expressão regular (regex)</label><input class="input" [(ngModel)]="f.validation.pattern" placeholder="ex.: \d&#123;5&#125;-\d&#123;3&#125;" /></div>
-                <div class="field"><label class="label">Mensagem se inválido</label><input class="input" [(ngModel)]="f.validation.patternMessage" placeholder="ex.: CEP inválido" /></div>
+                <div class="field"><label class="label">{{ 'Expressão regular (regex)' | t }}</label><input class="input" [(ngModel)]="f.validation.pattern" placeholder="ex.: \d&#123;5&#125;-\d&#123;3&#125;" /></div>
+                <div class="field"><label class="label">{{ 'Mensagem se inválido' | t }}</label><input class="input" [(ngModel)]="f.validation.patternMessage" [placeholder]="'ex.: CEP inválido' | t" /></div>
               }
             </div>
           }
 
           @if (isAnyFile(f) && f.validation) {
             <div class="val-box">
-              <p class="val-title">Anexo</p>
+              <p class="val-title">{{ 'Anexo' | t }}</p>
               <div class="fc-grid">
-                <div class="field"><label class="label">Tipos aceitos</label>
-                  <input class="input" [(ngModel)]="f.validation.accept" placeholder="ex.: .pdf,.png,image/*" />
-                  <p class="muted help">Extensões (.pdf) ou tipos MIME (image/*), separados por vírgula. Vazio = qualquer.</p>
+                <div class="field"><label class="label">{{ 'Tipos aceitos' | t }}</label>
+                  <input class="input" [(ngModel)]="f.validation.accept" [placeholder]="'ex.: .pdf,.png,image/*' | t" />
+                  <p class="muted help">{{ 'Extensões (.pdf) ou tipos MIME (image/*), separados por vírgula. Vazio = qualquer.' | t }}</p>
                 </div>
-                <div class="field"><label class="label">Tamanho máximo (MB)</label>
+                <div class="field"><label class="label">{{ 'Tamanho máximo (MB)' | t }}</label>
                   <input class="input" type="number" min="0" step="0.5" [(ngModel)]="f.validation.maxSizeMb" />
-                  <p class="muted help">Por arquivo. Limite do servidor: 10 MB.</p>
+                  <p class="muted help">{{ 'Por arquivo. Limite do servidor: 10 MB.' | t }}</p>
                 </div>
               </div>
             </div>
@@ -178,15 +187,15 @@
 
           @if (f.visibleWhen) {
             <div class="cond-box">
-              <label class="label">Exibir somente quando</label>
+              <label class="label">{{ 'Exibir somente quando' | t }}</label>
               <div class="cond-row">
                 <select class="input" [(ngModel)]="f.visibleWhen.field">
-                  <option value="">Sempre exibir</option>
+                  <option value="">{{ 'Sempre exibir' | t }}</option>
                   @for (o of otherFields(f); track o.value) { <option [value]="o.value">{{ o.label }}</option> }
                 </select>
                 @if (f.visibleWhen.field) {
                   <select class="input" [(ngModel)]="f.visibleWhen.operator">@for (op of operators; track op.value) { <option [value]="op.value">{{ op.label }}</option> }</select>
-                  @if (needsValue(f.visibleWhen.operator)) { <input class="input" [(ngModel)]="f.visibleWhen.value" placeholder="valor" /> }
+                  @if (needsValue(f.visibleWhen.operator)) { <input class="input" [(ngModel)]="f.visibleWhen.value" [placeholder]="'valor' | t" /> }
                 }
               </div>
             </div>
@@ -194,7 +203,7 @@
         }
       </div>
     } @empty {
-      <div class="card empty-fields muted">Nenhum campo ainda — adicione pelo painel ao lado.</div>
+      <div class="card empty-fields muted">{{ 'Nenhum campo ainda — adicione pelo painel ao lado.' | t }}</div>
     }
   </div>
 </div>

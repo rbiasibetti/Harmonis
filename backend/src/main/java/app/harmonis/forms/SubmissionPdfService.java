@@ -42,13 +42,62 @@ public class SubmissionPdfService {
                 .body(pdf.bytes());
     }
 
+    /** Textos e formatos do PDF por idioma (pt-BR | en | es). */
+    static final class Tx {
+        final String record, sentOn, by, status, history, noSteps, noFields, issuedOn, page, yes, no, rolePrefix, user;
+        final String[] cols;
+        final java.util.Map<String, String> states, taskStates;
+        final DateTimeFormatter dt, d;
+
+        private Tx(String record, String sentOn, String by, String status, String history, String noSteps,
+                   String noFields, String issuedOn, String page, String yes, String no, String rolePrefix,
+                   String user, String[] cols, java.util.Map<String, String> states,
+                   java.util.Map<String, String> taskStates, String dtPattern, String dPattern) {
+            this.record = record; this.sentOn = sentOn; this.by = by; this.status = status; this.history = history;
+            this.noSteps = noSteps; this.noFields = noFields; this.issuedOn = issuedOn; this.page = page;
+            this.yes = yes; this.no = no; this.rolePrefix = rolePrefix; this.user = user; this.cols = cols;
+            this.states = states; this.taskStates = taskStates;
+            this.dt = DateTimeFormatter.ofPattern(dtPattern); this.d = DateTimeFormatter.ofPattern(dPattern);
+        }
+
+        static Tx of(String lang) {
+            String l = app.harmonis.identity.Languages.normalize(lang);
+            if ("en".equals(l)) {
+                return new Tx("Record no. ", "Submitted on ", "by ", "Status: ", "Approval history",
+                        "No approval steps were required.", "This form has no fields.", "Issued on ", "Page ",
+                        "Yes", "No", "Role: ", "user",
+                        new String[]{"STEP", "APPROVER", "RESULT", "DECIDED BY / ON", "COMMENT"},
+                        java.util.Map.of("approved", "Approved", "rejected", "Rejected", "pending", "In progress"),
+                        java.util.Map.of("approved", "Approved", "rejected", "Rejected", "pending", "Pending", "skipped", "Skipped"),
+                        "MM/dd/yyyy hh:mm a", "MM/dd/yyyy");
+            }
+            if ("es".equals(l)) {
+                return new Tx("Registro n.º ", "Enviado el ", "por ", "Estado: ", "Historial de aprobación",
+                        "No fue necesaria ninguna etapa de aprobación.", "Este formulario no tiene campos.", "Emitido el ", "Página ",
+                        "Sí", "No", "Rol: ", "usuario",
+                        new String[]{"ETAPA", "APROBADOR", "RESULTADO", "DECIDIDO POR / EL", "COMENTARIO"},
+                        java.util.Map.of("approved", "Aprobado", "rejected", "Rechazado", "pending", "En curso"),
+                        java.util.Map.of("approved", "Aprobado", "rejected", "Rechazado", "pending", "Pendiente", "skipped", "Omitido"),
+                        "dd/MM/yyyy HH:mm", "dd/MM/yyyy");
+            }
+            return new Tx("Registro nº ", "Enviado em ", "por ", "Situação: ", "Histórico de aprovação",
+                    "Nenhuma etapa de aprovação foi necessária.", "Este formulário não possui campos.", "Emitido em ", "Página ",
+                    "Sim", "Não", "Papel: ", "usuário",
+                    new String[]{"ETAPA", "APROVADOR", "RESULTADO", "DECIDIDO POR / EM", "COMENTÁRIO"},
+                    java.util.Map.of("approved", "Aprovado", "rejected", "Reprovado", "pending", "Em andamento"),
+                    java.util.Map.of("approved", "Aprovado", "rejected", "Reprovado", "pending", "Pendente", "skipped", "Dispensado"),
+                    "dd/MM/yyyy HH:mm", "dd/MM/yyyy");
+        }
+
+        String state(String k) { return states.getOrDefault(k == null ? "" : k, k); }
+        String task(String k) { return taskStates.getOrDefault(k == null ? "" : k, k); }
+    }
+
     private static final Color INK = new Color(0x1f, 0x29, 0x37);
     private static final Color MUTED = new Color(0x6b, 0x72, 0x80);
     private static final Color LINE = new Color(0xd1, 0xd5, 0xdb);
     private static final Color BAND = new Color(0xf3, 0xf4, 0xf6);
     private static final Color ACCENT = new Color(0x1d, 0x4e, 0xd8);
-    private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-    private static final DateTimeFormatter D = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final ZoneId ZONE = ZoneId.systemDefault();
 
     private static final Font F_TITLE = font(18, Font.BOLD, INK);
@@ -82,7 +131,8 @@ public class SubmissionPdfService {
 
     /** PDF do registro; formId (opcional) garante que o registro pertence ao formulario da URL. */
     @Transactional(readOnly = true)
-    public Pdf render(Long formId, long submissionId) {
+    public Pdf render(Long formId, long submissionId, String lang) {
+        Tx tx = Tx.of(lang);
         FormSubmission sub = submissions.findById(submissionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resposta não encontrada."));
         if (formId != null && !formId.equals(sub.getFormId())) {
@@ -104,14 +154,14 @@ public class SubmissionPdfService {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             Document doc = new Document(PageSize.A4, 36, 36, 40, 44);
             PdfWriter writer = PdfWriter.getInstance(doc, out);
-            writer.setPageEvent(new Footer(form.getName(), sub.getId()));
+            writer.setPageEvent(new Footer(form.getName(), sub.getId(), tx));
             doc.addTitle(form.getName() + " #" + sub.getId());
             doc.addCreator("Harmonis");
             doc.open();
 
-            header(doc, form, sub, inst, names);
-            body(doc, fields, data);
-            if (inst != null) history(doc, inst, taskList, names);
+            header(doc, form, sub, inst, names, tx);
+            body(doc, fields, data, tx);
+            if (inst != null) history(doc, inst, taskList, names, tx);
 
             doc.close();
             return new Pdf(out.toByteArray(), "registro-" + (form.getSlug() == null ? form.getId() : form.getSlug())
@@ -122,27 +172,27 @@ public class SubmissionPdfService {
     }
 
     @Transactional(readOnly = true)
-    public Pdf renderForProcess(long instanceId) {
+    public Pdf renderForProcess(long instanceId, String lang) {
         ProcessInstance inst = instances.findById(instanceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Processo não encontrado."));
-        return render(null, inst.getSubmissionId());
+        return render(null, inst.getSubmissionId(), lang);
     }
 
     // ---------------------------------------------------------------- secoes
 
     private void header(Document doc, Form form, FormSubmission sub, ProcessInstance inst,
-                        Map<Long, String> names) throws DocumentException {
+                        Map<Long, String> names, Tx tx) throws DocumentException {
         Paragraph title = new Paragraph(form.getName(), F_TITLE);
         title.setSpacingAfter(2);
         doc.add(title);
 
         List<String> meta = new ArrayList<>();
-        meta.add("Registro nº " + sub.getId());
-        if (sub.getCreatedAt() != null) meta.add("Enviado em " + DT.format(sub.getCreatedAt().atZone(ZONE)));
+        meta.add(tx.record + sub.getId());
+        if (sub.getCreatedAt() != null) meta.add(tx.sentOn + tx.dt.format(sub.getCreatedAt().atZone(ZONE)));
         if (sub.getSubmittedBy() != null && names.get(sub.getSubmittedBy()) != null) {
-            meta.add("por " + names.get(sub.getSubmittedBy()));
+            meta.add(tx.by + names.get(sub.getSubmittedBy()));
         }
-        if (inst != null) meta.add("Situação: " + statusLabel(inst.getStatus()));
+        if (inst != null) meta.add(tx.status + tx.state(inst.getStatus()));
         Paragraph sp = new Paragraph(String.join("  ·  ", meta), F_SUB);
         sp.setSpacingAfter(8);
         doc.add(sp);
@@ -159,7 +209,7 @@ public class SubmissionPdfService {
     }
 
     /** Campos na ordem do formulario, ocupando a grade de 12 colunas como na tela de preenchimento. */
-    private void body(Document doc, List<FormField> fields, Map<String, Object> data) throws DocumentException {
+    private void body(Document doc, List<FormField> fields, Map<String, Object> data, Tx tx) throws DocumentException {
         PdfPTable grid = new PdfPTable(12);
         grid.setWidthPercentage(100);
         int used = 0;
@@ -179,34 +229,34 @@ public class SubmissionPdfService {
                 fill(grid, used);
                 used = 0;
             }
-            grid.addCell(fieldCell(f, data.get(f.key()), span));
+            grid.addCell(fieldCell(f, data.get(f.key()), span, tx));
             used = (used + span) % 12;
             any = true;
         }
         fill(grid, used);
 
         if (!any) {
-            doc.add(new Paragraph("Este formulário não possui campos.", F_EMPTY));
+            doc.add(new Paragraph(tx.noFields, F_EMPTY));
             return;
         }
         doc.add(grid);
     }
 
     private void history(Document doc, ProcessInstance inst, List<ProcessTask> list,
-                         Map<Long, String> names) throws DocumentException {
-        Paragraph h = new Paragraph("Histórico de aprovação", F_SECTION);
+                         Map<Long, String> names, Tx tx) throws DocumentException {
+        Paragraph h = new Paragraph(tx.history, F_SECTION);
         h.setSpacingBefore(14);
         h.setSpacingAfter(4);
         doc.add(h);
 
         if (list.isEmpty()) {
-            doc.add(new Paragraph("Nenhuma etapa de aprovação foi necessária.", F_EMPTY));
+            doc.add(new Paragraph(tx.noSteps, F_EMPTY));
             return;
         }
         PdfPTable t = new PdfPTable(new float[]{3f, 3f, 2f, 3f, 4f});
         t.setWidthPercentage(100);
         t.setHeaderRows(1);
-        for (String col : new String[]{"ETAPA", "APROVADOR", "RESULTADO", "DECIDIDO POR / EM", "COMENTÁRIO"}) {
+        for (String col : tx.cols) {
             PdfPCell c = new PdfPCell(new Phrase(col, F_TH));
             c.setBackgroundColor(BAND);
             c.setBorderColor(LINE);
@@ -215,13 +265,13 @@ public class SubmissionPdfService {
         }
         for (ProcessTask k : list) {
             String approver = "user".equals(k.getApproverType())
-                    ? Optional.ofNullable(names.get(k.getAssignedUserId())).orElse("usuário")
-                    : "Papel: " + k.getRole();
+                    ? Optional.ofNullable(names.get(k.getAssignedUserId())).orElse(tx.user)
+                    : tx.rolePrefix + k.getRole();
             String by = k.getDecidedBy() == null ? "—" : names.getOrDefault(k.getDecidedBy(), "—");
-            if (k.getDecidedAt() != null) by += "\n" + DT.format(k.getDecidedAt().atZone(ZONE));
+            if (k.getDecidedAt() != null) by += "\n" + tx.dt.format(k.getDecidedAt().atZone(ZONE));
             t.addCell(cell(k.getStepName(), F_TD));
             t.addCell(cell(approver, F_TD));
-            t.addCell(cell(taskLabel(k.getStatus()), F_TD));
+            t.addCell(cell(tx.task(k.getStatus()), F_TD));
             t.addCell(cell(by, F_TD));
             t.addCell(cell(k.getComment() == null || k.getComment().isBlank() ? "—" : k.getComment(), F_TD));
         }
@@ -245,8 +295,8 @@ public class SubmissionPdfService {
         return c;
     }
 
-    private PdfPCell fieldCell(FormField f, Object value, int span) {
-        String text = format(f, value);
+    private PdfPCell fieldCell(FormField f, Object value, int span, Tx tx) {
+        String text = format(f, value, tx);
         boolean empty = text.isEmpty();
         Phrase p = new Phrase();
         p.add(new Chunk(f.label().toUpperCase(Locale.ROOT) + "\n", F_LABEL));
@@ -285,13 +335,13 @@ public class SubmissionPdfService {
 
     // ---------------------------------------------------------------- valores
 
-    private static String format(FormField f, Object value) {
+    private static String format(FormField f, Object value, Tx tx) {
         if (value == null) return "";
         String type = f.type();
         if ("checkbox".equals(type)) {
             boolean b = (value instanceof Boolean bb) ? bb
                     : List.of("true", "1", "on", "sim").contains(value.toString().toLowerCase(Locale.ROOT));
-            return b ? "Sim" : "Não";
+            return b ? tx.yes : tx.no;
         }
         if (FieldTypes.isAnyFile(type)) return attachmentNames(value);
         if (value instanceof Collection<?> c) {
@@ -301,7 +351,7 @@ public class SubmissionPdfService {
         }
         String s = value.toString();
         if ("date".equals(type)) {
-            try { return D.format(LocalDate.parse(s)); } catch (Exception ignored) { /* mantem o texto */ }
+            try { return tx.d.format(LocalDate.parse(s)); } catch (Exception ignored) { /* mantem o texto */ }
         }
         return s;
     }
@@ -314,25 +364,6 @@ public class SubmissionPdfService {
             else if (o != null) j.add(o.toString());
         }
         return j.toString();
-    }
-
-    private static String statusLabel(String s) {
-        return switch (s == null ? "" : s) {
-            case "approved" -> "Aprovado";
-            case "rejected" -> "Reprovado";
-            case "pending" -> "Em andamento";
-            default -> s;
-        };
-    }
-
-    private static String taskLabel(String s) {
-        return switch (s == null ? "" : s) {
-            case "approved" -> "Aprovado";
-            case "rejected" -> "Reprovado";
-            case "pending" -> "Pendente";
-            case "skipped" -> "Dispensado";
-            default -> s;
-        };
     }
 
     private Map<String, Object> readData(String json) {
@@ -348,9 +379,14 @@ public class SubmissionPdfService {
     /** Rodape com paginacao e data de emissao. */
     private static final class Footer extends PdfPageEventHelper {
         private final String left;
-        private final String stamp = DT.format(Instant.now().atZone(ZONE));
+        private final String stamp;
+        private final Tx tx;
 
-        Footer(String form, long id) { this.left = "Harmonis · " + form + " #" + id; }
+        Footer(String form, long id, Tx tx) {
+            this.left = "Harmonis · " + form + " #" + id;
+            this.tx = tx;
+            this.stamp = tx.dt.format(Instant.now().atZone(ZONE));
+        }
 
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
@@ -359,7 +395,7 @@ public class SubmissionPdfService {
             float y = document.bottom() - 22;
             ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(left, f), document.left(), y, 0);
             ColumnText.showTextAligned(cb, Element.ALIGN_RIGHT,
-                    new Phrase("Emitido em " + stamp + " · Página " + writer.getPageNumber(), f),
+                    new Phrase(tx.issuedOn + stamp + " · " + tx.page + writer.getPageNumber(), f),
                     document.right(), y, 0);
         }
     }

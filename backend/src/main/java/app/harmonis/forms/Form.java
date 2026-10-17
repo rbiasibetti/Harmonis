@@ -31,6 +31,10 @@ public class Form {
     @Column(nullable = false)
     private String status = "draft";
 
+    /** Idiomas aos quais o formulario esta vinculado (CSV: pt-BR,en,es). */
+    @Column(nullable = false)
+    private String languages = "pt-BR,en,es";
+
     @Column(name = "created_by")
     private Long createdBy;
 
@@ -53,6 +57,9 @@ public class Form {
     void onUpdate() {
         updatedAt = Instant.now();
     }
+
+    public String getLanguages() { return languages; }
+    public void setLanguages(String languages) { this.languages = languages; }
 
     public boolean isPublished() {
         return "published".equals(status);

@@ -56,8 +56,9 @@ public class ProcessController {
     }
 
     @GetMapping("/{id}/pdf")
-    public org.springframework.http.ResponseEntity<byte[]> pdf(@PathVariable long id) {
-        return app.harmonis.forms.SubmissionPdfService.response(pdfs.renderForProcess(id));
+    public org.springframework.http.ResponseEntity<byte[]> pdf(@PathVariable long id,
+                                                               @AuthenticationPrincipal AuthPrincipal principal) {
+        return app.harmonis.forms.SubmissionPdfService.response(pdfs.renderForProcess(id, currentUser(principal).getLanguage()));
     }
 
     @PostMapping("/tasks/{taskId}/decide")

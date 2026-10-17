@@ -3,10 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { ThemeService } from '../../core/theme.service';
+import { LANGS, TPipe, applyLanguage, currentLang, tr } from '../../core/i18n/i18n';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule],
+  imports: [TPipe, FormsModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -18,6 +19,11 @@ export class Login {
   tenant = 'acme';
   email = 'admin@acme.test';
   password = 'password';
+
+  readonly langs = LANGS;
+  lang: string = currentLang;
+
+  changeLang(code: string): void { applyLanguage(code); }
 
   loading = signal(false);
   error = signal<string | null>(null);
@@ -32,7 +38,7 @@ export class Login {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(err?.status === 401 ? 'Credenciais inválidas.' : 'Não foi possível entrar. Verifique o servidor.');
+        this.error.set(err?.status === 401 ? tr('Credenciais inválidas.') : tr('Não foi possível entrar. Verifique o servidor.'));
       },
     });
   }

@@ -4,12 +4,14 @@ import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/rou
 import { AuthService } from '../core/auth.service';
 import { ThemeService } from '../core/theme.service';
 import { NotificationsService, NotificationView } from '../core/notifications.service';
+import { TPipe } from '../core/i18n/i18n';
+import { tr } from '../core/i18n/i18n';
 
 interface NavItem { label: string; path: string; icon: string; permission?: string; }
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, DatePipe],
+  imports: [TPipe, RouterOutlet, RouterLink, RouterLinkActive, DatePipe],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
@@ -32,6 +34,20 @@ export class Shell {
     if (next) this.notifications.refresh();
   }
 
+  /** Mensagens de notificacao geradas pelo servidor ("<formulario> aguarda sua decisão." etc.). */
+  notifMessage(message: string | null): string {
+    if (!message) return "";
+    const rules: [string, string][] = [
+      [' aguarda sua decisão.', '{form} aguarda sua decisão.'],
+      [' foi aprovada.', '{form} foi aprovada.'],
+      [' foi reprovada.', '{form} foi reprovada.'],
+    ];
+    for (const [suffix, key] of rules) {
+      if (message.endsWith(suffix)) return tr(key, { form: message.slice(0, -suffix.length) });
+    }
+    return tr(message);
+  }
+
   openNotification(n: NotificationView): void {
     this.notifications.markRead(n.id);
     this.bellOpen.set(false);
@@ -40,14 +56,14 @@ export class Shell {
 
   readonly nav: NavItem[] = [
     { label: 'Dashboard', path: '/dashboard', icon: '◧' },
-    { label: 'Usuários', path: '/users', icon: '◎', permission: 'users.view' },
-    { label: 'Papéis', path: '/roles', icon: '✦', permission: 'roles.view' },
-    { label: 'Formulários', path: '/forms', icon: '▤', permission: 'forms.view' },
-    { label: 'Processos', path: '/processes', icon: '⇄', permission: 'processes.view' },
-    { label: 'Documentos', path: '/documents', icon: '🗀', permission: 'documents.view' },
-    { label: 'Portal', path: '/portal', icon: '◈', permission: 'pages.view' },
-    { label: 'Integrações', path: '/integrations', icon: '⚡', permission: 'integrations.view' },
-    { label: 'Logs de integração', path: '/integration-logs', icon: '☰', permission: 'integrations.logs' },
+    { label: tr('Usuários'), path: '/users', icon: '◎', permission: 'users.view' },
+    { label: tr('Papéis'), path: '/roles', icon: '✦', permission: 'roles.view' },
+    { label: tr('Formulários'), path: '/forms', icon: '▤', permission: 'forms.view' },
+    { label: tr('Processos'), path: '/processes', icon: '⇄', permission: 'processes.view' },
+    { label: tr('Documentos'), path: '/documents', icon: '🗀', permission: 'documents.view' },
+    { label: tr('Portal'), path: '/portal', icon: '◈', permission: 'pages.view' },
+    { label: tr('Integrações'), path: '/integrations', icon: '⚡', permission: 'integrations.view' },
+    { label: tr('Logs de integração'), path: '/integration-logs', icon: '☰', permission: 'integrations.logs' },
   ];
 
   visibleNav(): NavItem[] {

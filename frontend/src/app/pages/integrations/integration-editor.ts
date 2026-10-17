@@ -6,6 +6,8 @@ import {
   AUTH_LABELS, AuthType, EVENT_LABELS, IntegrationView, IntegrationsService,
   LogDetail, NameValue, SaveIntegrationRequest, UsageRef,
 } from '../../core/integrations.service';
+import { TPipe } from '../../core/i18n/i18n';
+import { tr } from '../../core/i18n/i18n';
 
 interface HeaderRow { name: string; value: string; secret: boolean; valueSet: boolean; }
 
@@ -48,7 +50,7 @@ interface Model {
 
 @Component({
   selector: 'app-integration-editor',
-  imports: [FormsModule, RouterLink],
+  imports: [TPipe, FormsModule, RouterLink],
   templateUrl: './integration-editor.html',
   styleUrl: './integrations.scss',
 })
@@ -99,7 +101,7 @@ export class IntegrationEditor {
     this.loading.set(true);
     this.api.get(this.id()!).subscribe({
       next: (v) => { this.fill(v); this.loading.set(false); },
-      error: () => { this.error.set('Não foi possível carregar a integração.'); this.loading.set(false); },
+      error: () => { this.error.set(tr('Não foi possível carregar a integração.')); this.loading.set(false); },
     });
     if (this.auth.can('integrations.view')) {
       this.api.usage(this.id()!).subscribe({ next: (u) => this.usage.set(u), error: () => {} });
@@ -172,7 +174,7 @@ export class IntegrationEditor {
         this.fill(v);
         this.saved.set(true);
       },
-      error: (e) => { this.saving.set(false); this.error.set(e?.error?.message ?? 'Não foi possível salvar.'); },
+      error: (e) => { this.saving.set(false); this.error.set(e?.error?.message ?? tr('Não foi possível salvar.')); },
     });
   }
 
@@ -183,7 +185,7 @@ export class IntegrationEditor {
     const call = v.status === 'published' ? this.api.unpublish(v.id) : this.api.publish(v.id);
     call.subscribe({
       next: (nv) => this.view.set(nv),
-      error: (e) => this.error.set(e?.error?.message ?? 'Não foi possível alterar a publicação.'),
+      error: (e) => this.error.set(e?.error?.message ?? tr('Não foi possível alterar a publicação.')),
     });
   }
 
@@ -194,7 +196,7 @@ export class IntegrationEditor {
     this.error.set(null);
     this.api.test(this.id()!).subscribe({
       next: (r) => { this.testResult.set(r); this.testing.set(false); },
-      error: (e) => { this.testing.set(false); this.error.set(e?.error?.message ?? 'Falha ao executar o teste.'); },
+      error: (e) => { this.testing.set(false); this.error.set(e?.error?.message ?? tr('Falha ao executar o teste.')); },
     });
   }
 

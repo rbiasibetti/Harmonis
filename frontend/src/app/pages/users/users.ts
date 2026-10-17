@@ -4,10 +4,12 @@ import { AuthService } from '../../core/auth.service';
 import { UsersService } from '../../core/users.service';
 import { RolesService } from '../../core/roles.service';
 import { RoleView, UserView } from '../../core/models';
+import { TPipe } from '../../core/i18n/i18n';
+import { LANGS, currentLang, tr } from '../../core/i18n/i18n';
 
 @Component({
   selector: 'app-users',
-  imports: [FormsModule],
+  imports: [TPipe, FormsModule],
   templateUrl: './users.html',
   styleUrl: './users.scss',
 })
@@ -29,7 +31,8 @@ export class Users {
   formError = signal<string | null>(null);
   createdPassword = signal<string | null>(null);
 
-  f = { name: '', email: '', jobTitle: '', active: true, roles: new Set<string>() };
+  f = { name: '', email: '', jobTitle: '', active: true, language: 'pt-BR', roles: new Set<string>() };
+  readonly langs = LANGS;
 
   constructor() {
     this.load();
@@ -41,13 +44,13 @@ export class Users {
     this.error.set(null);
     this.usersApi.list(this.search).subscribe({
       next: (u) => { this.users.set(u); this.loading.set(false); },
-      error: () => { this.error.set('Não foi possível carregar os usuários.'); this.loading.set(false); },
+      error: () => { this.error.set(tr('Não foi possível carregar os usuários.')); this.loading.set(false); },
     });
   }
 
   openCreate(): void {
     this.editing.set(null);
-    this.f = { name: '', email: '', jobTitle: '', active: true, roles: new Set(['member']) };
+    this.f = { name: '', email: '', jobTitle: '', active: true, language: currentLang, roles: new Set(['member']) };
     this.formError.set(null);
     this.createdPassword.set(null);
     this.showModal.set(true);
@@ -59,6 +62,7 @@ export class Users {
       name: u.name,
       email: u.email,
       jobTitle: u.jobTitle ?? '',
+      language: u.language ?? 'pt-BR',
       active: u.active,
       roles: new Set(u.roles),
     };
@@ -80,14 +84,14 @@ export class Users {
 
     if (editing) {
       this.usersApi.update(editing.id, {
-        name: this.f.name, jobTitle: this.f.jobTitle || null, roles, active: this.f.active,
+        name: this.f.name, jobTitle: this.f.jobTitle || null, roles, active: this.f.active, language: this.f.language,
       }).subscribe({
         next: () => { this.saving.set(false); this.showModal.set(false); this.load(); },
         error: (e) => this.fail(e),
       });
     } else {
       this.usersApi.create({
-        name: this.f.name, email: this.f.email, jobTitle: this.f.jobTitle || null, roles,
+        name: this.f.name, email: this.f.email, jobTitle: this.f.jobTitle || null, roles, language: this.f.language,
       }).subscribe({
         next: (res) => {
           this.saving.set(false);
@@ -100,10 +104,10 @@ export class Users {
   }
 
   remove(u: UserView): void {
-    if (!confirm(`Remover o usuário ${u.name}?`)) return;
+    if (!confirm(tr('Remover o usuário {name}?', { name: u.name }))) return;
     this.usersApi.remove(u.id).subscribe({
       next: () => this.load(),
-      error: (e) => alert(e?.error?.message ?? 'Não foi possível remover.'),
+      error: (e) => alert(e?.error?.message ?? tr('Não foi possível remover.')),
     });
   }
 
@@ -113,6 +117,6 @@ export class Users {
 
   private fail(e: any): void {
     this.saving.set(false);
-    this.formError.set(e?.error?.message ?? 'Não foi possível salvar.');
+    this.formError.set(e?.error?.message ?? tr('Não foi possível salvar.'));
   }
 }

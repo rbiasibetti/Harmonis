@@ -14,19 +14,21 @@ public final class FormDtos {
 
     public record FormSummary(
             Long id, String name, String slug, String description,
-            String status, int fields, long submissions
+            String status, int fields, long submissions, List<String> languages
     ) {}
 
     public record FormDetail(
             Long id, String name, String slug, String description,
-            String status, List<FormField> fields
+            String status, List<FormField> fields, List<String> languages
     ) {}
 
     public record SaveFormRequest(
             @NotBlank String name,
             String description,
             String status,
-            @NotNull List<FormField> fields
+            @NotNull List<FormField> fields,
+            /** Idiomas vinculados (>= 1). Nulo: todos na criacao / mantem na edicao. */
+            List<String> languages
     ) {}
 
     public record SubmitRequest(@NotNull Map<String, Object> data) {}

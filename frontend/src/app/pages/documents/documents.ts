@@ -6,12 +6,14 @@ import { AuthService } from '../../core/auth.service';
 import {
   BrowseView, DocumentDetail, DocumentsService, SearchHit,
 } from '../../core/documents.service';
+import { TPipe } from '../../core/i18n/i18n';
+import { tr } from '../../core/i18n/i18n';
 
 interface MetaRow { key: string; value: string; }
 
 @Component({
   selector: 'app-documents',
-  imports: [FormsModule, DatePipe, RouterLink],
+  imports: [TPipe, FormsModule, DatePipe, RouterLink],
   templateUrl: './documents.html',
   styleUrl: './documents.scss',
 })
@@ -56,7 +58,7 @@ export class Documents {
     this.error.set(null);
     this.api.browse(this.folderId()).subscribe({
       next: (v) => { this.view.set(v); this.loading.set(false); },
-      error: () => { this.error.set('Não foi possível carregar os documentos.'); this.loading.set(false); },
+      error: () => { this.error.set(tr('Não foi possível carregar os documentos.')); this.loading.set(false); },
     });
   }
 
@@ -76,17 +78,17 @@ export class Documents {
     if (!this.folderName.trim()) return;
     this.api.createFolder(this.folderName.trim(), this.folderId()).subscribe({
       next: () => { this.showFolderModal.set(false); this.load(); },
-      error: (e) => alert(e?.error?.message ?? 'Não foi possível criar a pasta.'),
+      error: (e) => alert(e?.error?.message ?? tr('Não foi possível criar a pasta.')),
     });
   }
   renameFolder(id: number, currentName: string): void {
-    const name = prompt('Novo nome da pasta:', currentName);
+    const name = prompt(tr('Novo nome da pasta:'), currentName);
     if (!name || !name.trim()) return;
     this.api.renameFolder(id, name.trim()).subscribe({ next: () => this.load() });
   }
   deleteFolder(id: number, name: string): void {
-    if (!confirm(`Excluir a pasta "${name}" e todo o conteúdo?`)) return;
-    this.api.deleteFolder(id).subscribe({ next: () => this.load(), error: (e) => alert(e?.error?.message ?? 'Erro.') });
+    if (!confirm(tr('Excluir a pasta "{name}" e todo o conteúdo?', { name }))) return;
+    this.api.deleteFolder(id).subscribe({ next: () => this.load(), error: (e) => alert(e?.error?.message ?? tr('Erro.')) });
   }
 
   // ----- upload -----
@@ -97,7 +99,7 @@ export class Documents {
     this.uploading.set(true);
     this.api.upload(file, this.folderId()).subscribe({
       next: () => { this.uploading.set(false); input.value = ''; this.load(); },
-      error: (e) => { this.uploading.set(false); input.value = ''; alert(e?.error?.message ?? 'Falha no upload.'); },
+      error: (e) => { this.uploading.set(false); input.value = ''; alert(e?.error?.message ?? tr('Falha no upload.')); },
     });
   }
 
@@ -120,7 +122,7 @@ export class Documents {
     this.metaRows().forEach((r) => { if (r.key.trim()) meta[r.key.trim()] = r.value; });
     this.api.update(d.id, d.name, d.description, meta).subscribe({
       next: (upd) => { this.savingDetail.set(false); this.detail.set(upd); this.syncMeta(upd); this.load(); },
-      error: (e) => { this.savingDetail.set(false); alert(e?.error?.message ?? 'Não foi possível salvar.'); },
+      error: (e) => { this.savingDetail.set(false); alert(e?.error?.message ?? tr('Não foi possível salvar.')); },
     });
   }
 
@@ -131,13 +133,13 @@ export class Documents {
     if (!file || !d) return;
     this.api.addVersion(d.id, file).subscribe({
       next: (upd) => { input.value = ''; this.detail.set(upd); this.syncMeta(upd); this.load(); },
-      error: (e) => { input.value = ''; alert(e?.error?.message ?? 'Falha ao enviar versão.'); },
+      error: (e) => { input.value = ''; alert(e?.error?.message ?? tr('Falha ao enviar versão.')); },
     });
   }
 
   deleteDocument(): void {
     const d = this.detail();
-    if (!d || !confirm(`Excluir o documento "${d.name}" e todas as versões?`)) return;
+    if (!d || !confirm(tr('Excluir o documento "{name}" e todas as versões?', { name: d.name }))) return;
     this.api.remove(d.id).subscribe({ next: () => { this.closeDetail(); this.load(); } });
   }
 

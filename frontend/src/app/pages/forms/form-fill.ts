@@ -3,10 +3,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsService } from '../../core/forms.service';
 import { FormDetail, FormField } from '../../core/models';
 import { FormRenderer } from './form-renderer';
+import { TPipe } from '../../core/i18n/i18n';
+import { tr } from '../../core/i18n/i18n';
 
 @Component({
   selector: 'app-form-fill',
-  imports: [RouterLink, FormRenderer],
+  imports: [TPipe, RouterLink, FormRenderer],
   templateUrl: './form-fill.html',
   styleUrl: './forms.scss',
 })
@@ -28,7 +30,7 @@ export class FormFill {
     this.formId = Number(this.route.snapshot.paramMap.get('id'));
     this.api.get(this.formId).subscribe({
       next: (f) => { this.form.set(f); this.reset(f); this.loading.set(false); },
-      error: () => { this.error.set('Não foi possível carregar o formulário.'); this.loading.set(false); },
+      error: () => { this.error.set(tr('Não foi possível carregar o formulário.')); this.loading.set(false); },
     });
   }
 
@@ -60,7 +62,7 @@ export class FormFill {
       error: (e) => {
         this.saving.set(false);
         if (e?.status === 422 && e.error?.errors) this.errors.set(e.error.errors);
-        else this.error.set(e?.error?.message ?? 'Não foi possível enviar.');
+        else this.error.set(e?.error?.message ?? tr('Não foi possível enviar.'));
       },
     });
   }

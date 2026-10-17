@@ -3,10 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
 import { RolesService } from '../../core/roles.service';
 import { PermissionGroup, RoleView } from '../../core/models';
+import { TPipe } from '../../core/i18n/i18n';
+import { tr } from '../../core/i18n/i18n';
 
 @Component({
   selector: 'app-roles',
-  imports: [FormsModule],
+  imports: [TPipe, FormsModule],
   templateUrl: './roles.html',
   styleUrl: './roles.scss',
 })
@@ -37,7 +39,7 @@ export class Roles {
     this.error.set(null);
     this.api.list().subscribe({
       next: (r) => { this.roles.set(r); this.loading.set(false); },
-      error: () => { this.error.set('Não foi possível carregar os papéis.'); this.loading.set(false); },
+      error: () => { this.error.set(tr('Não foi possível carregar os papéis.')); this.loading.set(false); },
     });
   }
 
@@ -82,17 +84,17 @@ export class Roles {
     const editing = this.editing();
     const done = {
       next: () => { this.saving.set(false); this.showModal.set(false); this.load(); },
-      error: (e: any) => { this.saving.set(false); this.formError.set(e?.error?.message ?? 'Não foi possível salvar.'); },
+      error: (e: any) => { this.saving.set(false); this.formError.set(e?.error?.message ?? tr('Não foi possível salvar.')); },
     };
     if (editing) this.api.update(editing.id, req).subscribe(done);
     else this.api.create(req).subscribe(done);
   }
 
   remove(role: RoleView): void {
-    if (!confirm(`Remover o papel ${role.label}?`)) return;
+    if (!confirm(tr('Remover o papel {name}?', { name: role.label }))) return;
     this.api.remove(role.id).subscribe({
       next: () => this.load(),
-      error: (e) => alert(e?.error?.message ?? 'Não foi possível remover.'),
+      error: (e) => alert(e?.error?.message ?? tr('Não foi possível remover.')),
     });
   }
 

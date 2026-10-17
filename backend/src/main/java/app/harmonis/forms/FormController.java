@@ -17,11 +17,14 @@ public class FormController {
     private final FormService service;
     private final FormAttachmentService attachments;
     private final SubmissionPdfService pdfs;
+    private final app.harmonis.identity.UserRepository users;
 
-    public FormController(FormService service, FormAttachmentService attachments, SubmissionPdfService pdfs) {
+    public FormController(FormService service, FormAttachmentService attachments, SubmissionPdfService pdfs,
+                          app.harmonis.identity.UserRepository users) {
         this.service = service;
         this.attachments = attachments;
         this.pdfs = pdfs;
+        this.users = users;
     }
 
     @GetMapping("/field-types")
@@ -30,15 +33,30 @@ public class FormController {
         return FieldTypes.ALL;
     }
 
+    /** Idioma do usuario autenticado. */
+    private String languageOf(AuthPrincipal principal) {
+        return users.findById(principal.userId()).map(app.harmonis.identity.User::getLanguage)
+                .orElse(app.harmonis.identity.Languages.DEFAULT);
+    }
+
+    /** Quem gerencia formularios enxerga todos, independentemente do idioma. */
+    private static boolean managesForms(org.springframework.security.core.Authentication auth) {
+        return auth.getAuthorities().stream().anyMatch(a ->
+                a.getAuthority().equals("forms.update") || a.getAuthority().equals("forms.create"));
+    }
+
     @GetMapping
     @PreAuthorize("hasAuthority('forms.view')")
-    public List<FormSummary> list() {
-        return service.list();
+    public List<FormSummary> list(@AuthenticationPrincipal AuthPrincipal principal,
+                                  org.springframework.security.core.Authentication auth) {
+        return service.list(languageOf(principal), managesForms(auth));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('forms.view')")
-    public FormDetail get(@PathVariable long id) {
+    public FormDetail get(@PathVariable long id, @AuthenticationPrincipal AuthPrincipal principal,
+                          org.springframework.security.core.Authentication auth) {
+        service.assertAccessible(id, languageOf(principal), managesForms(auth));
         return service.get(id);
     }
 
@@ -68,7 +86,9 @@ public class FormController {
     @PreAuthorize("hasAuthority('forms.view')")
     public java.util.Map<String, Object> submit(@PathVariable long id,
                                                 @Valid @RequestBody SubmitRequest req,
-                                                @AuthenticationPrincipal AuthPrincipal principal) {
+                                                @AuthenticationPrincipal AuthPrincipal principal,
+                                                org.springframework.security.core.Authentication auth) {
+        service.assertAccessible(id, languageOf(principal), managesForms(auth));
         long submissionId = service.submit(id, req.data(), principal.userId());
         return java.util.Map.of("id", submissionId);
     }
@@ -133,8 +153,9 @@ public class FormController {
 
     @GetMapping("/{id}/submissions/{submissionId}/pdf")
     @PreAuthorize("hasAuthority('forms.submissions')")
-    public org.springframework.http.ResponseEntity<byte[]> pdf(@PathVariable long id, @PathVariable long submissionId) {
-        return SubmissionPdfService.response(pdfs.render(id, submissionId));
+    public org.springframework.http.ResponseEntity<byte[]> pdf(@PathVariable long id, @PathVariable long submissionId,
+                                                               @AuthenticationPrincipal AuthPrincipal principal) {
+        return SubmissionPdfService.response(pdfs.render(id, submissionId, languageOf(principal)));
     }
 
     @GetMapping("/{id}/submissions.csv")

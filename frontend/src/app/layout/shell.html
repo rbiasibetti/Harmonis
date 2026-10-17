@@ -16,48 +16,50 @@
 
   <div class="main">
     <header class="topbar">
-      <button class="icon-btn menu-btn" type="button" (click)="menuOpen.set(!menuOpen())" aria-label="Menu">☰</button>
+      <button class="icon-btn menu-btn" type="button" (click)="menuOpen.set(!menuOpen())" [attr.aria-label]="'Menu' | t">☰</button>
       <div class="spacer"></div>
 
       <div class="bell-wrap">
-        <button class="icon-btn" type="button" (click)="toggleBell()" aria-label="Notificações">
+        <button class="icon-btn" type="button" (click)="toggleBell()" [attr.aria-label]="'Notificações' | t">
           🔔
           @if (notifications.unread() > 0) { <span class="bell-badge">{{ notifications.unread() }}</span> }
         </button>
         @if (bellOpen()) {
           <div class="bell-menu card" (click)="$event.stopPropagation()">
             <div class="bell-head">
-              <strong>Notificações</strong>
+              <strong>{{ 'Notificações' | t }}</strong>
               @if (notifications.unread() > 0) {
-                <button class="link-btn" (click)="notifications.markAllRead()">Marcar todas como lidas</button>
+                <button class="link-btn" (click)="notifications.markAllRead()">{{ 'Marcar todas como lidas' | t }}</button>
               }
             </div>
             <div class="bell-list">
               @for (n of notifications.items(); track n.id) {
                 <button class="bell-item" [class.unread]="!n.readAt" (click)="openNotification(n)">
-                  <strong>{{ n.title }}</strong>
-                  <span class="muted">{{ n.message }}</span>
+                  <strong>{{ n.title | t }}</strong>
+                  <span class="muted">{{ notifMessage(n.message) }}</span>
                   <span class="muted when">{{ n.createdAt | date:'short' }}</span>
                 </button>
               } @empty {
-                <p class="muted" style="padding:1rem;text-align:center">Sem notificações.</p>
+                <p class="muted" style="padding:1rem;text-align:center">{{ 'Sem notificações.' | t }}</p>
               }
             </div>
           </div>
         }
       </div>
 
-      <button class="icon-btn" type="button" (click)="theme.toggle()" [attr.aria-label]="theme.dark() ? 'Tema claro' : 'Tema escuro'">
+      <button class="icon-btn" type="button" (click)="theme.toggle()" [attr.aria-label]="theme.dark() ? ('Tema claro' | t) : ('Tema escuro' | t)">
         {{ theme.dark() ? '☀︎' : '☾' }}
       </button>
 
       <div class="user">
-        <div class="avatar">{{ initials() }}</div>
-        <div class="who">
-          <strong>{{ auth.user()?.name }}</strong>
-          <small class="muted">{{ auth.user()?.email }}</small>
-        </div>
-        <button class="btn btn-ghost sm" type="button" (click)="logout()">Sair</button>
+        <a class="user-link" routerLink="/profile" [attr.title]="'Meu perfil' | t">
+          <div class="avatar">{{ initials() }}</div>
+          <div class="who">
+            <strong>{{ auth.user()?.name }}</strong>
+            <small class="muted">{{ auth.user()?.email }}</small>
+          </div>
+        </a>
+        <button class="btn btn-ghost sm" type="button" (click)="logout()">{{ 'Sair' | t }}</button>
       </div>
     </header>
 

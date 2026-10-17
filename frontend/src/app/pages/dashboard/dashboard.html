@@ -1,8 +1,8 @@
 <div class="head">
-  <h1>Olá, {{ auth.user()?.name }}</h1>
+  <h1>{{ 'Olá, {name}' | t:{name: auth.user()?.name} }}</h1>
   <p class="muted">
-    Visão geral do workspace.
-    @if (auth.user()?.owner) { <span class="badge">Proprietário</span> }
+    {{ 'Visão geral do workspace.' | t }}
+    @if (auth.user()?.owner) { <span class="badge">{{ 'Proprietário' | t }}</span> }
   </p>
 </div>
 
@@ -16,7 +16,7 @@
       </div>
     </a>
   } @empty {
-    <p class="muted">{{ loading() ? 'Carregando…' : 'Sem métricas disponíveis.' }}</p>
+    <p class="muted">{{ loading() ? ('Carregando…' | t) : ('Sem métricas disponíveis.' | t) }}</p>
   }
 </section>
 
@@ -24,32 +24,32 @@
   <div class="lists">
     @if (auth.can('processes.view')) {
       <div class="card list">
-        <div class="list-head"><h2>Aprovações pendentes</h2><a routerLink="/processes" class="muted more">ver tudo →</a></div>
+        <div class="list-head"><h2>{{ 'Aprovações pendentes' | t }}</h2><a routerLink="/processes" class="muted more">{{ 'ver tudo →' | t }}</a></div>
         @for (it of d.pendingApprovals; track it.taskId) {
           <div class="li"><div><strong>{{ it.formName }}</strong><div class="muted sub">{{ it.stepName }} · {{ it.requestedBy || '—' }}</div></div>
-            @if (it.needsFill) { <span class="badge">Preencher</span> }
+            @if (it.needsFill) { <span class="badge">{{ 'Preencher' | t }}</span> }
             <span class="muted">{{ it.createdAt | date:'short' }}</span></div>
-        } @empty { <p class="muted empty">Nada pendente.</p> }
+        } @empty { <p class="muted empty">{{ 'Nada pendente.' | t }}</p> }
       </div>
 
       <div class="card list">
-        <div class="list-head"><h2>Minhas solicitações</h2><a routerLink="/processes" class="muted more">ver tudo →</a></div>
+        <div class="list-head"><h2>{{ 'Minhas solicitações' | t }}</h2><a routerLink="/processes" class="muted more">{{ 'ver tudo →' | t }}</a></div>
         @for (it of d.myRequests; track it.instanceId) {
           <div class="li"><div><strong>{{ it.formName }}</strong><div class="muted sub">{{ it.currentStep || '—' }}</div></div>
             <span class="badge" [class]="it.status === 'approved' ? 'ok' : it.status === 'rejected' ? 'off' : 'gray'">
-              {{ it.status === 'approved' ? 'Aprovado' : it.status === 'rejected' ? 'Reprovado' : 'Pendente' }}
+              {{ it.status === 'approved' ? ('Aprovado' | t) : it.status === 'rejected' ? ('Reprovado' | t) : ('Pendente' | t) }}
             </span></div>
-        } @empty { <p class="muted empty">Nenhuma solicitação.</p> }
+        } @empty { <p class="muted empty">{{ 'Nenhuma solicitação.' | t }}</p> }
       </div>
     }
 
     @if (auth.can('forms.submissions')) {
       <div class="card list">
-        <div class="list-head"><h2>Respostas recentes</h2><a routerLink="/forms" class="muted more">ver tudo →</a></div>
+        <div class="list-head"><h2>{{ 'Respostas recentes' | t }}</h2><a routerLink="/forms" class="muted more">{{ 'ver tudo →' | t }}</a></div>
         @for (r of d.recentSubmissions; track $index) {
           <div class="li"><div><strong>{{ r.formName }}</strong><div class="muted sub">{{ r.submittedBy || '—' }}</div></div>
             <span class="muted">{{ r.createdAt | date:'short' }}</span></div>
-        } @empty { <p class="muted empty">Sem respostas.</p> }
+        } @empty { <p class="muted empty">{{ 'Sem respostas.' | t }}</p> }
       </div>
     }
   </div>
