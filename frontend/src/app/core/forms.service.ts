@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE } from './api';
-import { AttachmentRef, FieldType, FormDetail, FormSummary, SaveFormRequest, SubmissionView } from './models';
+import { AttachmentRef, FieldType, FormDetail, FormSummary, SaveFormRequest, SignatureValue, SubmissionView } from './models';
 import { HookRef } from './integrations.service';
 
 export interface FlowView {
@@ -68,6 +68,26 @@ export class FormsService {
 
   deleteAttachment(attachmentId: number): Observable<void> {
     return this.http.delete<void>(`${API_BASE}/forms/attachments/${attachmentId}`);
+  }
+
+  /** Envia a imagem da assinatura + metadados do cliente; o servidor completa os confiáveis. */
+  captureSignature(
+    formId: number, fieldKey: string, style: 'drawn' | 'selfie', image: Blob,
+    geo: { status: string; lat: number | null; lon: number | null; accuracy: number | null },
+  ): Observable<SignatureValue> {
+    const form = new FormData();
+    form.append('fieldKey', fieldKey);
+    form.append('style', style);
+    form.append('image', image, style === 'selfie' ? 'selfie.jpg' : 'assinatura.png');
+    form.append('geoStatus', geo.status);
+    if (geo.lat != null) form.append('geoLat', String(geo.lat));
+    if (geo.lon != null) form.append('geoLon', String(geo.lon));
+    if (geo.accuracy != null) form.append('geoAccuracy', String(geo.accuracy));
+    return this.http.post<SignatureValue>(`${API_BASE}/forms/${formId}/signatures`, form);
+  }
+
+  signatureImage(signatureId: number): Observable<Blob> {
+    return this.http.get(`${API_BASE}/forms/signatures/${signatureId}/image`, { responseType: 'blob' });
   }
 
   getFlow(id: number): Observable<FlowView> {

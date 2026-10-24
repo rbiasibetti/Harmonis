@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class SubmissionPdfServiceTest {
@@ -43,8 +44,11 @@ class SubmissionPdfServiceTest {
         ObjectMapper mapper = new ObjectMapper();
         UserRepository users = mock(UserRepository.class);
         when(users.findAll()).thenReturn(List.of());
+        app.harmonis.forms.SignatureService sigs = mock(app.harmonis.forms.SignatureService.class);
+        when(sigs.forSubmission(anyLong())).thenReturn(java.util.List.of());
         service = new SubmissionPdfService(forms, submissions, mock(ProcessInstanceRepository.class),
-                mock(ProcessTaskRepository.class), users, new FormSchemaService(mapper), mapper);
+                mock(ProcessTaskRepository.class), users, new FormSchemaService(mapper), mapper,
+                sigs, mock(app.harmonis.documents.DocumentStorage.class));
 
         Form form = mock(Form.class);
         when(form.getId()).thenReturn(7L);

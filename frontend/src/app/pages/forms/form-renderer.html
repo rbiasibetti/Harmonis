@@ -96,6 +96,47 @@
               @if (fileError(f.key!)) { <p class="field-err">{{ fileError(f.key!) }}</p> }
             </div>
           }
+          @case ('lookup') {
+            <div class="lookup-field">
+              <div class="lk-input">
+                <input class="input" type="text" [value]="lookupText(f)" readonly [placeholder]="'Nenhum registro selecionado' | t" />
+                @if (!disabled && formId) { <button type="button" class="btn btn-ghost" (click)="openLookup(f)">🔍 {{ 'Pesquisar' | t }}</button> }
+                @if (lookupText(f) && !disabled) { <button type="button" class="icon-action danger" [attr.title]="'Limpar' | t" (click)="clearLookup(f)">✕</button> }
+              </div>
+              @if (disabled || !formId) { @if (!lookupText(f)) { <p class="muted help">{{ 'A consulta é feita no preenchimento.' | t }}</p> } }
+              @if (lookupKey() === f.key && f.dataModelId) {
+                <app-lookup-search [dataModelId]="f.dataModelId" [multiple]="f.display === 'multiple'"
+                  (picked)="onLookupPicked(f, $event)" (cancelled)="lookupKey.set(null)"></app-lookup-search>
+              }
+            </div>
+          }
+          @case ('signature') {
+            <div class="sig-field">
+              @if (signatureValue(f); as sv) {
+                <div class="sig-done">
+                  @if (signatureThumb(sv.signatureId); as url) {
+                    <img class="sig-thumb" [src]="url" alt="" />
+                  } @else {
+                    <div class="sig-thumb placeholder">{{ sv.style === 'selfie' ? '📷' : '✍️' }}</div>
+                  }
+                  <div class="sig-meta">
+                    <strong>{{ styleLabel(sv.style) }}</strong>
+                    <span class="muted">{{ sv.signer?.name || ('Assinado' | t) }} · {{ sv.signedAt | date:'short' }}</span>
+                    <span class="muted tiny">{{ 'Local' | t }}: {{ geoLabel(sv) }}</span>
+                    @if (!disabled) { <button type="button" class="btn btn-ghost sm" (click)="clearSignature(f)">{{ 'Refazer' | t }}</button> }
+                  </div>
+                </div>
+              } @else if (disabled || !formId) {
+                <p class="muted">{{ 'A assinatura é coletada no preenchimento.' | t }}</p>
+              } @else {
+                <button type="button" class="btn btn-primary" (click)="openSign(f)">{{ '✍️ Assinar' | t }}</button>
+              }
+              @if (signing(f)) {
+                <app-signature-capture [formId]="formId!" [fieldKey]="f.key!" [allowed]="signatureStyle(f)"
+                  (captured)="onSigned(f, $event)" (cancelled)="signingKey.set(null)"></app-signature-capture>
+              }
+            </div>
+          }
           @default {
             <input class="input" type="text" [(ngModel)]="values[f.key!]" [disabled]="disabled" [placeholder]="f.placeholder || ''" />
           }

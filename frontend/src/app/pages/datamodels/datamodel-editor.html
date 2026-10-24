@@ -1,0 +1,119 @@
+<div class="page-head">
+  <div>
+    <a class="muted back" routerLink="/datamodels">{{ '← Modelos de dados' | t }}</a>
+    <h1>{{ id() ? ('Editar modelo de dados' | t) : ('Novo modelo de dados' | t) }}</h1>
+  </div>
+  <div class="head-actions">
+    @if (id()) {
+      <button class="btn btn-ghost" (click)="togglePublish()">
+        {{ status() === 'published' ? ('Despublicar' | t) : ('Publicar' | t) }}
+      </button>
+    }
+    @if (saved()) { <span class="badge ok">{{ 'Salvo' | t }}</span> }
+    <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !name()">
+      {{ saving() ? ('Salvando…' | t) : ('Salvar' | t) }}
+    </button>
+  </div>
+</div>
+
+@if (error()) { <p class="notice error">{{ error() }}</p> }
+
+<div class="card dm-card">
+  <div class="fc-grid">
+    <div class="field"><label class="label">{{ 'Nome' | t }}</label>
+      <input class="input" [ngModel]="name()" (ngModelChange)="name.set($event)" [placeholder]="'ex.: Clientes' | t" /></div>
+    <div class="field"><label class="label">{{ 'Descrição (opcional)' | t }}</label>
+      <input class="input" [ngModel]="description()" (ngModelChange)="description.set($event)" /></div>
+  </div>
+  <div class="field" style="max-width:360px">
+    <label class="label">{{ 'Fonte dos dados' | t }}</label>
+    <select class="input" [ngModel]="sourceType()" (ngModelChange)="sourceType.set($event)">
+      <option value="static">{{ 'Dados cadastrados (CSV / edição manual)' | t }}</option>
+      <option value="query">{{ 'Consulta a outras tabelas do banco (SQL)' | t }}</option>
+    </select>
+  </div>
+</div>
+
+<div class="card dm-card">
+  <h2>{{ 'Colunas' | t }}</h2>
+  <p class="muted hint">{{ 'Chave (identificador), rótulo exibido e tipo. Para fontes de consulta, a chave deve ser o nome/alias da coluna no SELECT.' | t }}</p>
+  <table class="dm-cols">
+    <thead><tr><th>{{ 'Chave' | t }}</th><th>{{ 'Rótulo' | t }}</th><th>{{ 'Tipo' | t }}</th><th>{{ 'Rótulo principal' | t }}</th><th></th></tr></thead>
+    <tbody>
+      @for (c of columns(); track $index; let i = $index) {
+        <tr>
+          <td><input class="input" [(ngModel)]="c.key" (ngModelChange)="onColumnChange()" placeholder="cod" /></td>
+          <td><input class="input" [(ngModel)]="c.label" placeholder="Código" /></td>
+          <td>
+            <select class="input" [(ngModel)]="c.type">
+              @for (t of types; track t.value) { <option [value]="t.value">{{ t.label }}</option> }
+            </select>
+          </td>
+          <td style="text-align:center">
+            <input type="radio" name="labelKey" [value]="c.key" [ngModel]="labelKey()" (ngModelChange)="labelKey.set($event)" [disabled]="!c.key" />
+          </td>
+          <td><button class="icon-action danger" (click)="removeColumn(i)">✕</button></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <button class="btn btn-ghost sm" (click)="addColumn()">{{ '+ Coluna' | t }}</button>
+</div>
+
+<div class="card dm-card">
+  <h2>{{ 'Campos de consulta (filtros)' | t }}</h2>
+  <p class="muted hint">{{ 'Marque as colunas que serão pedidas como filtro ao buscar. Texto usa “contém” (sem diferenciar maiúsculas); número e data usam “igual”.' | t }}</p>
+  @if (filters().length === 0) {
+    <p class="muted">{{ 'Defina as colunas acima para escolher os filtros.' | t }}</p>
+  } @else {
+    @for (f of filters(); track f.key) {
+      <div class="dm-filter">
+        <label class="check-row"><input type="checkbox" [(ngModel)]="f.on" /> <span class="chip">{{ f.key }}</span></label>
+        @if (f.on) { <input class="input" [(ngModel)]="f.label" [placeholder]="'Rótulo do filtro' | t" /> }
+      </div>
+    }
+  }
+</div>
+
+@if (sourceType() === 'query') {
+  <div class="card dm-card">
+    <h2>{{ 'Consulta SQL' | t }}</h2>
+    <p class="muted hint">{{ 'Somente leitura (SELECT). As colunas declaradas acima devem existir no resultado (use alias). Os filtros são aplicados sobre o resultado.' | t }}</p>
+    <textarea class="input code" rows="5" [ngModel]="querySql()" (ngModelChange)="querySql.set($event)"
+      placeholder="SELECT id AS cod, nome, criado_em AS data FROM clientes"></textarea>
+  </div>
+} @else {
+  <div class="card dm-card">
+    <h2>{{ 'Dados' | t }}</h2>
+    @if (!id()) {
+      <p class="muted">{{ 'Salve o modelo para cadastrar as linhas (importar CSV ou editar manualmente).' | t }}</p>
+    } @else {
+      <div class="dm-rows-head">
+        <label class="btn btn-ghost sm">
+          {{ '⬆ Importar CSV' | t }}
+          <input type="file" accept=".csv,text/csv" hidden (change)="onCsvPick($any($event.target))" />
+        </label>
+        <button class="btn btn-ghost sm" (click)="addRow()">{{ '+ Linha' | t }}</button>
+        <button class="btn btn-primary sm" (click)="saveRows()">{{ 'Salvar linhas' | t }}</button>
+        @if (rowsMsg()) { <span class="badge ok">{{ rowsMsg() }}</span> }
+      </div>
+      <div style="overflow:auto">
+        <table class="dm-cols">
+          <thead><tr>@for (c of columns(); track c.key) { <th>{{ c.label || c.key }}</th> }<th></th></tr></thead>
+          <tbody>
+            @for (row of rows(); track $index; let i = $index) {
+              <tr>
+                @for (c of columns(); track c.key) {
+                  <td><input class="input" [value]="cellValue(row, c.key)" (input)="setCell(row, c.key, $any($event.target).value)" /></td>
+                }
+                <td><button class="icon-action danger" (click)="removeRow(i)">✕</button></td>
+              </tr>
+            } @empty {
+              <tr><td [attr.colspan]="columns().length + 1" class="muted" style="text-align:center;padding:1.5rem">{{ 'Nenhuma linha. Importe um CSV ou adicione manualmente.' | t }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}

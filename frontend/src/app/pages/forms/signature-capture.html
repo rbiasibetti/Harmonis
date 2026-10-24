@@ -1,0 +1,68 @@
+<div class="modal-scrim">
+  <div class="card modal sig-modal">
+    <button type="button" class="modal-x" [attr.aria-label]="'Fechar' | t" [attr.title]="'Fechar' | t" (click)="cancel()">✕</button>
+    <h2>{{ 'Assinar' | t }}</h2>
+
+    @if (error()) { <p class="notice error">{{ error() }}</p> }
+
+    @switch (mode()) {
+      @case ('pick') {
+        <p class="muted">{{ 'Escolha como assinar.' | t }}</p>
+        <div class="sig-choice">
+          <button type="button" class="sig-opt" (click)="start('drawn')">
+            <span class="ic">✍️</span>
+            <strong>{{ 'Desenhar' | t }}</strong>
+            <span class="muted">{{ 'Assine com o dedo ou o mouse.' | t }}</span>
+          </button>
+          <button type="button" class="sig-opt" (click)="start('selfie')">
+            <span class="ic">📷</span>
+            <strong>{{ 'Selfie' | t }}</strong>
+            <span class="muted">{{ 'Captura ao vivo do seu rosto.' | t }}</span>
+          </button>
+        </div>
+      }
+
+      @case ('drawn') {
+        <p class="muted">{{ 'Desenhe sua assinatura na área abaixo.' | t }}</p>
+        <div class="pad-wrap">
+          <canvas #pad class="sig-pad"
+                  (pointerdown)="onDown($event)" (pointermove)="onMove($event)"
+                  (pointerup)="onUp()" (pointerleave)="onUp()"></canvas>
+          <span class="pad-base"></span>
+        </div>
+        <div class="sig-actions">
+          @if (allowed === 'both') { <button type="button" class="btn btn-ghost" (click)="back()">{{ '← Voltar' | t }}</button> }
+          <span style="flex:1"></span>
+          <button type="button" class="btn btn-ghost" (click)="clearPad()" [disabled]="saving()">{{ 'Limpar' | t }}</button>
+          <button type="button" class="btn btn-primary" (click)="confirm()" [disabled]="saving() || !hasDrawing()">
+            {{ saving() ? ('Registrando…' | t) : ('Confirmar assinatura' | t) }}
+          </button>
+        </div>
+      }
+
+      @case ('selfie') {
+        <p class="muted">{{ 'Enquadre o rosto e capture. A imagem é registrada com os metadados.' | t }}</p>
+        <div class="cam-wrap">
+          @if (!captured0()) {
+            <video #video class="cam" playsinline muted></video>
+            @if (!cameraReady() && !error()) { <p class="muted cam-hint">{{ 'Iniciando a câmera…' | t }}</p> }
+          } @else {
+            <img class="cam" [src]="previewUrl()" alt="" />
+          }
+        </div>
+        <div class="sig-actions">
+          @if (allowed === 'both') { <button type="button" class="btn btn-ghost" (click)="back()">{{ '← Voltar' | t }}</button> }
+          <span style="flex:1"></span>
+          @if (!captured0()) {
+            <button type="button" class="btn btn-primary" (click)="takeSelfie()" [disabled]="!cameraReady()">{{ 'Capturar' | t }}</button>
+          } @else {
+            <button type="button" class="btn btn-ghost" (click)="retakeSelfie()" [disabled]="saving()">{{ 'Refazer' | t }}</button>
+            <button type="button" class="btn btn-primary" (click)="confirm()" [disabled]="saving()">
+              {{ saving() ? ('Registrando…' | t) : ('Confirmar assinatura' | t) }}
+            </button>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -1,0 +1,67 @@
+<div class="modal-scrim">
+  <div class="card modal lookup-modal">
+    <button type="button" class="modal-x" [attr.aria-label]="'Fechar' | t" [attr.title]="'Fechar' | t" (click)="cancel()">✕</button>
+    <h2>{{ model()?.name || ('Consultar' | t) }}</h2>
+
+    @if (error()) { <p class="notice error">{{ error() }}</p> }
+
+    @if (model(); as m) {
+      @if (m.filters.length) {
+        <div class="lk-filters">
+          @for (f of m.filters; track f.key) {
+            <div class="field">
+              <label class="label">{{ f.label }}</label>
+              <input class="input" [type]="inputType(f.type)" [(ngModel)]="filterValues[f.key]"
+                (keyup.enter)="search()" />
+            </div>
+          }
+          <button class="btn btn-primary" (click)="search()" [disabled]="loading()">{{ 'Buscar' | t }}</button>
+        </div>
+      }
+
+      <div class="lk-results">
+        <table class="table">
+          <thead>
+            <tr>
+              @if (multiple) { <th style="width:34px"></th> }
+              @for (c of m.columns; track c.key) { <th>{{ c.label }}</th> }
+              @if (!multiple) { <th style="width:80px"></th> }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of results(); track $index) {
+              <tr [class.sel]="isSelected(row)" (click)="toggle(row)">
+                @if (multiple) { <td><input type="checkbox" [checked]="isSelected(row)" (click)="$event.stopPropagation(); toggle(row)" /></td> }
+                @for (c of m.columns; track c.key) { <td>{{ cell(row, c.key) }}</td> }
+                @if (!multiple) { <td><button class="btn btn-ghost sm" (click)="$event.stopPropagation(); toggle(row)">{{ 'Selecionar' | t }}</button></td> }
+              </tr>
+            } @empty {
+              <tr><td [attr.colspan]="m.columns.length + 1" class="muted" style="text-align:center;padding:1.5rem">
+                {{ loading() ? ('Carregando…' | t) : (searched() ? ('Nenhum resultado.' | t) : ('Use os filtros e clique em Buscar.' | t)) }}
+              </td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="lk-foot">
+        <span class="muted">{{ '{total} resultado(s)' | t:{total: total()} }}</span>
+        <span style="flex:1"></span>
+        @if (pages() > 1) {
+          <button class="btn btn-ghost sm" (click)="prev()" [disabled]="page() === 0">{{ '← Anterior' | t }}</button>
+          <span class="muted">{{ 'página {p} de {n}' | t:{p: page() + 1, n: pages()} }}</span>
+          <button class="btn btn-ghost sm" (click)="next()" [disabled]="page() >= pages() - 1">{{ 'Próxima →' | t }}</button>
+        }
+      </div>
+
+      @if (multiple) {
+        <div class="modal-foot">
+          <button class="btn btn-ghost" (click)="cancel()">{{ 'Cancelar' | t }}</button>
+          <button class="btn btn-primary" (click)="confirm()" [disabled]="selected().length === 0">
+            {{ 'Confirmar ({n})' | t:{n: selected().length} }}
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>

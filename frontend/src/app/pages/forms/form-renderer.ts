@@ -1,10 +1,13 @@
-import { Component, Input, inject, signal } from '@angular/core';
+import { Component, Input, OnChanges, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 import { conditionPasses } from '../../core/condition';
-import { AttachmentRef, FormField } from '../../core/models';
+import { AttachmentRef, FormField, LookupSelection, SignatureValue } from '../../core/models';
 import { FormsService } from '../../core/forms.service';
 import { downloadBlob } from '../../core/download';
 import { TPipe } from '../../core/i18n/i18n';
+import { SignatureCapture } from './signature-capture';
+import { LookupSearch } from './lookup-search';
 import { tr } from '../../core/i18n/i18n';
 
 /**
@@ -13,11 +16,11 @@ import { tr } from '../../core/i18n/i18n';
  */
 @Component({
   selector: 'app-form-renderer',
-  imports: [TPipe, FormsModule],
+  imports: [TPipe, FormsModule, SignatureCapture, LookupSearch, DatePipe],
   templateUrl: './form-renderer.html',
   styleUrl: './form-renderer.scss',
 })
-export class FormRenderer {
+export class FormRenderer implements OnChanges {
   private api = inject(FormsService);
 
   @Input() fields: FormField[] = [];
@@ -27,8 +30,23 @@ export class FormRenderer {
   /** Necessário para enviar anexos; sem ele, campos de anexo ficam desabilitados. */
   @Input() formId: number | null = null;
 
+  signingKey = signal<string | null>(null);
+  lookupKey = signal<string | null>(null);
+  private thumbs = signal<Record<number, string>>({});
   uploading = signal<Record<string, boolean>>({});
   uploadError = signal<Record<string, string>>({});
+
+  ngOnChanges(): void {
+    // Pré-carrega as miniaturas de assinaturas já existentes (ex.: visualização de resposta).
+    for (const f of this.fields) {
+      if (this.isSignature(f)) {
+        const v = this.signatureValue(f);
+        if (v) this.loadSignatureThumbPublic(v.signatureId);
+      }
+    }
+  }
+
+  private loadSignatureThumbPublic(id: number): void { this.loadSignatureThumb(id); }
 
   widthClass(f: FormField): string {
     return 'w-' + (f.width || 'full');
@@ -37,6 +55,49 @@ export class FormRenderer {
   isSection(f: FormField): boolean { return f.type === 'section'; }
   isFile(f: FormField): boolean { return f.type === 'file' || f.type === 'multifile'; }
   isMultiFile(f: FormField): boolean { return f.type === 'multifile'; }
+  isSignature(f: FormField): boolean { return f.type === 'signature'; }
+
+  // ----- assinatura -----
+  /** Estilo permitido do campo (drawn | selfie | both). */
+  signatureStyle(f: FormField): 'drawn' | 'selfie' | 'both' {
+    const d = f.display;
+    return d === 'drawn' || d === 'selfie' ? d : 'both';
+  }
+  signatureValue(f: FormField): SignatureValue | null {
+    const v = this.values[f.key!];
+    return v && typeof v === 'object' && 'signatureId' in v ? (v as SignatureValue) : null;
+  }
+  signing(f: FormField): boolean { return this.signingKey() === f.key; }
+  openSign(f: FormField): void {
+    if (this.disabled || !this.formId) return;
+    this.signingKey.set(f.key!);
+  }
+  onSigned(f: FormField, value: SignatureValue): void {
+    this.values[f.key!] = value;
+    this.signingKey.set(null);
+    this.loadSignatureThumb(value.signatureId);
+  }
+  clearSignature(f: FormField): void {
+    if (this.disabled) return;
+    this.values[f.key!] = null;
+  }
+  signatureThumb(id: number): string | null { return this.thumbs()[id] ?? null; }
+  private loadSignatureThumb(id: number): void {
+    if (this.thumbs()[id]) return;
+    this.api.signatureImage(id).subscribe({
+      next: (blob) => this.thumbs.set({ ...this.thumbs(), [id]: URL.createObjectURL(blob) }),
+      error: () => {},
+    });
+  }
+  styleLabel(style: string): string { return style === 'selfie' ? tr('Selfie') : tr('Desenhada'); }
+  geoLabel(v: SignatureValue): string {
+    const g = v.geo;
+    if (g.status === 'ok' && g.lat != null && g.lon != null) {
+      return `${g.lat.toFixed(5)}, ${g.lon.toFixed(5)}`;
+    }
+    return g.status === 'denied' ? tr('permissão negada')
+      : g.status === 'unavailable' ? tr('indisponível') : tr('não informada');
+  }
 
   acceptAttr(f: FormField): string { return f.validation?.accept || ''; }
 
@@ -109,6 +170,22 @@ export class FormRenderer {
 
   private setUploading(key: string, v: boolean): void { this.uploading.set({ ...this.uploading(), [key]: v }); }
   private setUploadError(key: string, v: string): void { this.uploadError.set({ ...this.uploadError(), [key]: v }); }
+
+  // ----- lookup (modelo de dados) -----
+  isLookup(f: FormField): boolean { return f.type === 'lookup'; }
+  private lookupMultiple(f: FormField): boolean { return f.display === 'multiple'; }
+  lookupSelections(f: FormField): LookupSelection[] {
+    const v = this.values[f.key!];
+    if (!v) return [];
+    return Array.isArray(v) ? (v as LookupSelection[]) : [v as LookupSelection];
+  }
+  lookupText(f: FormField): string { return this.lookupSelections(f).map((s) => s.label).join('; '); }
+  openLookup(f: FormField): void { if (!this.disabled && this.formId) this.lookupKey.set(f.key!); }
+  onLookupPicked(f: FormField, sels: LookupSelection[]): void {
+    this.values[f.key!] = this.lookupMultiple(f) ? sels : (sels[0] ?? null);
+    this.lookupKey.set(null);
+  }
+  clearLookup(f: FormField): void { if (!this.disabled) this.values[f.key!] = this.lookupMultiple(f) ? [] : null; }
 
   /** Campo visivel conforme visibleWhen (secao sempre visivel). */
   isVisible(f: FormField): boolean {

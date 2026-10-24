@@ -101,6 +101,15 @@ export class Processes {
     const v = data[f.key!];
     if (v === null || v === undefined || v === '' || (Array.isArray(v) && v.length === 0)) return '—';
     if (f.type === 'checkbox') return v === true || v === 'true' ? tr('Sim') : tr('Não');
+    if (f.type === 'signature') {
+      const s = v as { style?: string; signer?: { name?: string } };
+      const style = s?.style === 'selfie' ? tr('Selfie') : tr('Desenhada');
+      return (s?.style === 'selfie' ? '📷 ' : '✍️ ') + style + (s?.signer?.name ? ' — ' + s.signer.name : '');
+    }
+    if (f.type === 'lookup') {
+      const list = Array.isArray(v) ? v : [v];
+      return list.map((x) => (x as { label?: string })?.label).filter(Boolean).join('; ') || '—';
+    }
     if (Array.isArray(v)) return v.join(', ');
     return String(v);
   }

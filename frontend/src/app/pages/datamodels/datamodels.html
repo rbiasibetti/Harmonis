@@ -1,0 +1,57 @@
+<div class="page-head">
+  <div>
+    <h1>{{ 'Modelos de dados' | t }}</h1>
+    <p class="muted">{{ 'Fontes de consulta pré-cadastradas para os campos de consulta dos formulários.' | t }}</p>
+  </div>
+  <div class="head-actions">
+    @if (auth.can('datamodels.create')) {
+      <a class="btn btn-primary" routerLink="/datamodels/new">{{ '+ Novo modelo' | t }}</a>
+    }
+  </div>
+</div>
+
+@if (error()) { <p class="notice error">{{ error() }}</p> }
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr><th>{{ 'Modelo' | t }}</th><th>{{ 'Fonte' | t }}</th><th>{{ 'Status' | t }}</th><th>{{ 'Colunas' | t }}</th><th>{{ 'Linhas' | t }}</th><th></th></tr>
+    </thead>
+    <tbody>
+      @for (i of items(); track i.id) {
+        <tr>
+          <td>
+            <strong>{{ i.name }}</strong>
+            @if (i.description) { <div class="muted desc">{{ i.description }}</div> }
+          </td>
+          <td>{{ sourceLabel(i.sourceType) }}</td>
+          <td>
+            @if (i.status === 'published') { <span class="badge ok">{{ 'Publicado' | t }}</span> }
+            @else { <span class="badge gray">{{ 'Rascunho' | t }}</span> }
+          </td>
+          <td class="muted">{{ i.columns }}</td>
+          <td class="muted">{{ i.rows < 0 ? '—' : i.rows }}</td>
+          <td>
+            <div class="row-actions">
+              @if (auth.can('datamodels.publish')) {
+                <button class="btn btn-ghost sm" [disabled]="busy() === i.id" (click)="togglePublish(i)">
+                  {{ i.status === 'published' ? ('Despublicar' | t) : ('Publicar' | t) }}
+                </button>
+              }
+              @if (auth.can('datamodels.update')) {
+                <a class="icon-action" [attr.title]="'Editar' | t" [routerLink]="['/datamodels', i.id, 'edit']">✎</a>
+              }
+              @if (auth.can('datamodels.delete')) {
+                <button class="icon-action danger" [attr.title]="'Excluir' | t" (click)="remove(i)">🗑</button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">
+          {{ loading() ? ('Carregando…' | t) : ('Nenhum modelo de dados ainda.' | t) }}
+        </td></tr>
+      }
+    </tbody>
+  </table>
+</div>

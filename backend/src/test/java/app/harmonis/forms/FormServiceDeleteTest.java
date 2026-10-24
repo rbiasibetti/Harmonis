@@ -23,6 +23,7 @@ class FormServiceDeleteTest {
 
     private FormRepository forms;
     private FormAttachmentService attachments;
+    private app.harmonis.forms.SignatureService signatures;
     private ProcessInstanceRepository instances;
     private NotificationRepository notifications;
     private FormService service;
@@ -33,9 +34,10 @@ class FormServiceDeleteTest {
         attachments = mock(FormAttachmentService.class);
         instances = mock(ProcessInstanceRepository.class);
         notifications = mock(NotificationRepository.class);
+        signatures = mock(app.harmonis.forms.SignatureService.class);
         service = new FormService(forms, mock(FormSubmissionRepository.class), mock(UserRepository.class),
                 mock(FormSchemaService.class), mock(ApprovalService.class), attachments,
-                instances, notifications, mock(HookBindingService.class),
+                signatures, instances, notifications, mock(HookBindingService.class),
                 mock(ApplicationEventPublisher.class), new ObjectMapper());
     }
 
@@ -49,6 +51,7 @@ class FormServiceDeleteTest {
 
         InOrder order = inOrder(attachments, notifications, instances, forms);
         order.verify(attachments).deleteAllForForm(7L);
+        verify(signatures).deleteAllForForm(7L);
         order.verify(notifications).deleteByProcessFormId(7L);
         order.verify(instances).deleteByFormId(7L);
         order.verify(forms).delete(form);
@@ -61,7 +64,7 @@ class FormServiceDeleteTest {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.delete(9L));
 
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
-        verifyNoInteractions(attachments, notifications, instances);
+        verifyNoInteractions(attachments, signatures, notifications, instances);
         verify(forms, never()).delete(any());
     }
 }

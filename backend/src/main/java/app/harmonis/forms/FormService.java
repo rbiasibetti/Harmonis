@@ -31,6 +31,7 @@ public class FormService {
     private final FormSchemaService schema;
     private final ApprovalService approvals;
     private final FormAttachmentService attachmentsService;
+    private final SignatureService signaturesService;
     private final ProcessInstanceRepository instances;
     private final NotificationRepository notifications;
     private final HookBindingService hookBindings;
@@ -40,6 +41,7 @@ public class FormService {
     public FormService(FormRepository forms, FormSubmissionRepository submissions,
                        UserRepository users, FormSchemaService schema,
                        @Lazy ApprovalService approvals, FormAttachmentService attachmentsService,
+                       SignatureService signaturesService,
                        ProcessInstanceRepository instances, NotificationRepository notifications,
                        HookBindingService hookBindings, ApplicationEventPublisher events,
                        ObjectMapper mapper) {
@@ -49,6 +51,7 @@ public class FormService {
         this.schema = schema;
         this.approvals = approvals;
         this.attachmentsService = attachmentsService;
+        this.signaturesService = signaturesService;
         this.instances = instances;
         this.notifications = notifications;
         this.hookBindings = hookBindings;
@@ -136,6 +139,7 @@ public class FormService {
         // Apaga os arquivos fisicos dos anexos antes de remover o formulario
         // (o cascade do banco removeria apenas os registros).
         attachmentsService.deleteAllForForm(form.getId());
+        signaturesService.deleteAllForForm(form.getId());
         // Processos de aprovacao referenciam o formulario e as respostas sem ON DELETE CASCADE:
         // remove, em ordem, notificacoes -> instancias (tarefas caem em cascata) -> formulario
         // (respostas caem em cascata). Tudo na mesma transacao: falhou, nada e apagado.
@@ -166,8 +170,10 @@ public class FormService {
         // Confirma os anexos do solicitante: vincula a submissao e reescreve os valores
         // com metadados autoritativos (do banco).
         List<FormField> fileFields = schema.fileFields(fields);
-        if (!fileFields.isEmpty()) {
+        List<FormField> signatureFields = schema.signatureFields(fields);
+        if (!fileFields.isEmpty() || !signatureFields.isEmpty()) {
             Map<String, Object> committed = attachmentsService.commit(form, sub.getId(), data, fileFields, userId);
+            committed = signaturesService.commit(form, sub.getId(), committed, signatureFields, userId);
             sub.setDataJson(writeData(committed));
             submissions.save(sub);
         }

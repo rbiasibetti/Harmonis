@@ -19,7 +19,8 @@ public record FormField(
         String width,              // full|half|third (layout em grid responsivo)
         Validation validation,     // regras extras (opcional)
         FieldCondition visibleWhen, // libera/exibe o campo somente quando a condicao passa (opcional)
-        String fillRole            // null = preenchido pelo solicitante; papel = preenchido no fluxo por esse papel
+        String fillRole,           // null = preenchido pelo solicitante; papel = preenchido no fluxo por esse papel
+        Long dataModelId           // campo lookup: modelo de dados consultado
 ) {
     public List<String> optionsOrEmpty() {
         return options == null ? List.of() : options;

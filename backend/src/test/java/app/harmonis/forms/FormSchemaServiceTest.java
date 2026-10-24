@@ -22,16 +22,16 @@ class FormSchemaServiceTest {
     }
 
     private FormField field(String type, String label, boolean required, List<String> options) {
-        return new FormField(null, null, type, label, null, null, required, options, null, null, null, null, null);
+        return new FormField(null, null, type, label, null, null, required, options, null, null, null, null, null, null);
     }
 
     private FormField field(String key, String type, boolean required, List<String> options,
                             Validation v, FieldCondition vw) {
-        return new FormField(null, key, type, key, null, null, required, options, null, null, v, vw, null);
+        return new FormField(null, key, type, key, null, null, required, options, null, null, v, vw, null, null);
     }
 
     private FormField roleField(String key, String type, boolean required, String fillRole) {
-        return new FormField(null, key, type, key, null, null, required, null, null, null, null, null, fillRole);
+        return new FormField(null, key, type, key, null, null, required, null, null, null, null, null, fillRole, null);
     }
 
     private Validation val() {
@@ -74,9 +74,9 @@ class FormSchemaServiceTest {
 
     @Test
     void display_normalizado_por_tipo() {
-        FormField single = new FormField(null, null, "select", "UF", null, null, false, List.of("SP"), null, null, null, null, null);
-        FormField radioDisplay = new FormField(null, null, "select", "UF", null, null, false, List.of("SP"), "radio", null, null, null, null);
-        FormField multi = new FormField(null, null, "multiselect", "Tags", null, null, false, List.of("A"), null, null, null, null, null);
+        FormField single = new FormField(null, null, "select", "UF", null, null, false, List.of("SP"), null, null, null, null, null, null);
+        FormField radioDisplay = new FormField(null, null, "select", "UF", null, null, false, List.of("SP"), "radio", null, null, null, null, null);
+        FormField multi = new FormField(null, null, "multiselect", "Tags", null, null, false, List.of("A"), null, null, null, null, null, null);
 
         assertEquals("combo", svc.normalize(List.of(single)).get(0).display());
         assertEquals("radio", svc.normalize(List.of(radioDisplay)).get(0).display());

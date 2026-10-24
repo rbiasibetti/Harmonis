@@ -70,7 +70,7 @@ public class FormSchemaService {
             if (FieldTypes.isLayout(type)) {
                 // bloco/secao: sem key, sem opcoes, sem validacao
                 out.add(new FormField("s_" + randomToken(8), null, type, f.label().trim(),
-                        null, f.help(), false, null, null, width, null, null, null));
+                        null, f.help(), false, null, null, width, null, null, null, null));
                 continue;
             }
 
@@ -90,9 +90,18 @@ public class FormSchemaService {
             Validation validation = sanitizeValidation(f.validation());
             FieldCondition visibleWhen = sanitizeCondition(f.visibleWhen());
 
+            Long dataModelId = null;
+            if (FieldTypes.isLookup(type)) {
+                dataModelId = f.dataModelId();
+                if (dataModelId == null) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "O campo \"" + f.label() + "\" precisa de um modelo de dados.");
+                }
+            }
+
             out.add(new FormField(id, key, type, f.label().trim(),
                     f.placeholder(), f.help(), f.required(), options,
-                    display, width, validation, visibleWhen, nullIfBlank(f.fillRole())));
+                    display, width, validation, visibleWhen, nullIfBlank(f.fillRole()), dataModelId));
         }
         return out;
     }
@@ -135,6 +144,22 @@ public class FormSchemaService {
                 continue;
             }
 
+            if (FieldTypes.isSignature(f.type())) {
+                // O valor e a referencia da assinatura (objeto com signatureId); a captura ja validou
+                // o campo/estilo. Aqui so checamos obrigatoriedade.
+                if (f.required() && signatureId(value) == null) {
+                    errors.put(f.key(), "Assinatura obrigatória.");
+                }
+                continue;
+            }
+
+            if (FieldTypes.isLookup(f.type())) {
+                // O valor e a selecao (objeto {label,values} ou lista deles). So checa obrigatoriedade.
+                boolean emptyLookup = "multiple".equals(f.display()) ? toList(value).isEmpty() : isEmptyValue(value);
+                if (f.required() && emptyLookup) errors.put(f.key(), "Selecione um registro.");
+                continue;
+            }
+
             boolean empty = value == null || value.toString().isBlank();
             if (empty) {
                 if (f.required()) errors.put(f.key(), "Campo obrigatório.");
@@ -173,6 +198,20 @@ public class FormSchemaService {
     /** Subconjunto de campos de anexo (file/multifile). */
     public List<FormField> fileFields(List<FormField> fields) {
         return fields.stream().filter(f -> FieldTypes.isAnyFile(f.type())).toList();
+    }
+
+    public List<FormField> signatureFields(List<FormField> fields) {
+        return fields.stream().filter(f -> FieldTypes.isSignature(f.type())).toList();
+    }
+
+    /** Extrai o id da assinatura de um valor de campo (objeto com signatureId, ou numero). */
+    public static Long signatureId(Object value) {
+        Object v = value;
+        if (v instanceof Map<?, ?> m) v = m.get("signatureId");
+        if (v == null) return null;
+        if (v instanceof Number n) return n.longValue();
+        try { return Long.parseLong(v.toString().trim()); }
+        catch (NumberFormatException e) { return null; }
     }
 
     /** Papeis distintos usados em algum campo com "Preenchido por" (preserva a ordem de aparicao). */
@@ -311,6 +350,17 @@ public class FormSchemaService {
         }
         if (FieldTypes.isMultiChoice(type)) {
             return "checkbox".equals(display) ? "checkbox" : "combo";
+        }
+        if (FieldTypes.isSignature(type)) {
+            // estilo permitido: drawn | selfie | both (padrao: both -> o signatario escolhe)
+            return switch (display == null ? "" : display) {
+                case "drawn" -> "drawn";
+                case "selfie" -> "selfie";
+                default -> "both";
+            };
+        }
+        if (FieldTypes.isLookup(type)) {
+            return "multiple".equals(display) ? "multiple" : "single";
         }
         return null;
     }

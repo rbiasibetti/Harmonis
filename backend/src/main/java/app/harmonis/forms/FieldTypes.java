@@ -22,13 +22,15 @@ public final class FieldTypes {
             new TypeInfo("checkbox", "Confirmação (sim/não)", false, "input"),
             new TypeInfo("file", "Anexo (único)", false, "file"),
             new TypeInfo("multifile", "Anexo (múltiplo)", false, "multifile"),
+            new TypeInfo("signature", "Assinatura", false, "signature"),
+            new TypeInfo("lookup", "Consulta (modelo de dados)", false, "lookup"),
             new TypeInfo("section", "Bloco / seção", false, "layout")
     );
 
     // 'radio' permanece valido para compatibilidade (dados antigos); a UI usa select + display.
     private static final Set<String> CODES =
             Set.of("text", "textarea", "number", "email", "date",
-                    "select", "radio", "multiselect", "checkbox", "file", "multifile", "section");
+                    "select", "radio", "multiselect", "checkbox", "file", "multifile", "signature", "lookup", "section");
 
     private static final Set<String> WITH_OPTIONS = Set.of("select", "radio", "multiselect");
 
@@ -66,5 +68,15 @@ public final class FieldTypes {
     /** Qualquer campo de anexo (único ou múltiplo). */
     public static boolean isAnyFile(String code) {
         return isFile(code) || isMultiFile(code);
+    }
+
+    /** Campo de assinatura (desenhada ou selfie). O valor guarda os metadados coletados. */
+    public static boolean isSignature(String code) {
+        return "signature".equals(code);
+    }
+
+    /** Campo de consulta a um modelo de dados (lookup). O valor guarda a(s) selecao(oes). */
+    public static boolean isLookup(String code) {
+        return "lookup".equals(code);
     }
 }

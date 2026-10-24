@@ -64,6 +64,7 @@ export class Shell {
     { label: tr('Portal'), path: '/portal', icon: '◈', permission: 'pages.view' },
     { label: tr('Integrações'), path: '/integrations', icon: '⚡', permission: 'integrations.view' },
     { label: tr('Logs de integração'), path: '/integration-logs', icon: '☰', permission: 'integrations.logs' },
+    { label: tr('Modelos de dados'), path: '/datamodels', icon: '▦', permission: 'datamodels.view' },
   ];
 
   visibleNav(): NavItem[] {

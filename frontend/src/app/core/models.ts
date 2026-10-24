@@ -110,6 +110,25 @@ export interface AttachmentRef {
   mime: string | null;
 }
 
+/** Geolocalização coletada no ato de assinar (best-effort). */
+export interface SignatureGeo {
+  status: 'ok' | 'denied' | 'unavailable' | 'unknown';
+  lat: number | null;
+  lon: number | null;
+  accuracy: number | null;
+}
+
+/** Valor de um campo de assinatura (retornado pela captura; guardado no valor do campo). */
+export interface SignatureValue {
+  signatureId: number;
+  style: 'drawn' | 'selfie';
+  signedAt: string;
+  signer: { id: number | null; name: string | null; email: string | null };
+  ip: string | null;
+  device: string | null;
+  geo: SignatureGeo;
+}
+
 export interface FieldCondition {
   field: string;
   operator: string;
@@ -130,6 +149,13 @@ export interface FormField {
   validation?: FieldValidation | null;
   visibleWhen?: FieldCondition | null;
   fillRole?: string | null;      // null = solicitante (no envio); papel = preenchido no fluxo
+  dataModelId?: number | null;   // campo lookup: modelo de dados consultado
+}
+
+/** Seleção de um campo lookup (uma linha do modelo de dados). */
+export interface LookupSelection {
+  label: string;
+  values: Record<string, unknown>;
 }
 
 export interface FormSummary {

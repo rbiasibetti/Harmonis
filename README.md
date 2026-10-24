@@ -81,14 +81,23 @@ as de outros sistemas no mesmo banco (todas as tabelas usam o prefixo `hm_`).
 - O **dono do tenant** recebe todas as permissões.
 
 ### Formulários
-- Construtor visual com **11 tipos de campo**: texto curto/longo, número, e-mail, data, seleção
+- Construtor visual com **13 tipos de campo**: texto curto/longo, número, e-mail, data, seleção
   única (combo ou radio), seleção múltipla (combo ou checkbox), confirmação (sim/não),
-  **anexo único**, **anexo múltiplo** e **blocos/seções** de layout.
+  **anexo único**, **anexo múltiplo**, **assinatura** (desenhada ou selfie), **consulta a modelo de dados**
+  (lookup) e **blocos/seções** de layout.
 - **Validações** por campo: regex com mensagem, valores positivos/inteiros, mínimo/máximo,
   tamanho de texto, datas mínima/máxima e **comparação entre campos** (ex.: data fim > data início).
 - **Exibição condicional** ("mostrar o campo X somente quando Y estiver preenchido").
 - **Layout responsivo** em grid (largura inteira / metade / um terço).
 - **Anexos** com tipos aceitos (`accept`) e tamanho máximo por arquivo configuráveis.
+- **Assinatura** no registro: desenhada (tela touch) ou **selfie** (captura ao vivo da câmera), com
+  metadados do ato (signatário, data/hora, IP, dispositivo e geolocalização *best-effort*). A ficha em
+  PDF ganha uma **folha adicional** com o histórico de assinaturas e os metadados de cada uma.
+- **Modelos de dados** pré-cadastrados como fonte de consulta (lookup): dados vindos de **CSV**,
+  **edição manual** ou **consulta SQL** (somente leitura) a outras tabelas do banco do tenant. O campo
+  *consulta* no formulário mostra rótulo + texto bloqueado + botão de busca; o botão abre um **modal**
+  com os **filtros** (por tipo: texto contém, número/data igual, sem diferenciar maiúsculas) e a lista de
+  resultados para **seleção única ou múltipla**.
 - **Segmentação por papel**: parte do formulário pode ser preenchida por um papel específico
   **durante o fluxo de aprovação** (o aprovador completa os campos que lhe cabem ao decidir).
 - **Internacionalização**: interface em **português (Brasil), inglês e espanhol**, com idioma preferido por usuário (*Meu perfil*) e formulários vinculados a um ou mais idiomas (só quem tem o idioma os vê para preencher).
@@ -600,6 +609,16 @@ Base: `/api`. Salvo indicação, todas as rotas exigem sessão (cookie `hm_at`) 
 | GET/PUT | `/api/forms/{id}/flow` | `forms.update` | Lê/salva o fluxo de aprovação (árvore) |
 | POST | `/api/forms/{id}/attachments` | `forms.view` | Envia um anexo (multipart; `fieldKey`) |
 | GET | `/api/forms/attachments/{id}/download` | `forms.view` | Baixa um anexo (autenticado) |
+| POST | `/api/forms/{id}/signatures` | `forms.view` | Registra uma assinatura (multipart: `fieldKey`, `style`, `image`, geo opcional) |
+| GET | `/api/forms/signatures/{id}/image` | `forms.view` | Imagem da assinatura (autenticado) |
+| GET/POST | `/api/datamodels` | `datamodels.view` / `datamodels.create` | Lista / cria modelo de dados |
+| GET/PUT/DELETE | `/api/datamodels/{id}` | `datamodels.view`/`update`/`delete` | Detalhe / atualiza / remove |
+| POST | `/api/datamodels/{id}/publish` · `/unpublish` | `datamodels.publish` | Publica / despublica |
+| GET/PUT | `/api/datamodels/{id}/rows` | `datamodels.view`/`update` | Lê / substitui linhas (fonte static) |
+| POST | `/api/datamodels/{id}/import` | `datamodels.update` | Importa linhas de CSV (multipart) |
+| GET | `/api/datamodels/options` | `datamodels.view` ou `forms.create`/`update` | Modelos publicados (p/ o construtor) |
+| GET | `/api/datamodels/{id}/option` | `forms.view` | Colunas/filtros de um modelo (p/ o modal) |
+| POST | `/api/datamodels/{id}/query` | `forms.view` | Consulta no preenchimento (filtros + paginação) |
 
 </details>
 
@@ -690,6 +709,7 @@ editados; papéis personalizados são livres.
 | Documentos | `documents.view` · `documents.create` · `documents.update` · `documents.delete` |
 | Portal | `pages.view` · `pages.create` · `pages.update` · `pages.delete` |
 | Integrações | `integrations.view` · `integrations.create` · `integrations.update` · `integrations.delete` · `integrations.publish` · `integrations.logs` |
+| Modelos de dados | `datamodels.view` · `datamodels.create` · `datamodels.update` · `datamodels.delete` · `datamodels.publish` |
 
 | Papel de sistema | Acesso |
 |---|---|

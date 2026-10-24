@@ -116,6 +116,36 @@
             </div>
           }
 
+          @if (isLookupType(f.type)) {
+            <div class="field" style="margin-top:.6rem;max-width:360px">
+              <label class="label">{{ 'Modelo de dados' | t }}</label>
+              <select class="input" [(ngModel)]="f.dataModelId">
+                <option [ngValue]="null">{{ 'Selecione…' | t }}</option>
+                @for (m of dataModels(); track m.id) { <option [ngValue]="m.id">{{ m.name }}</option> }
+              </select>
+              @if (dataModels().length === 0) { <p class="muted" style="font-size:.78rem;margin:.3rem 0 0">{{ 'Nenhum modelo publicado. Cadastre em Modelos de dados.' | t }}</p> }
+            </div>
+            <div class="field" style="margin-top:.6rem;max-width:360px">
+              <label class="label">{{ 'Seleção' | t }}</label>
+              <select class="input" [(ngModel)]="f.display">
+                <option value="single">{{ 'Única' | t }}</option>
+                <option value="multiple">{{ 'Múltipla' | t }}</option>
+              </select>
+            </div>
+          }
+
+          @if (isSignatureType(f.type)) {
+            <div class="field" style="margin-top:.6rem;max-width:320px">
+              <label class="label">{{ 'Estilo da assinatura' | t }}</label>
+              <select class="input" [(ngModel)]="f.display">
+                <option value="both">{{ 'Desenhada ou selfie (o signatário escolhe)' | t }}</option>
+                <option value="drawn">{{ 'Somente desenhada' | t }}</option>
+                <option value="selfie">{{ 'Somente selfie' | t }}</option>
+              </select>
+              <p class="muted" style="font-size:.78rem;margin:.3rem 0 0">{{ 'No preenchimento são coletados data/hora, IP, dispositivo e localização (quando permitida).' | t }}</p>
+            </div>
+          }
+
           <div class="fc-grid" style="margin-top:.6rem">
             <label class="switch" style="align-self:end;padding-bottom:.6rem">
               <input type="checkbox" [(ngModel)]="f.required" /><span class="track"></span> {{ 'Obrigatório' | t }}

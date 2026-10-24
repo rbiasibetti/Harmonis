@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modelos de dados — Manual do Harmonis</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body data-page="16-modelos-dados.html">
+<main>
+<article>
+
+<div class="crumbs">Formulários e processos</div>
+<h1 id="modelos">Modelos de dados</h1>
+<p class="lead">Fontes de consulta pré-cadastradas que alimentam os <a href="04-formularios.html#lookup">campos de consulta (lookup)</a> dos formulários — por exemplo, uma base de clientes, produtos ou centros de custo.</p>
+
+<div class="callout note">
+  <b>Permissões necessárias</b>
+  <p>Ver: <code class="perm">datamodels.view</code>. Criar/editar: <code class="perm">datamodels.create</code> / <code class="perm">datamodels.update</code>. Publicar: <code class="perm">datamodels.publish</code>. Excluir: <code class="perm">datamodels.delete</code>. Só modelos <b>publicados</b> podem ser vinculados a um formulário.</p>
+</div>
+
+<h2 id="fontes">Fontes de dados</h2>
+<p>Cada modelo tem uma fonte, escolhida na criação:</p>
+<table class="free">
+  <thead><tr><th>Fonte</th><th>De onde vêm os dados</th></tr></thead>
+  <tbody>
+    <tr><td><b>Dados cadastrados (CSV / edição manual)</b></td><td>As linhas ficam guardadas no Harmonis. Você as popula importando um arquivo <b>CSV</b> e/ou editando linha a linha na tela.</td></tr>
+    <tr><td><b>Consulta a outras tabelas do banco (SQL)</b></td><td>O modelo é alimentado por uma consulta <b>SELECT</b> (somente leitura) a outras tabelas do banco da empresa. Os dados não são copiados: a consulta roda a cada busca.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="colunas">Colunas e rótulo principal</h2>
+<p>Defina as colunas do modelo. Cada coluna tem:</p>
+<ul>
+  <li><b>Chave</b> — identificador (letras, números e “_”). Nas fontes de <b>consulta SQL</b>, a chave deve ser o nome ou <em>alias</em> da coluna no SELECT.</li>
+  <li><b>Rótulo</b> — nome exibido na lista de resultados.</li>
+  <li><b>Tipo</b> — <em>Texto</em>, <em>Número</em> ou <em>Data</em> (define como o filtro compara).</li>
+  <li><b>Rótulo principal</b> — a coluna usada como texto do registro selecionado no formulário (ex.: o nome do cliente).</li>
+</ul>
+
+<h2 id="filtros">Campos de consulta (filtros)</h2>
+<p>Marque quais colunas serão pedidas como <b>filtro</b> na hora da busca. O operador é fixo por tipo e <b>não diferencia maiúsculas</b>:</p>
+<table class="free">
+  <thead><tr><th>Tipo da coluna</th><th>Como filtra</th></tr></thead>
+  <tbody>
+    <tr><td>Texto</td><td><b>Contém</b> o que foi digitado (busca parcial).</td></tr>
+    <tr><td>Número</td><td><b>Igual</b> ao valor informado.</td></tr>
+    <tr><td>Data</td><td><b>Igual</b> à data informada.</td></tr>
+  </tbody>
+</table>
+<p>Acentos são considerados (ex.: “joao” não encontra “João”).</p>
+
+<h2 id="linhas">Dados (fonte CSV / manual)</h2>
+<ol class="steps">
+  <li><b>Salve</b> o modelo primeiro (para poder cadastrar linhas).</li>
+  <li><b>Importar CSV</b> — a primeira linha do arquivo é o cabeçalho; cada coluna é associada à do modelo pelo <em>rótulo</em> ou pela <em>chave</em> (sem diferenciar acento/maiúsculas). As linhas são <b>adicionadas</b> às existentes. Aceita separador “,” ou “;”.</li>
+  <li><b>+ Linha</b> / edição na grade — inclua ou ajuste valores manualmente.</li>
+  <li><b>Salvar linhas</b> — grava o conteúdo da grade (substitui o conjunto atual).</li>
+</ol>
+
+<h2 id="consulta-sql">Consulta SQL (fonte de consulta)</h2>
+<div class="callout warn">
+  <b>Somente leitura</b>
+  <p>A consulta precisa ser um <b>SELECT</b> (um único comando). Comandos que alteram dados são recusados. As colunas declaradas devem existir no resultado — use <em>alias</em> quando necessário (ex.: <code>SELECT id AS cod, nome FROM clientes</code>). Os filtros são aplicados sobre o resultado da consulta.</p>
+</div>
+
+<h2 id="publicar">Publicar</h2>
+<p>Enquanto estiver em <b>rascunho</b>, o modelo não aparece para vincular a formulários. Ao <b>Publicar</b>, ele fica disponível no construtor (campo <em>Consulta</em>). Exige ao menos uma coluna (e, para fontes de consulta, a consulta SQL preenchida).</p>
+
+<h2 id="usar">Usar em um formulário</h2>
+<p>No <a href="04-formularios.html">construtor</a>, adicione um campo <b>Consulta (modelo de dados)</b>, escolha o modelo publicado e defina a seleção (<b>única</b> ou <b>múltipla</b>). Veja <a href="04-formularios.html#lookup">Campo de consulta (lookup)</a> para o comportamento no preenchimento.</p>
+
+</article>
+</main>
+<script src="assets/search-index.js"></script>
+<script src="assets/manual.js"></script>
+</body>
+</html>

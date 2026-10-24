@@ -93,6 +93,57 @@ public class SubmissionPdfService {
         String task(String k) { return taskStates.getOrDefault(k == null ? "" : k, k); }
     }
 
+    /** Textos da secao de assinaturas por idioma. */
+    static final class SigTx {
+        final String signedBy, someone, historyTitle, historyLead, signature, imageUnavailable;
+        final String mStyle, mSigner, mEmail, mWhen, mIp, mDevice, mLocation;
+        final String drawn, selfie;
+        final java.util.Map<String, String> geo;
+
+        private SigTx(String signedBy, String someone, String historyTitle, String historyLead, String signature,
+                      String imageUnavailable, String mStyle, String mSigner, String mEmail, String mWhen,
+                      String mIp, String mDevice, String mLocation, String drawn, String selfie,
+                      java.util.Map<String, String> geo) {
+            this.signedBy = signedBy; this.someone = someone; this.historyTitle = historyTitle;
+            this.historyLead = historyLead; this.signature = signature; this.imageUnavailable = imageUnavailable;
+            this.mStyle = mStyle; this.mSigner = mSigner; this.mEmail = mEmail; this.mWhen = mWhen;
+            this.mIp = mIp; this.mDevice = mDevice; this.mLocation = mLocation;
+            this.drawn = drawn; this.selfie = selfie; this.geo = geo;
+        }
+
+        String styleName(String style) { return "selfie".equals(style) ? selfie : drawn; }
+        String geoStatus(String st) { return geo.getOrDefault(st == null ? "unknown" : st, geo.get("unknown")); }
+
+        static SigTx of(String lang) {
+            String l = app.harmonis.identity.Languages.normalize(lang);
+            if ("en".equals(l)) {
+                return new SigTx("Signed by ", "user", "Signature history",
+                        "Every signature collected for this record and the metadata captured for each one.",
+                        "Signature", "Image unavailable",
+                        "STYLE", "SIGNER", "E-MAIL", "DATE / TIME", "IP ADDRESS", "DEVICE", "LOCATION",
+                        "Drawn", "Selfie",
+                        java.util.Map.of("ok", "provided", "denied", "permission denied",
+                                "unavailable", "unavailable", "unknown", "not provided"));
+            }
+            if ("es".equals(l)) {
+                return new SigTx("Firmado por ", "usuario", "Historial de firmas",
+                        "Todas las firmas recogidas para este registro y los metadatos capturados en cada una.",
+                        "Firma", "Imagen no disponible",
+                        "ESTILO", "FIRMANTE", "CORREO", "FECHA / HORA", "DIRECCIÓN IP", "DISPOSITIVO", "UBICACIÓN",
+                        "Dibujada", "Selfie",
+                        java.util.Map.of("ok", "proporcionada", "denied", "permiso denegado",
+                                "unavailable", "no disponible", "unknown", "no proporcionada"));
+            }
+            return new SigTx("Assinado por ", "usuário", "Histórico de assinaturas",
+                    "Todas as assinaturas coletadas para este registro e os metadados capturados em cada uma.",
+                    "Assinatura", "Imagem indisponível",
+                    "ESTILO", "SIGNATÁRIO", "E-MAIL", "DATA / HORA", "ENDEREÇO IP", "DISPOSITIVO", "LOCALIZAÇÃO",
+                    "Desenhada", "Selfie",
+                    java.util.Map.of("ok", "informada", "denied", "permissão negada",
+                            "unavailable", "indisponível", "unknown", "não informada"));
+        }
+    }
+
     private static final Color INK = new Color(0x1f, 0x29, 0x37);
     private static final Color MUTED = new Color(0x6b, 0x72, 0x80);
     private static final Color LINE = new Color(0xd1, 0xd5, 0xdb);
@@ -116,10 +167,13 @@ public class SubmissionPdfService {
     private final UserRepository users;
     private final FormSchemaService schema;
     private final ObjectMapper mapper;
+    private final SignatureService signaturesService;
+    private final app.harmonis.documents.DocumentStorage storage;
 
     public SubmissionPdfService(FormRepository forms, FormSubmissionRepository submissions,
                                 ProcessInstanceRepository instances, ProcessTaskRepository tasks,
-                                UserRepository users, FormSchemaService schema, ObjectMapper mapper) {
+                                UserRepository users, FormSchemaService schema, ObjectMapper mapper,
+                                SignatureService signaturesService, app.harmonis.documents.DocumentStorage storage) {
         this.forms = forms;
         this.submissions = submissions;
         this.instances = instances;
@@ -127,6 +181,8 @@ public class SubmissionPdfService {
         this.users = users;
         this.schema = schema;
         this.mapper = mapper;
+        this.signaturesService = signaturesService;
+        this.storage = storage;
     }
 
     /** PDF do registro; formId (opcional) garante que o registro pertence ao formulario da URL. */
@@ -149,6 +205,10 @@ public class SubmissionPdfService {
 
         Map<String, Object> data = readData(sub.getDataJson());
         List<FormField> fields = schema.readFields(form.getSchemaJson());
+        List<Signature> sigs = signaturesService.forSubmission(sub.getId());
+        Map<Long, Signature> sigById = new HashMap<>();
+        for (Signature sg : sigs) sigById.put(sg.getId(), sg);
+        SigTx sx = SigTx.of(lang);
 
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -160,8 +220,9 @@ public class SubmissionPdfService {
             doc.open();
 
             header(doc, form, sub, inst, names, tx);
-            body(doc, fields, data, tx);
+            body(doc, fields, data, tx, sigById, sx);
             if (inst != null) history(doc, inst, taskList, names, tx);
+            if (!sigs.isEmpty()) signaturePages(doc, sigs, fields, tx, sx);
 
             doc.close();
             return new Pdf(out.toByteArray(), "registro-" + (form.getSlug() == null ? form.getId() : form.getSlug())
@@ -209,7 +270,8 @@ public class SubmissionPdfService {
     }
 
     /** Campos na ordem do formulario, ocupando a grade de 12 colunas como na tela de preenchimento. */
-    private void body(Document doc, List<FormField> fields, Map<String, Object> data, Tx tx) throws DocumentException {
+    private void body(Document doc, List<FormField> fields, Map<String, Object> data, Tx tx,
+                      Map<Long, Signature> sigById, SigTx sx) throws DocumentException {
         PdfPTable grid = new PdfPTable(12);
         grid.setWidthPercentage(100);
         int used = 0;
@@ -229,7 +291,11 @@ public class SubmissionPdfService {
                 fill(grid, used);
                 used = 0;
             }
-            grid.addCell(fieldCell(f, data.get(f.key()), span, tx));
+            if (FieldTypes.isSignature(f.type())) {
+                grid.addCell(signatureCell(f, data.get(f.key()), span, sigById, tx, sx));
+            } else {
+                grid.addCell(fieldCell(f, data.get(f.key()), span, tx));
+            }
             used = (used + span) % 12;
             any = true;
         }
@@ -276,6 +342,133 @@ public class SubmissionPdfService {
             t.addCell(cell(k.getComment() == null || k.getComment().isBlank() ? "—" : k.getComment(), F_TD));
         }
         doc.add(t);
+    }
+
+    // ---------------------------------------------------------------- assinaturas
+
+    /** Celula do corpo para um campo de assinatura: imagem + "assinado por X em data". */
+    private PdfPCell signatureCell(FormField f, Object value, int span,
+                                   Map<Long, Signature> sigById, Tx tx, SigTx sx) {
+        PdfPCell c = new PdfPCell();
+        c.setColspan(span);
+        c.setBorder(Rectangle.BOTTOM);
+        c.setBorderColor(LINE);
+        c.setPaddingTop(5);
+        c.setPaddingBottom(6);
+        c.setPaddingLeft(0);
+        c.setPaddingRight(10);
+        c.addElement(new Paragraph(f.label().toUpperCase(Locale.ROOT), F_LABEL));
+
+        Long id = FormSchemaService.signatureId(value);
+        Signature sig = id == null ? null : sigById.get(id);
+        if (sig == null) {
+            c.addElement(new Paragraph("—", F_EMPTY));
+            return c;
+        }
+        Image img = loadImage(sig, 150, 70);
+        if (img != null) {
+            c.addElement(img);
+        }
+        String who = sig.getSignerName() == null ? sx.someone : sig.getSignerName();
+        String when = sig.getSignedAt() == null ? "" : tx.dt.format(sig.getSignedAt().atZone(ZONE));
+        Paragraph cap = new Paragraph(sx.signedBy + who + (when.isEmpty() ? "" : " · " + when), F_SUB);
+        cap.setSpacingBefore(2);
+        c.addElement(cap);
+        c.addElement(new Paragraph(sx.styleName(sig.getStyle()), F_SUB));
+        return c;
+    }
+
+    /** Folha(s) adicional(is): historico de assinaturas com a imagem e os metadados de cada uma. */
+    private void signaturePages(Document doc, List<Signature> sigs, List<FormField> fields, Tx tx, SigTx sx)
+            throws DocumentException {
+        doc.newPage();
+        Map<String, String> labels = new HashMap<>();
+        for (FormField f : fields) if (FieldTypes.isSignature(f.type()) && f.key() != null) labels.put(f.key(), f.label());
+
+        Paragraph h = new Paragraph(sx.historyTitle, F_TITLE);
+        h.setSpacingAfter(2);
+        doc.add(h);
+        Paragraph lead = new Paragraph(sx.historyLead, F_SUB);
+        lead.setSpacingAfter(10);
+        doc.add(lead);
+
+        int n = 0;
+        for (Signature sig : sigs) {
+            n++;
+            Paragraph title = new Paragraph(sx.signature + " " + n
+                    + "  ·  " + labels.getOrDefault(sig.getFieldKey(), sig.getFieldKey()), F_SECTION);
+            title.setSpacingBefore(n == 1 ? 0 : 14);
+            title.setSpacingAfter(4);
+            doc.add(title);
+
+            PdfPTable row = new PdfPTable(new float[]{2.2f, 5f});
+            row.setWidthPercentage(100);
+            // imagem: celula nao-composta (honra alinhamento vertical) com fundo branco
+            Image img = loadImage(sig, 150, 150);
+            PdfPCell imgCell = img != null ? new PdfPCell(img) : new PdfPCell(new Phrase(sx.imageUnavailable, F_EMPTY));
+            imgCell.setBorderColor(LINE);
+            imgCell.setPadding(8);
+            imgCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            imgCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            imgCell.setBackgroundColor(new Color(0xff, 0xff, 0xff));
+            row.addCell(imgCell);
+            // metadados
+            PdfPCell meta = new PdfPCell();
+            meta.setBorderColor(LINE);
+            meta.setPadding(0);
+            meta.addElement(metaTable(sig, tx, sx));
+            row.addCell(meta);
+            doc.add(row);
+        }
+    }
+
+    private PdfPTable metaTable(Signature sig, Tx tx, SigTx sx) {
+        PdfPTable t = new PdfPTable(new float[]{2f, 4f});
+        t.setWidthPercentage(100);
+        metaRow(t, sx.mStyle, sx.styleName(sig.getStyle()));
+        metaRow(t, sx.mSigner, sig.getSignerName() == null ? "—" : sig.getSignerName());
+        metaRow(t, sx.mEmail, sig.getSignerEmail() == null ? "—" : sig.getSignerEmail());
+        metaRow(t, sx.mWhen, sig.getSignedAt() == null ? "—" : tx.dt.format(sig.getSignedAt().atZone(ZONE)));
+        metaRow(t, sx.mIp, sig.getIpAddress() == null ? "—" : sig.getIpAddress());
+        metaRow(t, sx.mDevice, sig.getUserAgent() == null ? "—" : sig.getUserAgent());
+        metaRow(t, sx.mLocation, geoText(sig, sx));
+        return t;
+    }
+
+    private void metaRow(PdfPTable t, String label, String value) {
+        PdfPCell k = new PdfPCell(new Phrase(label, F_LABEL));
+        k.setBackgroundColor(BAND);
+        k.setBorderColor(LINE);
+        k.setPadding(4);
+        k.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        t.addCell(k);
+        PdfPCell v = new PdfPCell(new Phrase(value, F_TD));
+        v.setBorderColor(LINE);
+        v.setPadding(4);
+        t.addCell(v);
+    }
+
+    private static String geoText(Signature sig, SigTx sx) {
+        if (!"ok".equals(sig.getGeoStatus()) || sig.getGeoLat() == null || sig.getGeoLon() == null) {
+            return sx.geoStatus(sig.getGeoStatus());
+        }
+        String coord = String.format(Locale.ROOT, "%.6f, %.6f", sig.getGeoLat(), sig.getGeoLon());
+        if (sig.getGeoAccuracy() != null) {
+            coord += " (±" + Math.round(sig.getGeoAccuracy()) + " m)";
+        }
+        return coord;
+    }
+
+    /** Carrega a imagem da assinatura do disco e ajusta ao retangulo (w x h), ou null se falhar. */
+    private Image loadImage(Signature sig, float maxW, float maxH) {
+        try {
+            byte[] bytes = java.nio.file.Files.readAllBytes(storage.resolve(sig.getStoredPath()));
+            Image img = Image.getInstance(bytes);
+            img.scaleToFit(maxW, maxH);
+            return img;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // ---------------------------------------------------------------- celulas
@@ -344,6 +537,7 @@ public class SubmissionPdfService {
             return b ? tx.yes : tx.no;
         }
         if (FieldTypes.isAnyFile(type)) return attachmentNames(value);
+        if (FieldTypes.isLookup(type)) return lookupText(value);
         if (value instanceof Collection<?> c) {
             StringJoiner j = new StringJoiner(", ");
             for (Object o : c) j.add(String.valueOf(o));
@@ -354,6 +548,16 @@ public class SubmissionPdfService {
             try { return tx.d.format(LocalDate.parse(s)); } catch (Exception ignored) { /* mantem o texto */ }
         }
         return s;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String lookupText(Object value) {
+        List<?> items = value instanceof Collection<?> c ? new ArrayList<>(c) : List.of(value);
+        StringJoiner j = new StringJoiner("; ");
+        for (Object o : items) {
+            if (o instanceof Map<?, ?> m && m.get("label") != null) j.add(m.get("label").toString());
+        }
+        return j.toString();
     }
 
     private static String attachmentNames(Object value) {

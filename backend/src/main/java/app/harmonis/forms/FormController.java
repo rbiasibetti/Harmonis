@@ -17,13 +17,15 @@ public class FormController {
     private final FormService service;
     private final FormAttachmentService attachments;
     private final SubmissionPdfService pdfs;
+    private final SignatureService signatures;
     private final app.harmonis.identity.UserRepository users;
 
     public FormController(FormService service, FormAttachmentService attachments, SubmissionPdfService pdfs,
-                          app.harmonis.identity.UserRepository users) {
+                          SignatureService signatures, app.harmonis.identity.UserRepository users) {
         this.service = service;
         this.attachments = attachments;
         this.pdfs = pdfs;
+        this.signatures = signatures;
         this.users = users;
     }
 
@@ -117,6 +119,42 @@ public class FormController {
     public void deleteAttachment(@PathVariable long attachmentId,
                                  @AuthenticationPrincipal AuthPrincipal principal) {
         attachments.deleteUncommitted(attachmentId, principal.userId());
+    }
+
+    // ----- assinaturas -----
+
+    @PostMapping("/{id}/signatures")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('forms.view')")
+    public FormDtos.SignatureRef captureSignature(
+            @PathVariable long id,
+            @RequestParam("fieldKey") String fieldKey,
+            @RequestParam("style") String style,
+            @RequestParam("image") org.springframework.web.multipart.MultipartFile image,
+            @RequestParam(value = "geoStatus", required = false) String geoStatus,
+            @RequestParam(value = "geoLat", required = false) Double geoLat,
+            @RequestParam(value = "geoLon", required = false) Double geoLon,
+            @RequestParam(value = "geoAccuracy", required = false) Double geoAccuracy,
+            @AuthenticationPrincipal AuthPrincipal principal,
+            jakarta.servlet.http.HttpServletRequest http) {
+        SignatureService.ClientGeo geo = new SignatureService.ClientGeo(geoStatus, geoLat, geoLon, geoAccuracy);
+        return signatures.capture(id, fieldKey, style, image, geo, http, principal.userId());
+    }
+
+    @GetMapping("/signatures/{signatureId}/image")
+    @PreAuthorize("hasAuthority('forms.view')")
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.FileSystemResource> signatureImage(
+            @PathVariable long signatureId) {
+        SignatureService.Downloadable d = signatures.image(signatureId);
+        org.springframework.core.io.FileSystemResource resource =
+                new org.springframework.core.io.FileSystemResource(d.path());
+        if (!resource.exists()) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Imagem não encontrada.");
+        }
+        org.springframework.http.MediaType mediaType = d.mimeType() != null
+                ? org.springframework.http.MediaType.parseMediaType(d.mimeType())
+                : org.springframework.http.MediaType.IMAGE_PNG;
+        return org.springframework.http.ResponseEntity.ok().contentType(mediaType).body(resource);
     }
 
     @GetMapping("/attachments/{attachmentId}/download")

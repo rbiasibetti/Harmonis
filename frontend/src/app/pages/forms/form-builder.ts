@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsService } from '../../core/forms.service';
 import { RolesService } from '../../core/roles.service';
+import { DataModelOption, DataModelsService } from '../../core/datamodels.service';
 import { FieldType, FormField } from '../../core/models';
 import { FormRenderer } from './form-renderer';
 import { TPipe } from '../../core/i18n/i18n';
@@ -19,10 +20,12 @@ interface Opt { value: string; label: string; }
 export class FormBuilder {
   private api = inject(FormsService);
   private rolesApi = inject(RolesService);
+  private dmApi = inject(DataModelsService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   roleOptions = signal<Opt[]>([]);
+  dataModels = signal<DataModelOption[]>([]);
   id = signal<number | null>(null);
   name = signal('');
   description = signal('');
@@ -61,6 +64,7 @@ export class FormBuilder {
   constructor() {
     this.api.fieldTypes().subscribe({ next: (t) => this.types.set(t) });
     this.rolesApi.list().subscribe({ next: (r) => this.roleOptions.set(r.map((x) => ({ value: x.name, label: x.label }))) });
+    this.dmApi.options().subscribe({ next: (o) => this.dataModels.set(o), error: () => {} });
     const param = this.route.snapshot.paramMap.get('id');
     if (param) {
       this.id.set(Number(param));
@@ -94,6 +98,8 @@ export class FormBuilder {
   isSection(f: FormField): boolean { return f.type === 'section'; }
   isSingle(f: FormField): boolean { return f.type === 'select'; }
   isMulti(f: FormField): boolean { return f.type === 'multiselect'; }
+  isSignatureType(type: string): boolean { return type === 'signature'; }
+  isLookupType(type: string): boolean { return type === 'lookup'; }
   isAnyFile(f: FormField): boolean { return f.type === 'file' || f.type === 'multifile'; }
   supportsValidation(f: FormField): boolean {
     return ['text', 'textarea', 'number', 'email', 'date'].includes(f.type);
@@ -127,7 +133,8 @@ export class FormBuilder {
         id: null, key: null, type,
         label: tr('Novo campo'), placeholder: null, help: null, required: false,
         options: this.hasOptions(type) ? [tr('Opção 1')] : null,
-        display: this.hasOptions(type) ? 'combo' : null,
+        display: this.hasOptions(type) ? 'combo' : (type === 'signature' ? 'both' : (type === 'lookup' ? 'single' : null)),
+        dataModelId: type === 'lookup' ? null : undefined,
         width: 'full',
         validation: {},
         visibleWhen: { field: '', operator: 'not_empty', value: '' },

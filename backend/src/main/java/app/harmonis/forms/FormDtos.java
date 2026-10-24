@@ -46,4 +46,13 @@ public final class FormDtos {
 
     /** Referencia de um anexo (retornada no upload e guardada na resposta). */
     public record AttachmentRef(Long id, String name, long size, String mime) {}
+
+    /** Referencia de uma assinatura recem-capturada (vai no valor do campo). */
+    public record SignatureRef(
+            Long signatureId, String style, String signedAt,
+            SignerRef signer, String ip, String device, GeoRef geo) {}
+
+    public record SignerRef(Long id, String name, String email) {}
+
+    public record GeoRef(String status, Double lat, Double lon, Double accuracy) {}
 }

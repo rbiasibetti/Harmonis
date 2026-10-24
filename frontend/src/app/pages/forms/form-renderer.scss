@@ -46,3 +46,19 @@
 @media (max-width: 640px) {
   .w-full, .w-half, .w-third { grid-column: span 12; }
 }
+
+/* ----- assinatura ----- */
+.sig-field { display: flex; flex-direction: column; gap: .4rem; }
+.sig-done { display: flex; gap: .75rem; align-items: center; }
+.sig-thumb {
+  width: 130px; height: 70px; object-fit: contain;
+  border: 1px solid var(--border); border-radius: 8px; background: #fff;
+}
+.sig-thumb.placeholder { display: grid; place-items: center; font-size: 1.6rem; }
+.sig-meta { display: flex; flex-direction: column; gap: .15rem; }
+.sig-meta .tiny { font-size: .72rem; }
+.sig-meta .btn { align-self: flex-start; margin-top: .25rem; padding: .35rem .7rem; font-size: .8rem; }
+
+/* ----- lookup ----- */
+.lookup-field .lk-input { display: flex; gap: .4rem; align-items: center; }
+.lookup-field .lk-input .input { flex: 1; background: var(--surface-2); }

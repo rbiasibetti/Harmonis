@@ -99,6 +99,8 @@
     <tr><td>Confirmação (sim/não)</td><td>Interruptor com o rótulo ao lado.</td><td>Sim/Não</td><td>—</td></tr>
     <tr><td>Anexo (único)</td><td>Botão de enviar um arquivo.</td><td>Referência ao arquivo</td><td>Tipos aceitos e tamanho máximo.</td></tr>
     <tr><td>Anexo (múltiplo)</td><td>Botão para enviar vários arquivos.</td><td>Lista de referências</td><td>Tipos aceitos e tamanho máximo.</td></tr>
+    <tr><td>Assinatura</td><td>Coleta uma assinatura desenhada (tela touch) ou por selfie (câmera ao vivo), com metadados do ato.</td><td>Metadados da assinatura (ver <a href="#assinatura">abaixo</a>)</td><td>Estilo (desenhada / selfie / o signatário escolhe), obrigatório, “preenchido por”.</td></tr>
+    <tr><td>Consulta (modelo de dados)</td><td>Busca um registro em um <a href="16-modelos-dados.html">modelo de dados</a> pré-cadastrado, por um modal com filtros e lista de resultados.</td><td>Registro(s) selecionado(s)</td><td>Modelo de dados, seleção única ou múltipla (ver <a href="#lookup">abaixo</a>).</td></tr>
     <tr><td>Bloco / seção</td><td>Título (e texto de apoio) que separa partes do formulário. Não recebe resposta.</td><td>—</td><td>Título, descrição, largura.</td></tr>
   </tbody>
 </table>
@@ -254,6 +256,54 @@
   <li>Anexo único aceita um arquivo; anexo múltiplo aceita vários (cada um é validado separadamente).</li>
   <li>Os arquivos ficam em armazenamento privado; só são baixados por usuários autenticados com acesso (veja <a href="05-preenchimento-respostas.html#resgatar-anexos">resgatar anexos</a>).</li>
 </ul>
+
+<h2 id="lookup">Campo de consulta (lookup)</h2>
+<p>O campo <b>Consulta (modelo de dados)</b> permite escolher um registro a partir de um <a href="16-modelos-dados.html">modelo de dados</a> pré-cadastrado (clientes, produtos, etc.). Diferente de uma lista suspensa, ele é pensado para bases grandes: você <b>pesquisa</b> antes de escolher.</p>
+
+<h3 id="lookup-config">Configuração no construtor</h3>
+<ul>
+  <li><b>Modelo de dados</b> — escolha um modelo <b>publicado</b> (cadastrado em <a href="16-modelos-dados.html">Modelos de dados</a>).</li>
+  <li><b>Seleção</b> — <b>Única</b> (um registro) ou <b>Múltipla</b> (vários).</li>
+</ul>
+
+<h3 id="lookup-fill">No preenchimento</h3>
+<p>O campo mostra o <b>rótulo</b>, um <b>campo de texto bloqueado</b> (com o que foi selecionado) e um <b>botão de pesquisa</b>. Ao clicar no botão, abre-se um <b>modal</b>:</p>
+<ol class="steps">
+  <li>Preencha os <b>filtros</b> (os campos de consulta definidos no modelo) e clique em <b>Buscar</b>.</li>
+  <li>Na <b>lista de resultados</b>, escolha o registro: em seleção <em>única</em>, clicar já confirma; em <em>múltipla</em>, marque vários e clique em <b>Confirmar</b>.</li>
+  <li>O texto do campo passa a mostrar o registro selecionado. Use <b>✕</b> para limpar.</li>
+</ol>
+<p>Os dados da linha escolhida ficam guardados com a resposta e aparecem na tabela de respostas e no PDF.</p>
+
+<h2 id="assinatura">Campo de assinatura</h2>
+<p>O campo <b>Assinatura</b> coleta uma assinatura no ato do preenchimento e guarda, junto ao registro, os <b>metadados</b> do momento em que foi feita. É útil para termos, autorizações e protocolos.</p>
+
+<h3 id="assinatura-estilo">Estilo (configuração no construtor)</h3>
+<table class="free">
+  <thead><tr><th>Estilo</th><th>Como o signatário assina</th></tr></thead>
+  <tbody>
+    <tr><td><b>Desenhada</b></td><td>Desenha a assinatura numa área de toque, com o dedo (em telas touch) ou o mouse.</td></tr>
+    <tr><td><b>Selfie</b></td><td>Faz uma <b>captura ao vivo</b> do rosto pela câmera. Não é possível enviar uma foto da galeria; é obrigatório capturar na hora.</td></tr>
+    <tr><td><b>Desenhada ou selfie</b></td><td>O próprio signatário escolhe entre os dois no momento de assinar.</td></tr>
+  </tbody>
+</table>
+<p>O campo pode ser <b>obrigatório</b> e também pode ser <a href="#preenchido-por">preenchido por um papel</a> durante o fluxo (ex.: a assinatura do gestor na etapa de aprovação).</p>
+
+<h3 id="assinatura-metadados">Metadados coletados</h3>
+<p>Ao assinar, o Harmonis registra automaticamente:</p>
+<ul>
+  <li><b>Signatário</b> — nome e e-mail do usuário logado.</li>
+  <li><b>Data e hora</b> — carimbo do servidor.</li>
+  <li><b>Endereço IP</b> e <b>dispositivo</b> (navegador) — do servidor.</li>
+  <li><b>Geolocalização</b> — pedida ao navegador no momento de assinar. Se você <b>negar</b> ou o dispositivo não suportar, a assinatura prossegue e o campo fica como <em>permissão negada</em> / <em>não informada</em> (não bloqueia).</li>
+</ul>
+<div class="callout note">
+  <b>Sobre a selfie</b>
+  <p>A selfie é uma captura ao vivo da câmera; não há verificação biométrica de vivacidade (anti-fraude). Conceda a permissão de câmera quando o navegador solicitar.</p>
+</div>
+
+<h3 id="assinatura-pdf">No PDF do registro</h3>
+<p>A ficha em PDF mostra a assinatura junto ao formulário e, ao final, uma <b>folha adicional</b> — <em>Histórico de assinaturas</em> — com a imagem e todos os metadados de cada assinatura do registro (podem existir várias). Veja <a href="05-preenchimento-respostas.html#pdf">Ficha em PDF</a>.</p>
 
 <h2 id="preenchido-por">“Preenchido por”: campos completados no fluxo</h2>
 <figure class="narrow">

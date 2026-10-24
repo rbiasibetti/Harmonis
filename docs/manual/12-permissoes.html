@@ -92,6 +92,18 @@
   </tbody>
 </table>
 
+<h3 id="m-datamodels">Modelos de dados</h3>
+<table>
+  <thead><tr><th>Permissão</th><th>O que libera</th><th>Admin</th><th>Gestor</th><th>Colab.</th></tr></thead>
+  <tbody>
+    <tr><td><code class="perm">datamodels.view</code></td><td>Ver os modelos de dados e suas linhas.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">datamodels.create</code></td><td>Criar modelos.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">datamodels.update</code></td><td>Editar colunas/filtros, importar CSV e salvar linhas.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">datamodels.delete</code></td><td>Excluir modelos.</td><td>✔</td><td>—</td><td>—</td></tr>
+    <tr><td><code class="perm">datamodels.publish</code></td><td>Publicar e despublicar (habilita o uso em formulários).</td><td>✔</td><td>—</td><td>—</td></tr>
+  </tbody>
+</table>
+
 <h2 id="telas">Tela por tela</h2>
 <table class="free">
   <thead><tr><th>Tela / ação</th><th>Permissão necessária</th></tr></thead>
@@ -100,6 +112,7 @@
     <tr><td>Menu Usuários · Papéis</td><td><code class="perm">users.view</code> · <code class="perm">roles.view</code></td></tr>
     <tr><td>Menu Formulários · Processos · Documentos · Portal</td><td><code class="perm">forms.view</code> · <code class="perm">processes.view</code> · <code class="perm">documents.view</code> · <code class="perm">pages.view</code></td></tr>
     <tr><td>Menu Integrações · Logs de integração</td><td><code class="perm">integrations.view</code> · <code class="perm">integrations.logs</code></td></tr>
+    <tr><td>Menu Modelos de dados</td><td><code class="perm">datamodels.view</code></td></tr>
     <tr><td>Construtor de formulário (ícone ⚙) e editor de fluxo (⇄)</td><td><code class="perm">forms.update</code> (novo formulário: <code class="perm">forms.create</code>)</td></tr>
     <tr><td>Respostas, CSV e PDF do registro (📊)</td><td><code class="perm">forms.submissions</code> (PDF também no detalhe do processo, com <code class="perm">processes.view</code>)</td></tr>
     <tr><td>Decidir uma aprovação</td><td><code class="perm">processes.view</code> + ser o aprovador da etapa (ou ser o proprietário)</td></tr>

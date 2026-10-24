@@ -31,12 +31,14 @@ public class ProcessService {
     private final FormSchemaService schema;
     private final ApprovalService approvals;
     private final FormAttachmentService attachmentsService;
+    private final app.harmonis.forms.SignatureService signaturesService;
     private final ObjectMapper mapper;
 
     public ProcessService(ProcessInstanceRepository instances, ProcessTaskRepository tasks,
                           FormRepository forms, FormSubmissionRepository submissions,
                           UserRepository users, FormSchemaService schema,
                           ApprovalService approvals, FormAttachmentService attachmentsService,
+                          app.harmonis.forms.SignatureService signaturesService,
                           ObjectMapper mapper) {
         this.instances = instances;
         this.tasks = tasks;
@@ -46,6 +48,7 @@ public class ProcessService {
         this.schema = schema;
         this.approvals = approvals;
         this.attachmentsService = attachmentsService;
+        this.signaturesService = signaturesService;
         this.mapper = mapper;
     }
 
@@ -167,6 +170,10 @@ public class ProcessService {
         List<FormField> fileFields = schema.fileFields(assigned);
         if (!fileFields.isEmpty()) {
             attachmentsService.commit(form, inst.getSubmissionId(), data, fileFields, userId);
+        }
+        List<FormField> signatureFields = schema.signatureFields(assigned);
+        if (!signatureFields.isEmpty()) {
+            signaturesService.commit(form, inst.getSubmissionId(), data, signatureFields, userId);
         }
 
         FormSubmission sub = submissions.findById(inst.getSubmissionId())

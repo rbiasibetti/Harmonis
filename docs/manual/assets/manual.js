@@ -17,6 +17,7 @@
       ['05-preenchimento-respostas.html', 'Preenchimento e respostas'],
       ['06-fluxo-aprovacao.html', 'Fluxo de aprovação'],
       ['07-processos.html', 'Processos e aprovações'],
+      ['16-modelos-dados.html', 'Modelos de dados'],
     ]},
     { group: 'Conteúdo', items: [
       ['08-documentos.html', 'Documentos (GED)'],

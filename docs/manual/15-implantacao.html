@@ -74,7 +74,7 @@
 <ul>
   <li>Não há ferramenta de migração automática: os scripts em <code>migrations/</code> são aplicados <b>manualmente, em ordem</b> (o utilitário <code>tools/MigrationRunner.java</code> ajuda).</li>
   <li>Todas as tabelas do Harmonis usam o prefixo <b><code>hm_</code></b>, convivendo com tabelas de outros sistemas no mesmo banco.</li>
-  <li>Catálogo: <code>migrations/catalog/*.sql</code>. Cada empresa: <code>migrations/tenant/*.sql</code> (identidade, formulários, workflow, documentos, portal, anexos, integrações, sessões/refresh tokens, idiomas).</li>
+  <li>Catálogo: <code>migrations/catalog/*.sql</code>. Cada empresa: <code>migrations/tenant/*.sql</code> (identidade, formulários, workflow, documentos, portal, anexos, integrações, sessões/refresh tokens, idiomas, assinaturas, modelos de dados).</li>
   <li>Ao atualizar a aplicação, aplique os novos scripts em <b>cada banco de empresa</b> antes de subir a nova versão.</li>
 </ul>
 

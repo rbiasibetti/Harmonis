@@ -20,6 +20,8 @@ import { Integrations } from './pages/integrations/integrations';
 import { IntegrationEditor } from './pages/integrations/integration-editor';
 import { IntegrationLogs } from './pages/integrations/integration-logs';
 import { Profile } from './pages/profile/profile';
+import { DataModels } from './pages/datamodels/datamodels';
+import { DataModelEditor } from './pages/datamodels/datamodel-editor';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -51,6 +53,9 @@ export const routes: Routes = [
       { path: 'integrations/new', component: IntegrationEditor },
       { path: 'integrations/:id/edit', component: IntegrationEditor },
       { path: 'integration-logs', component: IntegrationLogs },
+      { path: 'datamodels', component: DataModels },
+      { path: 'datamodels/new', component: DataModelEditor },
+      { path: 'datamodels/:id/edit', component: DataModelEditor },
     ],
   },
   { path: '**', redirectTo: '' },
