@@ -38,7 +38,7 @@
     </ul>
   </li>
 </ol>
-<p>As colunas <b>Campos</b> e <b>Respostas</b> mostram, respectivamente, quantos campos o formulário tem e quantas respostas já recebeu.</p>
+<p>As colunas <b>Campos</b> e <b>Respostas</b> mostram, respectivamente, quantos campos o formulário tem e quantas respostas já recebeu. A coluna <b>Idiomas</b> lista os idiomas vinculados ao formulário (veja <a href="#idiomas">abaixo</a>).</p>
 <div class="callout warn">
   <b>Excluir um formulário</b>
   <p>A exclusão remove o formulário, suas respostas e os arquivos anexados. Nesta versão, formulários que <em>já possuem processos de aprovação</em> podem ser
@@ -261,6 +261,10 @@
 <p>O campo <b>Consulta (modelo de dados)</b> permite escolher um registro a partir de um <a href="16-modelos-dados.html">modelo de dados</a> pré-cadastrado (clientes, produtos, etc.). Diferente de uma lista suspensa, ele é pensado para bases grandes: você <b>pesquisa</b> antes de escolher.</p>
 
 <h3 id="lookup-config">Configuração no construtor</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/field-lookup.png"><img src="img/field-lookup.png" alt="Cartão de campo de consulta a modelo de dados"></a>
+  <figcaption>Cartão de um campo <b>Consulta (modelo de dados)</b>.</figcaption>
+</figure>
 <ul>
   <li><b>Modelo de dados</b> — escolha um modelo <b>publicado</b> (cadastrado em <a href="16-modelos-dados.html">Modelos de dados</a>).</li>
   <li><b>Seleção</b> — <b>Única</b> (um registro) ou <b>Múltipla</b> (vários).</li>
@@ -268,6 +272,10 @@
 
 <h3 id="lookup-fill">No preenchimento</h3>
 <p>O campo mostra o <b>rótulo</b>, um <b>campo de texto bloqueado</b> (com o que foi selecionado) e um <b>botão de pesquisa</b>. Ao clicar no botão, abre-se um <b>modal</b>:</p>
+<figure>
+  <a class="zoom" href="img/fill-lookup.png"><img src="img/fill-lookup.png" alt="Modal de pesquisa de um campo de consulta a modelo de dados"></a>
+  <figcaption>Modal de pesquisa — filtros, lista de resultados e <b>Selecionar</b>.</figcaption>
+</figure>
 <ol class="steps">
   <li>Preencha os <b>filtros</b> (os campos de consulta definidos no modelo) e clique em <b>Buscar</b>.</li>
   <li>Na <b>lista de resultados</b>, escolha o registro: em seleção <em>única</em>, clicar já confirma; em <em>múltipla</em>, marque vários e clique em <b>Confirmar</b>.</li>
@@ -279,6 +287,14 @@
 <p>O campo <b>Assinatura</b> coleta uma assinatura no ato do preenchimento e guarda, junto ao registro, os <b>metadados</b> do momento em que foi feita. É útil para termos, autorizações e protocolos.</p>
 
 <h3 id="assinatura-estilo">Estilo (configuração no construtor)</h3>
+<figure class="narrow">
+  <a class="zoom" href="img/field-signature.png"><img src="img/field-signature.png" alt="Cartão de campo de assinatura"></a>
+  <figcaption>Cartão de um campo <b>Assinatura</b>.</figcaption>
+</figure>
+<figure>
+  <a class="zoom" href="img/fill-signature.png"><img src="img/fill-signature.png" alt="Área de desenho da assinatura no preenchimento"></a>
+  <figcaption>No preenchimento, o signatário escolhe <b>Desenhar</b> ou <b>Selfie</b> e confirma a assinatura.</figcaption>
+</figure>
 <table class="free">
   <thead><tr><th>Estilo</th><th>Como o signatário assina</th></tr></thead>
   <tbody>
@@ -304,6 +320,10 @@
 
 <h3 id="assinatura-pdf">No PDF do registro</h3>
 <p>A ficha em PDF mostra a assinatura junto ao formulário e, ao final, uma <b>folha adicional</b> — <em>Histórico de assinaturas</em> — com a imagem e todos os metadados de cada assinatura do registro (podem existir várias). Veja <a href="05-preenchimento-respostas.html#pdf">Ficha em PDF</a>.</p>
+<figure>
+  <a class="zoom" href="img/pdf-assinaturas.png"><img src="img/pdf-assinaturas.png" alt="Folha de histórico de assinaturas no PDF"></a>
+  <figcaption>Folha <b>Histórico de assinaturas</b> ao final do PDF, com estilo, signatário, data/hora, IP, dispositivo e localização.</figcaption>
+</figure>
 
 <h2 id="preenchido-por">“Preenchido por”: campos completados no fluxo</h2>
 <figure class="narrow">

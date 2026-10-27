@@ -287,12 +287,12 @@ const ok = crypto.timingSafeEqual(Buffer.from(esperado), Buffer.from(req.headers
 <pre><code>{
   "event": "approved",
   "occurredAt": "2026-10-16T00:20:40Z",
-  "tenant": "demo",
+  "tenant": "acme",
   "form": { "id": 1, "name": "Solicitação de compra", "slug": "solicitacao-de-compra" },
   "submission": {
     "id": 21,
     "submittedAt": "2026-10-16T00:20:37Z",
-    "submittedBy": { "id": 2, "name": "João Lima", "email": "joao@demo.test" },
+    "submittedBy": { "id": 2, "name": "João Lima", "email": "joao@acme.test" },
     "data": { "campo_a1b2c3": "Notebooks para o time comercial", "campo_d4e5f6": 18500 },
     "answers": [
       { "key": "campo_a1b2c3", "label": "Assunto", "type": "text", "value": "Notebooks para o time comercial" },
@@ -303,7 +303,7 @@ const ok = crypto.timingSafeEqual(Buffer.from(esperado), Buffer.from(req.headers
     "id": 7, "status": "approved",
     "steps": [
       { "step": "Aprovação do gestor", "stepIndex": 0, "approver": "papel: manager", "status": "approved",
-        "decidedBy": { "id": 3, "name": "Marina Souza", "email": "marina@demo.test" },
+        "decidedBy": { "id": 3, "name": "Marina Souza", "email": "marina@acme.test" },
         "comment": "Aprovado.", "decidedAt": "2026-10-16T00:20:39Z" }
     ]
   }

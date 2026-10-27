@@ -19,8 +19,17 @@
   <p>Ver: <code class="perm">datamodels.view</code>. Criar/editar: <code class="perm">datamodels.create</code> / <code class="perm">datamodels.update</code>. Publicar: <code class="perm">datamodels.publish</code>. Excluir: <code class="perm">datamodels.delete</code>. Só modelos <b>publicados</b> podem ser vinculados a um formulário.</p>
 </div>
 
+<figure>
+  <a class="zoom" href="img/datamodels-list.png"><img src="img/datamodels-list.png" alt="Lista de modelos de dados"></a>
+  <figcaption><b>Menu Modelos de dados.</b> Um modelo com fonte CSV/manual (<em>Clientes</em>) e outro com fonte de consulta SQL (<em>Usuarios do sistema</em>), ambos publicados.</figcaption>
+</figure>
+
 <h2 id="fontes">Fontes de dados</h2>
 <p>Cada modelo tem uma fonte, escolhida na criação:</p>
+<figure>
+  <a class="zoom" href="img/datamodel-editor.png"><img src="img/datamodel-editor.png" alt="Editor de modelo de dados com colunas e filtros"></a>
+  <figcaption>Editor do modelo <b>Clientes</b> (fonte CSV/manual): nome, fonte dos dados, colunas e campos de consulta.</figcaption>
+</figure>
 <table class="free">
   <thead><tr><th>Fonte</th><th>De onde vêm os dados</th></tr></thead>
   <tbody>
@@ -51,6 +60,10 @@
 <p>Acentos são considerados (ex.: “joao” não encontra “João”).</p>
 
 <h2 id="linhas">Dados (fonte CSV / manual)</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/datamodel-data.png"><img src="img/datamodel-data.png" alt="Grade de dados do modelo com importação de CSV"></a>
+  <figcaption><b>Importar CSV</b>, <b>+ Linha</b> e a grade de dados do modelo.</figcaption>
+</figure>
 <ol class="steps">
   <li><b>Salve</b> o modelo primeiro (para poder cadastrar linhas).</li>
   <li><b>Importar CSV</b> — a primeira linha do arquivo é o cabeçalho; cada coluna é associada à do modelo pelo <em>rótulo</em> ou pela <em>chave</em> (sem diferenciar acento/maiúsculas). As linhas são <b>adicionadas</b> às existentes. Aceita separador “,” ou “;”.</li>
@@ -59,6 +72,10 @@
 </ol>
 
 <h2 id="consulta-sql">Consulta SQL (fonte de consulta)</h2>
+<figure class="narrow">
+  <a class="zoom" href="img/datamodel-sql.png"><img src="img/datamodel-sql.png" alt="Caixa de consulta SQL do modelo de dados"></a>
+  <figcaption>Consulta SQL do modelo <b>Usuarios do sistema</b>, com <em>alias</em> para as colunas declaradas.</figcaption>
+</figure>
 <div class="callout warn">
   <b>Somente leitura</b>
   <p>A consulta precisa ser um <b>SELECT</b> (um único comando). Comandos que alteram dados são recusados. As colunas declaradas devem existir no resultado — use <em>alias</em> quando necessário (ex.: <code>SELECT id AS cod, nome FROM clientes</code>). Os filtros são aplicados sobre o resultado da consulta.</p>
