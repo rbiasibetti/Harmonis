@@ -17,6 +17,14 @@ harmonis:
     options: ";encrypt=true;trustServerCertificate=true;loginTimeout=15"
   catalog:
     db-name: ${HARMONIS_CATALOG_DB:harmonis_catalog}
+  # Pool de conexoes por tenant. min-idle=0 faz um tenant inativo soltar todas as conexoes
+  # apos o idle-timeout, impedindo que o total de conexoes cresca com o numero de tenants.
+  tenant-pool:
+    max-size: ${HARMONIS_TENANT_POOL_MAX:5}
+    min-idle: ${HARMONIS_TENANT_POOL_MIN_IDLE:0}
+    idle-timeout-seconds: ${HARMONIS_TENANT_POOL_IDLE_SECONDS:90}
+    max-lifetime-minutes: ${HARMONIS_TENANT_POOL_MAX_LIFETIME_MIN:20}
+    connection-timeout-seconds: ${HARMONIS_TENANT_POOL_CONN_TIMEOUT_SECONDS:30}
   jwt:
     secret: ${HARMONIS_JWT_SECRET:troque-esta-chave-em-producao-com-no-minimo-32-bytes!!}
     # Access token curto; a sessao e mantida pelo refresh token (rotativo, em cookie HttpOnly).

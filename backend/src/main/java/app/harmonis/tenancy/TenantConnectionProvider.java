@@ -37,14 +37,20 @@ public class TenantConnectionProvider {
 
     private HikariDataSource build(TenantInfo tenant) {
         HarmonisProperties.SqlServer db = props.getSqlserver();
+        HarmonisProperties.TenantPool pool = props.getTenantPool();
         HikariConfig cfg = new HikariConfig();
         cfg.setJdbcUrl(props.jdbcUrl(tenant.dbName()));
         cfg.setUsername(db.getUser());
         cfg.setPassword(db.getPassword());
         cfg.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         cfg.setPoolName("hm-" + tenant.slug());
-        cfg.setMaximumPoolSize(10);
-        cfg.setMinimumIdle(1);
+        // Limites por tenant: com minIdle=0 um tenant inativo solta todas as conexoes apos o
+        // idleTimeout, de modo que o total nao cresce com o numero de tenants ja acessados.
+        cfg.setMaximumPoolSize(Math.max(1, pool.getMaxSize()));
+        cfg.setMinimumIdle(Math.max(0, pool.getMinIdle()));
+        cfg.setIdleTimeout(pool.getIdleTimeoutSeconds() * 1000L);
+        cfg.setMaxLifetime(pool.getMaxLifetimeMinutes() * 60_000L);
+        cfg.setConnectionTimeout(pool.getConnectionTimeoutSeconds() * 1000L);
         return new HikariDataSource(cfg);
     }
 

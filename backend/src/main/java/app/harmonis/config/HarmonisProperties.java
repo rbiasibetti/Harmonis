@@ -8,6 +8,7 @@ public class HarmonisProperties {
 
     private SqlServer sqlserver = new SqlServer();
     private Catalog catalog = new Catalog();
+    private TenantPool tenantPool = new TenantPool();
     private Jwt jwt = new Jwt();
     private Cors cors = new Cors();
     private Cookies cookies = new Cookies();
@@ -17,6 +18,8 @@ public class HarmonisProperties {
     public void setSqlserver(SqlServer sqlserver) { this.sqlserver = sqlserver; }
     public Catalog getCatalog() { return catalog; }
     public void setCatalog(Catalog catalog) { this.catalog = catalog; }
+    public TenantPool getTenantPool() { return tenantPool; }
+    public void setTenantPool(TenantPool tenantPool) { this.tenantPool = tenantPool; }
     public Jwt getJwt() { return jwt; }
     public void setJwt(Jwt jwt) { this.jwt = jwt; }
     public Cookies getCookies() { return cookies; }
@@ -54,6 +57,36 @@ public class HarmonisProperties {
         private String dbName = "harmonis_catalog";
         public String getDbName() { return dbName; }
         public void setDbName(String dbName) { this.dbName = dbName; }
+    }
+
+    /**
+     * Pool de conexoes por tenant (Hikari). Como ha um pool por banco de tenant, estes limites
+     * controlam quantas conexoes cada tenant mantem. Com {@code minIdle=0}, um tenant inativo
+     * libera todas as suas conexoes apos {@code idleTimeoutSeconds}, evitando que o total de
+     * conexoes cresca com o numero de tenants ja acessados.
+     */
+    public static class TenantPool {
+        /** Maximo de conexoes simultaneas por tenant. */
+        private int maxSize = 5;
+        /** Conexoes ociosas mantidas por tenant (0 = solta todas quando inativo). */
+        private int minIdle = 0;
+        /** Tempo ate uma conexao ociosa ser fechada (segundos). */
+        private long idleTimeoutSeconds = 90;
+        /** Vida maxima de uma conexao (minutos); reciclada mesmo em uso intermitente. */
+        private long maxLifetimeMinutes = 20;
+        /** Tempo maximo de espera por uma conexao do pool (segundos). */
+        private long connectionTimeoutSeconds = 30;
+
+        public int getMaxSize() { return maxSize; }
+        public void setMaxSize(int maxSize) { this.maxSize = maxSize; }
+        public int getMinIdle() { return minIdle; }
+        public void setMinIdle(int minIdle) { this.minIdle = minIdle; }
+        public long getIdleTimeoutSeconds() { return idleTimeoutSeconds; }
+        public void setIdleTimeoutSeconds(long v) { this.idleTimeoutSeconds = v; }
+        public long getMaxLifetimeMinutes() { return maxLifetimeMinutes; }
+        public void setMaxLifetimeMinutes(long v) { this.maxLifetimeMinutes = v; }
+        public long getConnectionTimeoutSeconds() { return connectionTimeoutSeconds; }
+        public void setConnectionTimeoutSeconds(long v) { this.connectionTimeoutSeconds = v; }
     }
 
     public static class Jwt {
