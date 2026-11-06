@@ -30,12 +30,16 @@ public class DataModelQueryService {
     private final ObjectMapper mapper;
     private final JdbcTemplate jdbc;
 
+    /** Teto de tempo por consulta (segundos): evita que uma consulta de modelo trave a conexao. */
+    private static final int QUERY_TIMEOUT_SECONDS = 15;
+
     public DataModelQueryService(DataModelService service, DataModelRowRepository rows,
                                  ObjectMapper mapper, DataSource dataSource) {
         this.service = service;
         this.rows = rows;
         this.mapper = mapper;
         this.jdbc = new JdbcTemplate(dataSource);
+        this.jdbc.setQueryTimeout(QUERY_TIMEOUT_SECONDS);
     }
 
     @Transactional(readOnly = true)

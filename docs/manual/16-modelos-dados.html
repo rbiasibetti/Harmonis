@@ -77,8 +77,17 @@
   <figcaption>Consulta SQL do modelo <b>Usuarios do sistema</b>, com <em>alias</em> para as colunas declaradas.</figcaption>
 </figure>
 <div class="callout warn">
-  <b>Somente leitura</b>
-  <p>A consulta precisa ser um <b>SELECT</b> (um único comando). Comandos que alteram dados são recusados. As colunas declaradas devem existir no resultado — use <em>alias</em> quando necessário (ex.: <code>SELECT id AS cod, nome FROM clientes</code>). Os filtros são aplicados sobre o resultado da consulta.</p>
+  <b>Somente leitura e restrita ao banco atual</b>
+  <p>A consulta precisa ser um <b>SELECT</b> (ou <code>WITH</code>) e um <b>único comando</b>. As colunas declaradas devem existir no resultado — use <em>alias</em> quando necessário (ex.: <code>SELECT id AS cod, nome FROM clientes</code>). Os filtros são aplicados sobre o resultado da consulta.</p>
+  <p>Por segurança, a consulta é <b>recusada</b> quando contém:</p>
+  <ul>
+    <li>comandos que alteram dados ou estrutura (INSERT, UPDATE, DELETE, DROP, CREATE, MERGE, GRANT…);</li>
+    <li><em>procedures</em> ou rotinas (EXEC, <code>sp_</code>, <code>xp_</code>, <code>fn_</code>, OPENQUERY, OPENROWSET, BULK, WAITFOR, DBCC…);</li>
+    <li>catálogos ou bancos de sistema (<code>sys.</code>, <code>master.</code>, <code>msdb.</code>, <code>INFORMATION_SCHEMA</code>…);</li>
+    <li>referência a <b>outro banco</b> (nome de três partes, como <code>banco.esquema.tabela</code>);</li>
+    <li>comentários (<code>--</code> ou <code>/* */</code>), ponto e vírgula (<code>;</code>) e variáveis de sistema (<code>@@</code>).</li>
+  </ul>
+  <p>Use apenas tabelas do <b>banco do próprio ambiente</b> (no máximo <code>esquema.tabela</code>). A consulta também tem um tempo-limite de execução.</p>
 </div>
 
 <h2 id="publicar">Publicar</h2>

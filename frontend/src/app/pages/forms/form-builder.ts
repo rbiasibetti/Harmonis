@@ -124,13 +124,29 @@ export class FormBuilder {
   needsValue(op: string): boolean { return op !== 'empty' && op !== 'not_empty'; }
 
   // ----- edicao de campos -----
+  /**
+   * Gera uma chave de campo no cliente (mesmo formato do servidor: campo_xxxxxx), unica no
+   * formulario. O backend preserva a chave enviada (so gera quando vem nula), entao o campo
+   * ja fica utilizavel na previa e em condicoes sem precisar salvar antes.
+   */
+  private nextKey(): string {
+    const used = new Set(this.fields().map((x) => x.key).filter(Boolean) as string[]);
+    const alnum = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let key: string;
+    do {
+      key = 'campo_';
+      for (let i = 0; i < 6; i++) key += alnum.charAt(Math.floor(Math.random() * alnum.length));
+    } while (used.has(key));
+    return key;
+  }
+
   addField(type: string): void {
     let f: FormField;
     if (type === 'section') {
       f = { id: null, key: null, type, label: tr('Novo bloco'), placeholder: null, help: null, required: false, options: null, width: 'full' };
     } else {
       f = {
-        id: null, key: null, type,
+        id: null, key: this.nextKey(), type,
         label: tr('Novo campo'), placeholder: null, help: null, required: false,
         options: this.hasOptions(type) ? [tr('Opção 1')] : null,
         display: this.hasOptions(type) ? 'combo' : (type === 'signature' ? 'both' : (type === 'lookup' ? 'single' : null)),

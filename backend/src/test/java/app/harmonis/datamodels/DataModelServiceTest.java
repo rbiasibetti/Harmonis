@@ -107,6 +107,47 @@ class DataModelServiceTest {
     }
 
     @Test
+    void consultaSqlBloqueiaAcessoTransversoCatalogosEProcedures() {
+        // Cada consulta abaixo deve ser recusada na validacao.
+        String[] bloqueadas = {
+                "SELECT * FROM outrobanco.dbo.clientes",        // nome de 3 partes (cross-db)
+                "SELECT name FROM sys.databases",               // catalogo de sistema
+                "SELECT name FROM [sys].[objects]",             // catalogo com colchetes
+                "SELECT * FROM master.sys.sql_logins",          // banco de sistema
+                "SELECT * FROM INFORMATION_SCHEMA.TABLES",      // information_schema
+                "SELECT * FROM OPENROWSET('SQLNCLI','','SELECT 1')", // openrowset
+                "SELECT * FROM OPENQUERY(srv,'SELECT 1')",      // openquery
+                "SELECT @@version",                             // variavel de sistema
+                "SELECT 1 -- comentario",                       // comentario de linha
+                "SELECT/**/1 FROM t",                           // comentario de bloco
+                "SELECT * FROM t WHERE 1=1 WAITFOR DELAY '0:0:5'", // waitfor (DoS/tempo)
+                "EXEC sp_who",                                  // procedure
+        };
+        for (String sql : bloqueadas) {
+            var req = new SaveDataModelRequest("B_" + Math.abs(sql.hashCode()), null, "query", sql,
+                    List.of(new ColumnSpec("cod", "c", "text")), List.of(), null);
+            assertThrows(ResponseStatusException.class, () -> service.create(req, 1L),
+                    "deveria recusar: " + sql);
+        }
+    }
+
+    @Test
+    void consultaSqlAceitaSelectComEsquemaEAlias() {
+        // Consultas legitimas (1-2 partes, sem catalogos) devem ser aceitas.
+        String[] ok = {
+                "SELECT id AS cod, nome FROM clientes",
+                "SELECT c.id AS cod, c.nome FROM dbo.clientes c WHERE c.ativo = 1",
+                "SELECT p.id AS cod, p.nome FROM produtos p JOIN categorias cat ON cat.id = p.cat_id",
+        };
+        int i = 0;
+        for (String sql : ok) {
+            var req = new SaveDataModelRequest("OK_" + (i++), null, "query", sql,
+                    List.of(new ColumnSpec("cod", "c", "text")), List.of(), null);
+            assertDoesNotThrow(() -> service.create(req, 1L), "deveria aceitar: " + sql);
+        }
+    }
+
+    @Test
     void publicarExigeColunasEEntraNasOpcoes() {
         DataModelView v = service.create(staticReq("Clientes"), 1L);
         when(models.findByStatusOrderByNameAsc("published")).thenAnswer(i ->

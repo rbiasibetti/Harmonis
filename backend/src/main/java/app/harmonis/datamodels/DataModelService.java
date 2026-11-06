@@ -20,11 +20,29 @@ public class DataModelService {
 
     private static final Set<String> TYPES = Set.of("text", "number", "date");
     private static final Pattern KEY = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]{0,63}$");
-    // Palavras proibidas na consulta (defesa em profundidade; a seguranca principal e envolver
-    // a consulta como subquery, que so aceita SELECT).
+
+    // --- Validacao da consulta SQL (fonte de consulta) ---
+    // Defesa em profundidade. A consulta do administrador e sempre envolvida como subquery
+    // (SELECT ... FROM (<sql>) q), o que ja garante contexto somente-leitura; aqui barramos
+    // tambem comandos, procedures/funcoes de sistema, catalogos e acesso a outros bancos.
+    // Recomendacao complementar: executar estas consultas sob um login SQL de minimo privilegio,
+    // com SELECT apenas nas tabelas do banco do tenant e sem acesso a catalogos/outros bancos.
+
+    /** Comandos, procedures e rotinas perigosas (mesmo dentro de um SELECT). */
     private static final Pattern FORBIDDEN = Pattern.compile(
-            "\\b(insert|update|delete|drop|alter|truncate|exec|execute|merge|grant|revoke|create|into|sp_|xp_)\\b",
+            "\\b(insert|update|delete|drop|alter|truncate|create|merge|into|grant|revoke|deny|"
+            + "exec|execute|sp_|xp_|fn_|openquery|openrowset|opendatasource|openxml|bulk|"
+            + "waitfor|shutdown|reconfigure|dbcc|backup|restore|kill|use|"
+            + "information_schema|sysobjects|syscolumns|syslogins|sysusers|sysdatabases|sysprocesses)\\b",
             Pattern.CASE_INSENSITIVE);
+    /** Esquemas/bancos de sistema quando qualificados (sys., master., msdb., tempdb., model.). */
+    private static final Pattern SYSTEM_SCHEMA = Pattern.compile(
+            "\\b(sys|master|msdb|tempdb|model)\\s*\\.", Pattern.CASE_INSENSITIVE);
+    /** Nome de 3 partes (banco.esquema.tabela) ou mais => acesso transversal a outro banco. */
+    private static final Pattern CROSS_DB = Pattern.compile(
+            "[A-Za-z_][A-Za-z0-9_]*\\s*\\.\\s*[A-Za-z_][A-Za-z0-9_]*\\s*\\.");
+    /** Literal de string ('...', com aspas escapadas por duplicacao). */
+    private static final Pattern STRING_LITERAL = Pattern.compile("'(?:[^']|'')*'");
 
     private final DataModelRepository models;
     private final DataModelRowRepository rows;
@@ -243,12 +261,35 @@ public class DataModelService {
         String q = sql == null ? "" : sql.trim();
         if (q.endsWith(";")) q = q.substring(0, q.length() - 1).trim();
         if (q.isEmpty()) throw bad("Informe a consulta SQL.");
-        String lower = q.toLowerCase();
+
+        // Comentarios nao sao permitidos: podem ocultar comandos (ex.: INS/**/ERT) ou encerrar
+        // prematuramente a subquery que envolve a consulta.
+        if (q.contains("--") || q.contains("/*") || q.contains("*/")) {
+            throw bad("A consulta não pode conter comentários (-- ou /* */).");
+        }
+        if (q.contains(";")) throw bad("A consulta deve ser um único comando (sem ';').");
+
+        // Normaliza para analise: remove literais de string (viram '') e colchetes/aspas de
+        // identificador, de modo que [sys].[objects] ou \"sys\".\"objects\" fiquem como sys.objects.
+        String scan = STRING_LITERAL.matcher(q).replaceAll("''");
+        scan = scan.replace("[", " ").replace("]", " ").replace("\"", " ");
+
+        String lower = scan.toLowerCase(java.util.Locale.ROOT).trim();
         if (!(lower.startsWith("select") || lower.startsWith("with"))) {
             throw bad("A consulta deve ser um SELECT.");
         }
-        if (q.contains(";")) throw bad("A consulta deve ser um único comando (sem ';').");
-        if (FORBIDDEN.matcher(q).find()) throw bad("A consulta só pode ler dados (SELECT).");
+        if (scan.contains("@@")) {
+            throw bad("Variáveis de sistema (@@) não são permitidas na consulta.");
+        }
+        if (FORBIDDEN.matcher(scan).find()) {
+            throw bad("A consulta só pode ler dados (SELECT), sem comandos, procedures ou rotinas de sistema.");
+        }
+        if (SYSTEM_SCHEMA.matcher(scan).find()) {
+            throw bad("A consulta não pode acessar catálogos ou bancos de sistema (sys, master, msdb, tempdb, model).");
+        }
+        if (CROSS_DB.matcher(scan).find()) {
+            throw bad("A consulta não pode referenciar outro banco (use apenas tabelas do banco atual; sem nome de 3 partes).");
+        }
         return q;
     }
 

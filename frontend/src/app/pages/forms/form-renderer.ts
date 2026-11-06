@@ -67,7 +67,9 @@ export class FormRenderer implements OnChanges {
     const v = this.values[f.key!];
     return v && typeof v === 'object' && 'signatureId' in v ? (v as SignatureValue) : null;
   }
-  signing(f: FormField): boolean { return this.signingKey() === f.key; }
+  // Exige key nao-nula: um campo recem-adicionado (ainda sem key) nunca abre a captura
+  // sozinho na previa (evita o caso null === null que montava o modal travado).
+  signing(f: FormField): boolean { return !!f.key && this.signingKey() === f.key; }
   openSign(f: FormField): void {
     if (this.disabled || !this.formId) return;
     this.signingKey.set(f.key!);
